@@ -22,7 +22,9 @@ namespace fin.settings {
             return JsonConvert.DeserializeObject<Settings>(reader.ReadToEnd());
           }
         }
-      } catch (Exception e) { }
+      } catch (Exception e) {
+        // TODO: Handle this exception.
+      }
 
       Settings settings = new Settings();
       if (!Directory.Exists(directoryPath)) {

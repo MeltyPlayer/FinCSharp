@@ -28,7 +28,7 @@ namespace fin.program.impl.opentk {
       GL.Enable(EnableCap.DepthTest);
       GL.ClearColor(Color4.Cyan);
 
-      ticker_ = new RecurrentCaller(settings_.framerate, Tick_);
+      ticker_ = RecurrentCaller.FromFrequency(settings_.framerate, Tick_);
       ticker_.Start();
     }
 

@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SimpleGame</RootNamespace>
+    <RootNamespace>FinCSharp</RootNamespace>
     <AssemblyName>SimpleGame</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -31,6 +31,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>simple.EntryPoint</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -49,10 +52,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="fin\data\Grid.cs" />
+    <Compile Include="fin\pipeline\IConverter.cs" />
+    <Compile Include="fin\data\grid\ArrayGrid.cs" />
+    <Compile Include="fin\data\grid\IGrid.cs" />
     <Compile Include="fin\emulation\gb\Processor.cs" />
+    <Compile Include="fin\exception\InvalidIndexException.cs" />
     <Compile Include="fin\function\RecurrentCaller.cs" />
     <Compile Include="fin\graphics\common\IGraphics.cs" />
+    <Compile Include="fin\log\Logger.cs" />
     <Compile Include="fin\program\impl\opentk\App.cs" />
     <Compile Include="fin\program\IApp.cs" />
     <Compile Include="fin\program\IWindow.cs" />
@@ -66,6 +73,8 @@
     <Compile Include="fin\program\IScene.cs" />
     <Compile Include="fin\promise\Promise.cs" />
     <Compile Include="fin\promise\IPromise.cs" />
+    <Compile Include="fin\promise\Thenable.cs" />
+    <Compile Include="fin\resource\Resource.cs" />
     <Compile Include="fin\settings\Settings.cs" />
     <Compile Include="simple\EntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -77,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="fin\audio\" />
+    <Folder Include="fin\data\string\" />
     <Folder Include="fin\input\" />
     <Folder Include="resources\" />
   </ItemGroup>
