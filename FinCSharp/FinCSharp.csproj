@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>FinCSharp</RootNamespace>
+    <RootNamespace>fin</RootNamespace>
     <AssemblyName>SimpleGame</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -41,6 +41,9 @@
     <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="RSG.Promise, Version=3.0.1.0, Culture=neutral, PublicKeyToken=7019fe0722eef3a4, processorArchitecture=MSIL">
+      <HintPath>..\packages\RSG.Promise.3.0.1\lib\net35\RSG.Promise.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -54,6 +57,8 @@
   <ItemGroup>
     <Compile Include="src\fin\exception\DuplicateInstanceException.cs" />
     <Compile Include="src\fin\exception\CycleException.cs" />
+    <Compile Include="src\fin\file\FileUtil.cs" />
+    <Compile Include="src\fin\file\JsonUtil.cs" />
     <Compile Include="src\fin\pipeline\IConverter.cs" />
     <Compile Include="src\fin\data\grid\ArrayGrid.cs" />
     <Compile Include="src\fin\data\grid\IGrid.cs" />
@@ -63,20 +68,17 @@
     <Compile Include="src\fin\graphics\common\IGraphics.cs" />
     <Compile Include="src\fin\log\Logger.cs" />
     <Compile Include="src\fin\pipeline\IPipelineStep.cs" />
-    <Compile Include="src\fin\program\impl\opentk\App.cs" />
-    <Compile Include="src\fin\program\IApp.cs" />
-    <Compile Include="src\fin\program\IWindow.cs" />
-    <Compile Include="src\fin\program\Resolution.cs" />
+    <Compile Include="src\fin\app\impl\opentk\App.cs" />
+    <Compile Include="src\fin\app\IApp.cs" />
+    <Compile Include="src\fin\app\IWindow.cs" />
+    <Compile Include="src\fin\app\Resolution.cs" />
     <Compile Include="src\fin\graphics\retro\Canvas.cs" />
     <Compile Include="src\fin\graphics\retro\Sprite.cs" />
     <Compile Include="src\fin\graphics\retro\Text.cs" />
     <Compile Include="src\fin\graphics\retro\TileLayer.cs" />
     <Compile Include="src\fin\graphics\retro\TileMap.cs" />
-    <Compile Include="src\fin\program\Actor.cs" />
-    <Compile Include="src\fin\program\IScene.cs" />
-    <Compile Include="src\fin\promise\Promise.cs" />
-    <Compile Include="src\fin\promise\IPromise.cs" />
-    <Compile Include="src\fin\promise\Thenable.cs" />
+    <Compile Include="src\fin\app\Actor.cs" />
+    <Compile Include="src\fin\app\IScene.cs" />
     <Compile Include="src\fin\resource\Resource.cs" />
     <Compile Include="src\fin\settings\Settings.cs" />
     <Compile Include="src\simple\EntryPoint.cs" />

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FinCSharp.fin.promise {
-  public class Thenable<T> {
-  }
+namespace fin.app {
+  class Actor {}
 }

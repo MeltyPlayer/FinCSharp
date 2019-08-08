@@ -7,7 +7,5 @@ using System.Threading.Tasks;
 namespace fin.graphics.retro {
   class Text {
     private string text;
-
-
   }
 }

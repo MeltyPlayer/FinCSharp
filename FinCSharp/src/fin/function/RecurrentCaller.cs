@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-
 using fin.log;
 
 namespace fin.function {
@@ -8,6 +7,7 @@ namespace fin.function {
    * Calls a given handler recurrently over time. Assumes the handler will take
    * less time than the prescribed delay between calls.
    */
+
   public class RecurrentCaller {
     private readonly Action handler_;
     private readonly double frequency_;
@@ -44,17 +44,21 @@ namespace fin.function {
 
         // Calculate the remaining time in the iteration, sleep for that # of millis.
         double remainingMillis = millisPerIteration - frameMillis;
-        int truncatedRemainingMillis = (int)remainingMillis;
+        int truncatedRemainingMillis = (int) remainingMillis;
         if (truncatedRemainingMillis > 0) {
           Thread.Sleep(truncatedRemainingMillis);
         }
         else {
-          Logger.Log(LogType.PERFORMANCE, LogSeverity.WARNING, "Recurrent call took too long.");
+          Logger.Log(LogType.PERFORMANCE,
+            LogSeverity.WARNING,
+            "Recurrent call took too long. Expected " + millisPerIteration +
+            "ms but was " + frameMillis + "ms.");
         }
 
-        // Subtract the float remainder from the current time for more accuracy.
-        double remainderRemainingMillis = remainingMillis - truncatedRemainingMillis;
-        previousTime = currentTime.AddMilliseconds(-remainderRemainingMillis);
+        // TODO: Subtract the float remainder from the current time for more accuracy.
+        //double remainderRemainingMillis = remainingMillis - truncatedRemainingMillis;
+        //previousTime = currentTime.AddMilliseconds(-remainderRemainingMillis);
+        previousTime = currentTime;
       }
     }
 

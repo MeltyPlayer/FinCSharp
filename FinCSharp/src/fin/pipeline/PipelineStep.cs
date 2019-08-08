@@ -3,15 +3,18 @@ using System.Threading.Tasks;
 
 namespace fin.pipeline {
   public static class Pipeline {
-    public static IPipelineStep<INPUT_TYPE> Step<INPUT_TYPE>(Action<INPUT_TYPE> handler) {
+    public static IPipelineStep<INPUT_TYPE> Step<INPUT_TYPE>(
+      Action<INPUT_TYPE> handler) {
       return new SyncPipelineCap<INPUT_TYPE>(handler);
     }
 
-    public static IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> Step<INPUT_TYPE, OUTPUT_TYPE>(Func<INPUT_TYPE, Task<OUTPUT_TYPE>> handler) {
+    public static IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> Step
+      <INPUT_TYPE, OUTPUT_TYPE>(Func<INPUT_TYPE, Task<OUTPUT_TYPE>> handler) {
       return new AsyncPipelineStep<INPUT_TYPE, OUTPUT_TYPE>(handler);
     }
 
-    public static IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> Step<INPUT_TYPE, OUTPUT_TYPE>(Func<INPUT_TYPE, OUTPUT_TYPE> handler) {
+    public static IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> Step
+      <INPUT_TYPE, OUTPUT_TYPE>(Func<INPUT_TYPE, OUTPUT_TYPE> handler) {
       return new SyncPipelineStep<INPUT_TYPE, OUTPUT_TYPE>(handler);
     }
   }
@@ -29,7 +32,8 @@ namespace fin.pipeline {
     }
   }
 
-  class AsyncPipelineStep<INPUT_TYPE, OUTPUT_TYPE> : IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> {
+  class AsyncPipelineStep<INPUT_TYPE, OUTPUT_TYPE> :
+    IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> {
     private readonly Func<INPUT_TYPE, Task<OUTPUT_TYPE>> handler_;
 
     public AsyncPipelineStep(Func<INPUT_TYPE, Task<OUTPUT_TYPE>> handler) {
@@ -41,7 +45,8 @@ namespace fin.pipeline {
     }
   }
 
-  class SyncPipelineStep<INPUT_TYPE, OUTPUT_TYPE> : IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> {
+  class SyncPipelineStep<INPUT_TYPE, OUTPUT_TYPE> :
+    IPipelineStep<INPUT_TYPE, OUTPUT_TYPE> {
     private readonly Func<INPUT_TYPE, OUTPUT_TYPE> handler_;
 
     public SyncPipelineStep(Func<INPUT_TYPE, OUTPUT_TYPE> handler) {
@@ -49,7 +54,7 @@ namespace fin.pipeline {
     }
 
     protected override Task<OUTPUT_TYPE> Convert(INPUT_TYPE inputValue) {
-       return Task.FromResult(handler_(inputValue));
+      return Task.FromResult(handler_(inputValue));
     }
   }
 }

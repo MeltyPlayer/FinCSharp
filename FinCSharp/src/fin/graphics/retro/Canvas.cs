@@ -5,6 +5,5 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace fin.graphics.retro {
-  class Canvas {
-  }
+  class Canvas {}
 }

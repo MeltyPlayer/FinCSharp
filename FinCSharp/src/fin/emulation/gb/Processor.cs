@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimpleGame.fin.emulation.gb {
   class Processor {
-
     private void init() {
-
       // 4. LD n,A
       op("LD", "A,A", "7F", 4);
       op("LD", "B,A", "47", 4);
@@ -23,8 +21,9 @@ namespace SimpleGame.fin.emulation.gb {
       op("LD", "(nn),A", "EA", 16);
     }
 
-    private void op(string instruction, string parameters, string opcode, int cycles) {
-
-    }
+    private void op(string instruction,
+      string parameters,
+      string opcode,
+      int cycles) {}
   }
 }

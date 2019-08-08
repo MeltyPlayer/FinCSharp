@@ -1,11 +1,9 @@
-﻿using fin.program;
+﻿using fin.app;
+using fin.file;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace fin.settings {
   public class Settings {
@@ -13,8 +11,8 @@ namespace fin.settings {
     public readonly double framerate = 60;
 
     public static Settings Load() {
-      string directoryPath = "data/";
-      string filePath = directoryPath + "settings.json";
+      const string directoryPath = "data/";
+      const string filePath = directoryPath + "settings.json";
 
       try {
         if (File.Exists(filePath)) {
@@ -22,17 +20,18 @@ namespace fin.settings {
             return JsonConvert.DeserializeObject<Settings>(reader.ReadToEnd());
           }
         }
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         // TODO: Handle this exception.
       }
 
-      Settings settings = new Settings();
+      var settings = new Settings();
       if (!Directory.Exists(directoryPath)) {
         Directory.CreateDirectory(directoryPath);
       }
 
-      string json = JsonConvert.SerializeObject(settings);
-      using (StreamWriter writer = new StreamWriter(filePath)) {
+      var json = JsonConvert.SerializeObject(settings);
+      using (var writer = new StreamWriter(filePath)) {
         writer.Write(json);
       }
 

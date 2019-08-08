@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace fin.program {
+namespace fin.app {
   public class Resolution {
     public readonly int width;
     public readonly int height;

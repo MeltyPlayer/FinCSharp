@@ -6,7 +6,7 @@ using OpenTK.Graphics.ES20;
 using OpenTK.Platform;
 using System;
 
-namespace fin.program.impl.opentk {
+namespace fin.app.impl.opentk {
   public class App : IDisposable {
     private Settings settings_ = Settings.Load();
     private Window window_;
@@ -18,10 +18,16 @@ namespace fin.program.impl.opentk {
     }
 
     public void Launch() {
-      window_ = new Window(settings_.resolution.width, settings_.resolution.height, OnEnd_);
+      window_ = new Window(settings_.resolution.width,
+        settings_.resolution.height,
+        OnEnd_);
 
       IWindowInfo windowInfo = window_.window.WindowInfo;
-      glContext_ = new GraphicsContext(GraphicsMode.Default, windowInfo, 1, 0, GraphicsContextFlags.Default);
+      glContext_ = new GraphicsContext(GraphicsMode.Default,
+        windowInfo,
+        1,
+        0,
+        GraphicsContextFlags.Default);
       glContext_.MakeCurrent(windowInfo);
       (glContext_ as IGraphicsContextInternal).LoadAll();
 
@@ -50,7 +56,12 @@ namespace fin.program.impl.opentk {
 
       // TODO: Prevent instantiation by anyone other than game.
       public Window(int width, int height, Action onClose) {
-        window = new NativeWindow(width, height, "SimpleGame", GameWindowFlags.Default, GraphicsMode.Default, DisplayDevice.Default);
+        window = new NativeWindow(width,
+          height,
+          "SimpleGame",
+          GameWindowFlags.Default,
+          GraphicsMode.Default,
+          DisplayDevice.Default);
         window.Visible = true;
 
         window.Closed += (s, e) => onClose();
@@ -60,6 +71,7 @@ namespace fin.program.impl.opentk {
         get { return window.Width; }
         set { window.Width = value; }
       }
+
       public int height {
         get { return window.Height; }
         set { window.Height = value; }
