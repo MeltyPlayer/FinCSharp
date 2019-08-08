@@ -1,18 +1,22 @@
 ﻿using fin.pipeline;
 using fin.program.impl.opentk;
+using System;
+using System.Threading.Tasks;
 
 namespace simple {
   public class EntryPoint {
     public static void Main(string[] args) {
-      Pipeline.Step((number) => {
+      IPipelineStep<int, int> step = Pipeline.Step<int, int>((number) => {
         return number;
-      }).Then((number) => {
+      });
+      step.Then((number) => {
         return "" + number;
       }).Then((text) => {
-        Console.WriteLn(text);
+        Console.WriteLine(text);
       }, (text) => {
-        Console.WriteLn(text);
-      }).Call(10);
+        Console.WriteLine(text);
+      });
+      step.Call(10).Wait();
 
       App app = new App();
       app.Launch();

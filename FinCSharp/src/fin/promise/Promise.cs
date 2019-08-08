@@ -45,13 +45,13 @@ namespace fin.promise {
 
     public Promise<T_RESULT> Then<T_RESULT>(Func<T, T_RESULT> resolveHandler) {
       switch (conclusion_) {
-        case ConclusionType.UNDETERMINED:\
-          Promise<T_RESULT> nextPromise = new Promise<T_RESULT>(() => {
-          });
-          thenResolveHandlers_.Add((value) => {
-            nextPromise.ResolveInternal_(resolveHandler(value));
-          });
-          return nextPromise;
+        case ConclusionType.UNDETERMINED:
+        /*Promise<T_RESULT> nextPromise = new Promise<T_RESULT>(() => {
+        });
+        thenResolveHandlers_.Add((value) => {
+          nextPromise.ResolveInternal_(resolveHandler(value));
+        });
+        return nextPromise;*/
 
         case ConclusionType.RESOLVED:
           return Promise.Resolve(resolveHandler(value_));

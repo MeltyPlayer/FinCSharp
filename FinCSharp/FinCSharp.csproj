@@ -52,31 +52,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="fin\pipeline\IConverter.cs" />
-    <Compile Include="fin\data\grid\ArrayGrid.cs" />
-    <Compile Include="fin\data\grid\IGrid.cs" />
-    <Compile Include="fin\emulation\gb\Processor.cs" />
-    <Compile Include="fin\exception\InvalidIndexException.cs" />
-    <Compile Include="fin\function\RecurrentCaller.cs" />
-    <Compile Include="fin\graphics\common\IGraphics.cs" />
-    <Compile Include="fin\log\Logger.cs" />
-    <Compile Include="fin\program\impl\opentk\App.cs" />
-    <Compile Include="fin\program\IApp.cs" />
-    <Compile Include="fin\program\IWindow.cs" />
-    <Compile Include="fin\program\Resolution.cs" />
-    <Compile Include="fin\graphics\retro\Canvas.cs" />
-    <Compile Include="fin\graphics\retro\Sprite.cs" />
-    <Compile Include="fin\graphics\retro\Text.cs" />
-    <Compile Include="fin\graphics\retro\TileLayer.cs" />
-    <Compile Include="fin\graphics\retro\TileMap.cs" />
-    <Compile Include="fin\program\Actor.cs" />
-    <Compile Include="fin\program\IScene.cs" />
-    <Compile Include="fin\promise\Promise.cs" />
-    <Compile Include="fin\promise\IPromise.cs" />
-    <Compile Include="fin\promise\Thenable.cs" />
-    <Compile Include="fin\resource\Resource.cs" />
-    <Compile Include="fin\settings\Settings.cs" />
-    <Compile Include="simple\EntryPoint.cs" />
+    <Compile Include="src\fin\exception\DuplicateInstanceException.cs" />
+    <Compile Include="src\fin\exception\CycleException.cs" />
+    <Compile Include="src\fin\pipeline\IConverter.cs" />
+    <Compile Include="src\fin\data\grid\ArrayGrid.cs" />
+    <Compile Include="src\fin\data\grid\IGrid.cs" />
+    <Compile Include="src\fin\emulation\gb\Processor.cs" />
+    <Compile Include="src\fin\exception\InvalidIndexException.cs" />
+    <Compile Include="src\fin\function\RecurrentCaller.cs" />
+    <Compile Include="src\fin\graphics\common\IGraphics.cs" />
+    <Compile Include="src\fin\log\Logger.cs" />
+    <Compile Include="src\fin\pipeline\IPipelineStep.cs" />
+    <Compile Include="src\fin\program\impl\opentk\App.cs" />
+    <Compile Include="src\fin\program\IApp.cs" />
+    <Compile Include="src\fin\program\IWindow.cs" />
+    <Compile Include="src\fin\program\Resolution.cs" />
+    <Compile Include="src\fin\graphics\retro\Canvas.cs" />
+    <Compile Include="src\fin\graphics\retro\Sprite.cs" />
+    <Compile Include="src\fin\graphics\retro\Text.cs" />
+    <Compile Include="src\fin\graphics\retro\TileLayer.cs" />
+    <Compile Include="src\fin\graphics\retro\TileMap.cs" />
+    <Compile Include="src\fin\program\Actor.cs" />
+    <Compile Include="src\fin\program\IScene.cs" />
+    <Compile Include="src\fin\promise\Promise.cs" />
+    <Compile Include="src\fin\promise\IPromise.cs" />
+    <Compile Include="src\fin\promise\Thenable.cs" />
+    <Compile Include="src\fin\resource\Resource.cs" />
+    <Compile Include="src\fin\settings\Settings.cs" />
+    <Compile Include="src\simple\EntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -85,10 +88,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="fin\audio\" />
-    <Folder Include="fin\data\string\" />
-    <Folder Include="fin\input\" />
     <Folder Include="resources\" />
+    <Folder Include="src\fin\audio\" />
+    <Folder Include="src\fin\data\string\" />
+    <Folder Include="src\fin\input\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\fin\pipeline\PipelineStep.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

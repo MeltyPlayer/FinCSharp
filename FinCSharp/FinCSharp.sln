@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2011
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinCsharp", "FinCsharp.csproj", "{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinCSharp", "FinCSharp.csproj", "{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinCSharpTests", "..\FinCSharpTests\FinCSharpTests.csproj", "{26DCC53F-3800-41B8-B35D-A4CD5312A4AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26DCC53F-3800-41B8-B35D-A4CD5312A4AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26DCC53F-3800-41B8-B35D-A4CD5312A4AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26DCC53F-3800-41B8-B35D-A4CD5312A4AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26DCC53F-3800-41B8-B35D-A4CD5312A4AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

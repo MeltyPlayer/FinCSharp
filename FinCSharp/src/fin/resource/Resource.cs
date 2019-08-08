@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace fin.resource {
   public class Resource<DATA_TYPE> {
-    private DATA_TYPE data;
+    private DATA_TYPE data_;
 
     public static void From(DATA_TYPE data) {
-      this.data = data;
+      //data = data;
     }
   }
 }
