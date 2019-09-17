@@ -5,12 +5,15 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <RootNamespace>fin</RootNamespace>
-    <AssemblyName>SimpleGame</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <AssemblyName>FinCSharp</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -21,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>FinCSharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,9 +34,11 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>FinCSharp.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>simple.EntryPoint</StartupObject>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -55,48 +61,102 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\fin\exception\DuplicateInstanceException.cs" />
-    <Compile Include="src\fin\exception\CycleException.cs" />
-    <Compile Include="src\fin\file\FileUtil.cs" />
-    <Compile Include="src\fin\file\JsonUtil.cs" />
-    <Compile Include="src\fin\pipeline\IConverter.cs" />
-    <Compile Include="src\fin\data\grid\ArrayGrid.cs" />
-    <Compile Include="src\fin\data\grid\IGrid.cs" />
-    <Compile Include="src\fin\emulation\gb\Processor.cs" />
-    <Compile Include="src\fin\exception\InvalidIndexException.cs" />
-    <Compile Include="src\fin\function\RecurrentCaller.cs" />
-    <Compile Include="src\fin\graphics\common\IGraphics.cs" />
-    <Compile Include="src\fin\log\Logger.cs" />
-    <Compile Include="src\fin\pipeline\IPipelineStep.cs" />
-    <Compile Include="src\fin\app\impl\opentk\App.cs" />
-    <Compile Include="src\fin\app\IApp.cs" />
-    <Compile Include="src\fin\app\IWindow.cs" />
-    <Compile Include="src\fin\app\Resolution.cs" />
-    <Compile Include="src\fin\graphics\retro\Canvas.cs" />
-    <Compile Include="src\fin\graphics\retro\Sprite.cs" />
-    <Compile Include="src\fin\graphics\retro\Text.cs" />
-    <Compile Include="src\fin\graphics\retro\TileLayer.cs" />
-    <Compile Include="src\fin\graphics\retro\TileMap.cs" />
-    <Compile Include="src\fin\app\Actor.cs" />
-    <Compile Include="src\fin\app\IScene.cs" />
-    <Compile Include="src\fin\resource\Resource.cs" />
-    <Compile Include="src\fin\settings\Settings.cs" />
-    <Compile Include="src\simple\EntryPoint.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="src\app\IPhaseHandler.cs" />
+    <Compile Include="src\app\Panel.cs" />
+    <Compile Include="src\app\TickHandlerManager.cs" />
+    <Compile Include="src\app\ISceneNode.cs" />
+    <Compile Include="src\app\TickPhase.cs" />
+    <Compile Include="src\assert\Assert.cs" />
+    <Compile Include="src\data\collections\IFinCollection.cs" />
+    <Compile Include="src\data\collections\set\IFinSet.cs" />
+    <Compile Include="src\data\collections\tree\ITreeNode.cs" />
+    <Compile Include="src\dispose\DisposableSet.cs" />
+    <Compile Include="src\dispose\DisposalScope.cs" />
+    <Compile Include="src\dispose\ISafeDisposable.cs" />
+    <Compile Include="src\exception\DuplicateInstanceException.cs" />
+    <Compile Include="src\exception\CycleException.cs" />
+    <Compile Include="src\file\FileUtil.cs" />
+    <Compile Include="src\file\WebFile.cs" />
+    <Compile Include="src\file\WebFileUtil.cs" />
+    <Compile Include="src\file\LocalFileUtil.cs" />
+    <Compile Include="src\file\IFile.cs" />
+    <Compile Include="src\file\JsonUtil.cs" />
+    <Compile Include="src\file\LocalFile.cs" />
+    <Compile Include="src\generic\ConvergingTypedHandlerMap.cs" />
+    <Compile Include="src\generic\DivergingTypedHandlerMap.cs" />
+    <Compile Include="src\graphics\common\Color.cs" />
+    <Compile Include="src\graphics\common\ITextures.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\GraphicsOpentk.cs" />
+    <Compile Include="src\graphics\common\IScreen.cs" />
+    <Compile Include="src\graphics\common\ImageData.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\ScreenOpentk.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\PrimitivesOpentk.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\TexturesOpentk.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\TransformOpentk.cs" />
+    <Compile Include="src\graphics\common\IPrimitives.cs" />
+    <Compile Include="src\graphics\common\ITransform.cs" />
+    <Compile Include="src\graphics\common\Model.cs" />
+    <Compile Include="src\graphics\common\Render2d.cs" />
+    <Compile Include="src\graphics\common\ITexture.cs" />
+    <Compile Include="src\graphics\common\Vertex2d.cs" />
+    <Compile Include="src\graphics\common\Vertex3d.cs" />
+    <Compile Include="src\input\IAnalogStick.cs" />
+    <Compile Include="src\input\IButton.cs" />
+    <Compile Include="src\input\IController.cs" />
+    <Compile Include="src\instantiable\Instantiable.cs" />
+    <Compile Include="src\instantiable\Instantiator.cs" />
+    <Compile Include="src\pipeline\IConverter.cs" />
+    <Compile Include="src\data\collections\grid\ArrayGrid.cs" />
+    <Compile Include="src\data\collections\grid\IGrid.cs" />
+    <Compile Include="src\emulation\gb\Processor.cs" />
+    <Compile Include="src\exception\InvalidIndexException.cs" />
+    <Compile Include="src\function\RecurrentCaller.cs" />
+    <Compile Include="src\graphics\common\IGraphics.cs" />
+    <Compile Include="src\log\Logger.cs" />
+    <Compile Include="src\pipeline\IPipelineStep.cs" />
+    <Compile Include="src\app\impl\opentk\App.cs" />
+    <Compile Include="src\app\IApp.cs" />
+    <Compile Include="src\app\IWindow.cs" />
+    <Compile Include="src\app\Resolution.cs" />
+    <Compile Include="src\graphics\retro\Canvas.cs" />
+    <Compile Include="src\graphics\retro\Sprite.cs" />
+    <Compile Include="src\graphics\retro\Text.cs" />
+    <Compile Include="src\graphics\retro\TileLayer.cs" />
+    <Compile Include="src\graphics\retro\TileMap.cs" />
+    <Compile Include="src\app\Actor.cs" />
+    <Compile Include="src\app\IScene.cs" />
+    <Compile Include="src\resource\Resource.cs" />
+    <Compile Include="src\resource\ResourceUri.cs" />
+    <Compile Include="src\settings\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="FinCSharp.ruleset" />
     <None Include="OpenTK.dll.config" />
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="resources\" />
-    <Folder Include="src\fin\audio\" />
-    <Folder Include="src\fin\data\string\" />
-    <Folder Include="src\fin\input\" />
+    <Folder Include="src\audio\" />
+    <Folder Include="src\data\collections\list\" />
+    <Folder Include="src\data\collections\map\" />
+    <Folder Include="src\data\collections\queue\" />
+    <Folder Include="src\data\collections\stack\" />
+    <Folder Include="src\data\string\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\fin\pipeline\PipelineStep.cs" />
+    <Compile Include="src\pipeline\PipelineStep.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

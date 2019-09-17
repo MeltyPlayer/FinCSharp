@@ -1,0 +1,92 @@
+﻿using OpenTK.Graphics.OpenGL;
+using fin.data.collections.grid;
+
+namespace fin.graphics.common.impl.opentk {
+  public class TexturesOpentk : ITextures {
+    public ITexture Create(ImageData imageData) {
+      var textureFormat =
+        TexturesOpentk.ConvertImageTypeToTextureFormat(imageData.imageType);
+
+      var width = imageData.pixels.Width;
+      var height = imageData.pixels.Height;
+
+      uint textureId;
+      GL.CreateTextures(TextureTarget.Texture2D, 1, out textureId);
+      GL.TextureStorage2D(textureId,
+        1,
+        textureFormat,
+        width,
+        height);
+
+      var pixelData = TexturesOpentk.ConvertRgbaGridToUintArray(imageData.pixels);
+
+      GL.BindTexture(TextureTarget.Texture2D, textureId);
+      GL.TextureSubImage2D(textureId,
+        0,
+        0,
+        0,
+        width,
+        height,
+        PixelFormat.Rgba,
+        PixelType.Int,
+        pixelData);
+      GL.BindTexture(TextureTarget.Texture2D, 0);
+
+      return new TextureOpentk(textureId);
+    }
+
+    private static SizedInternalFormat ConvertImageTypeToTextureFormat(
+      ImageType imageType) {
+      switch (imageType) {
+        case ImageType.GRAYSCALE:
+          return SizedInternalFormat.R8i;
+
+        case ImageType.RGB:
+        case ImageType.RGBA:
+          return SizedInternalFormat.Rgba32i;
+
+        default:
+          return SizedInternalFormat.Rgba32i;
+      }
+    }
+
+    private static uint[] ConvertRgbaGridToUintArray(IGrid<Color> rgbaGrid) {
+      var width = rgbaGrid.Width;
+      var height = rgbaGrid.Height;
+      var uintArray = new uint[width * height];
+
+      for (var y = 0; y < height; ++y) {
+        for (var x = 0; x < width; ++x) {
+          var i = y * width + x;
+          var rgba = rgbaGrid[x, y];
+          uintArray[i] = rgba.I;
+        }
+      }
+
+      return uintArray;
+    }
+
+    private class TextureOpentk : ITexture {
+      private readonly uint textureId_;
+
+      public TextureOpentk(uint textureId) {
+        this.textureId_ = textureId;
+        this.OnDisposeEvent += this.DestroyTexture;
+      }
+
+      private void DestroyTexture() {
+        var textureIdArray = new[] {this.textureId_};
+        GL.DeleteTextures(1, textureIdArray);
+        this.Dispose();
+      }
+
+      public override Color GetPixel(int x, int y) {
+        return Color.FromRgba(0);
+      }
+
+      public override IGrid<Color> GetAllPixels() {
+        return null;
+      }
+    }
+  }
+}
