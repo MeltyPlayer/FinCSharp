@@ -8,13 +8,13 @@ using OpenTK.Graphics.OpenGL;
 using System;
 
 namespace fin.app.impl.opentk {
-  public class App : IApp {
+  public class OpenTkApp : IApp {
     private readonly Window window_;
     private readonly RecurrentCaller ticker_;
 
-    private readonly IGraphics g_ = new GraphicsOpentk();
+    private readonly IGraphics g_ = new OpenTkGraphics();
 
-    public App() {
+    public OpenTkApp() {
       var settings = Settings.Load();
       this.window_ = new Window(settings.Resolution.Width,
         settings.Resolution.Height,

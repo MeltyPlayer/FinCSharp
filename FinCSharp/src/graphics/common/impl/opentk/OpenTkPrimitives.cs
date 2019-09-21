@@ -1,7 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL;
 
 namespace fin.graphics.common.impl.opentk {
-  public class PrimitivesGl : IPrimitives {
+  public class OpenTkPrimitives : IPrimitives {
     public override IPrimitives Begin(PrimitiveType primitiveType) {
       switch (primitiveType) {
         case PrimitiveType.POINTS:

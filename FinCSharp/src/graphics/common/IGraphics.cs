@@ -1,9 +1,7 @@
-﻿using fin.app;
+﻿using fin.app.phase;
 
 namespace fin.graphics.common {
   public abstract class IGraphics : IPhaseManager {
-    public TickPhase Phase => TickPhase.RENDER;
-
     public abstract IScreen S { get; }
     public abstract IPrimitives P { get; }
     public abstract ITransform T { get; }

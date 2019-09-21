@@ -18,7 +18,7 @@
       protected delegate void OnInstantiationEventHandler(TParams tParams);
 
       protected event OnInstantiationEventHandler OnInstantiationEvent;
-
+        
       protected IInstantiable(InstantiatorKey key, TParams tParams) {
         this.OnInstantiationEvent?.Invoke(tParams);
       }

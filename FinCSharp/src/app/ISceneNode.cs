@@ -13,13 +13,8 @@ namespace fin.app {
      * Child actor logic.
      */
     // TODO: Make this only accessible from Scenes to prevent spaghetti code.
-    protected ISceneNode GetParent() {
-      return this.parent_;
-    }
-
-    protected IList<ISceneNode> GetChildren() {
-      return this.children_;
-    }
+    protected ISceneNode GetParent() => this.parent_;
+    protected IList<ISceneNode> GetChildren() => this.children_;
 
     protected ISceneNode Append(params ISceneNode[] children) {
       foreach (var child in children) {

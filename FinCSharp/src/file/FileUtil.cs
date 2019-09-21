@@ -16,13 +16,11 @@ namespace fin.file {
         new ConvergingTypedHandlerMap<string>();
 
     // TODO: Use input/output streams instead of promises.
-    public static string ReadText(IFile file) {
-      return FileUtil.readHandlers.Call(file);
-    }
+    public static string ReadText(IFile file)
+      => FileUtil.readHandlers.Call(file);
 
-    public static IPromise<string> ReadTextAsync(IFile file) {
-      return FileUtil.asyncReadHandlers.Call(file);
-    }
+    public static IPromise<string> ReadTextAsync(IFile file)
+      => FileUtil.asyncReadHandlers.Call(file);
 
     public static void WriteText(IFile file, string text) {
       //return FileUtil.writeHandlers.Call(file, text);

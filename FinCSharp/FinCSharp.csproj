@@ -51,6 +51,10 @@
       <HintPath>..\packages\RSG.Promise.3.0.1\lib\net35\RSG.Promise.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
@@ -67,13 +71,13 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="src\app\IPhaseHandler.cs" />
     <Compile Include="src\app\Panel.cs" />
+    <Compile Include="src\app\phase\Phase.cs" />
     <Compile Include="src\app\TickHandlerManager.cs" />
     <Compile Include="src\app\ISceneNode.cs" />
-    <Compile Include="src\app\TickPhase.cs" />
     <Compile Include="src\assert\Assert.cs" />
     <Compile Include="src\data\collections\IFinCollection.cs" />
+    <Compile Include="src\generic\TypedDictionary.cs" />
     <Compile Include="src\data\collections\set\IFinSet.cs" />
     <Compile Include="src\data\collections\tree\ITreeNode.cs" />
     <Compile Include="src\dispose\DisposableSet.cs" />
@@ -88,15 +92,16 @@
     <Compile Include="src\file\IFile.cs" />
     <Compile Include="src\file\JsonUtil.cs" />
     <Compile Include="src\file\LocalFile.cs" />
+    <Compile Include="src\generic\DivergingSubclassHandlerMap.cs" />
     <Compile Include="src\generic\ConvergingTypedHandlerMap.cs" />
     <Compile Include="src\generic\DivergingTypedHandlerMap.cs" />
     <Compile Include="src\graphics\common\Color.cs" />
     <Compile Include="src\graphics\common\ITextures.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\GraphicsOpentk.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\OpenTkGraphics.cs" />
     <Compile Include="src\graphics\common\IScreen.cs" />
     <Compile Include="src\graphics\common\ImageData.cs" />
     <Compile Include="src\graphics\common\impl\opentk\ScreenOpentk.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\PrimitivesOpentk.cs" />
+    <Compile Include="src\graphics\common\impl\opentk\OpenTkPrimitives.cs" />
     <Compile Include="src\graphics\common\impl\opentk\TexturesOpentk.cs" />
     <Compile Include="src\graphics\common\impl\opentk\TransformOpentk.cs" />
     <Compile Include="src\graphics\common\IPrimitives.cs" />
@@ -109,6 +114,7 @@
     <Compile Include="src\input\IAnalogStick.cs" />
     <Compile Include="src\input\IButton.cs" />
     <Compile Include="src\input\IController.cs" />
+    <Compile Include="src\input\IInput.cs" />
     <Compile Include="src\instantiable\Instantiable.cs" />
     <Compile Include="src\instantiable\Instantiator.cs" />
     <Compile Include="src\pipeline\IConverter.cs" />
@@ -120,7 +126,7 @@
     <Compile Include="src\graphics\common\IGraphics.cs" />
     <Compile Include="src\log\Logger.cs" />
     <Compile Include="src\pipeline\IPipelineStep.cs" />
-    <Compile Include="src\app\impl\opentk\App.cs" />
+    <Compile Include="src\app\impl\opentk\OpenTkApp.cs" />
     <Compile Include="src\app\IApp.cs" />
     <Compile Include="src\app\IWindow.cs" />
     <Compile Include="src\app\Resolution.cs" />
@@ -129,7 +135,7 @@
     <Compile Include="src\graphics\retro\Text.cs" />
     <Compile Include="src\graphics\retro\TileLayer.cs" />
     <Compile Include="src\graphics\retro\TileMap.cs" />
-    <Compile Include="src\app\Actor.cs" />
+    <Compile Include="src\app\SimpleActor.cs" />
     <Compile Include="src\app\IScene.cs" />
     <Compile Include="src\resource\Resource.cs" />
     <Compile Include="src\resource\ResourceUri.cs" />
@@ -154,6 +160,7 @@
     <Folder Include="src\data\collections\queue\" />
     <Folder Include="src\data\collections\stack\" />
     <Folder Include="src\data\string\" />
+    <Folder Include="src\input\impl\opentk\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\pipeline\PipelineStep.cs" />

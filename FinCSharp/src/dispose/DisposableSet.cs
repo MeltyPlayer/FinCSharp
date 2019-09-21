@@ -3,7 +3,7 @@ using fin.data.collections.set;
 
 namespace fin.dispose {
   /*public class DisposableSet<TDisposable> : IFinSet<TDisposable>
-    where TDisposable : IFinDisposable {
+    where TDisposable : UnsafeDisposable {
     private readonly ISet<TDisposable> set_;
 
     public bool Add(TDisposable instance) {
@@ -24,7 +24,7 @@ namespace fin.dispose {
   }
 
   public class DisposableEnumerator<TDisposable> : IEnumerator<TDisposable>
-    where TDisposable : IFinDisposable {
+    where TDisposable : UnsafeDisposable {
     private readonly IEnumerator<TDisposable> enumerator_;
 
     public DisposableEnumerator(IEnumerator<TDisposable> enumerator) {

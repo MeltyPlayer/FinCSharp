@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using fin.app.phase;
+using fin.graphics.common;
 
 namespace fin.app {
-  public interface IPhaseManager {
+  /*public interface IPhaseManager {
     TickPhase Phase { get; }
   }
 
@@ -22,9 +24,13 @@ namespace fin.app {
       where TPhaseManager : IPhaseManager;
   }
 
-  public class TickHandlerManager : ITickHandlerManager, IDisposable {
+  public class TickHandlerManager : ITickHandlerManager, IDisposable, Phase.Animate.IHandler, Phase.Render.IHandler {
     private readonly Dictionary<TickPhase, ISet<IPhaseHandler>>
       tickHandlers_ = null; // new Dictionary<TickPhase, ISet<IPhaseHandler>>();
+
+    public void Render(IGraphics g) {
+      for 
+    }
 
     // TODO: Use proper dispose?
     public void Dispose() {
@@ -46,7 +52,7 @@ namespace fin.app {
     public void AddPhaseHandler<TPhaseManager>(
       IPhaseHandler<TPhaseManager> phaseHandler)
       where TPhaseManager : IPhaseManager {
-      /*var phase = TPhaseManager.Phase;
+      var phase = TPhaseManager.Phase;
 
       var phaseHandlers = this.tickHandlers_[phase];
       if (phaseHandlers == null) {
@@ -54,7 +60,7 @@ namespace fin.app {
         this.tickHandlers_[phase] = phaseHandlers;
       }
 
-      phaseHandlers.Add(phaseHandler);*/
+      phaseHandlers.Add(phaseHandler);
     }
-  }
+  }*/
 }
