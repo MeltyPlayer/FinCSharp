@@ -1,169 +1,27 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>fin</RootNamespace>
     <AssemblyName>FinCSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>FinCSharp.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>FinCSharp.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="RSG.Promise, Version=3.0.1.0, Culture=neutral, PublicKeyToken=7019fe0722eef3a4, processorArchitecture=MSIL">
-      <HintPath>..\packages\RSG.Promise.3.0.1\lib\net35\RSG.Promise.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Collections.Immutable, Version=1.2.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <COMReference Include="{d37e2a3e-8545-3a39-9f4f-31827c9124ab}">
+      <Guid>d37e2a3e-8545-3a39-9f4f-31827c9124ab</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>4</VersionMinor>
+      <WrapperTool>tlbimp</WrapperTool>
+    </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Include="src\app\Panel.cs" />
-    <Compile Include="src\app\phase\Phase.cs" />
-    <Compile Include="src\app\TickHandlerManager.cs" />
-    <Compile Include="src\app\ISceneNode.cs" />
-    <Compile Include="src\assert\Assert.cs" />
-    <Compile Include="src\data\collections\IFinCollection.cs" />
-    <Compile Include="src\generic\TypedDictionary.cs" />
-    <Compile Include="src\data\collections\set\IFinSet.cs" />
-    <Compile Include="src\data\collections\tree\ITreeNode.cs" />
-    <Compile Include="src\dispose\DisposableSet.cs" />
-    <Compile Include="src\dispose\DisposalScope.cs" />
-    <Compile Include="src\dispose\ISafeDisposable.cs" />
-    <Compile Include="src\exception\DuplicateInstanceException.cs" />
-    <Compile Include="src\exception\CycleException.cs" />
-    <Compile Include="src\file\FileUtil.cs" />
-    <Compile Include="src\file\WebFile.cs" />
-    <Compile Include="src\file\WebFileUtil.cs" />
-    <Compile Include="src\file\LocalFileUtil.cs" />
-    <Compile Include="src\file\IFile.cs" />
-    <Compile Include="src\file\JsonUtil.cs" />
-    <Compile Include="src\file\LocalFile.cs" />
-    <Compile Include="src\generic\DivergingSubclassHandlerMap.cs" />
-    <Compile Include="src\generic\ConvergingTypedHandlerMap.cs" />
-    <Compile Include="src\generic\DivergingTypedHandlerMap.cs" />
-    <Compile Include="src\graphics\common\Color.cs" />
-    <Compile Include="src\graphics\common\ITextures.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\OpenTkGraphics.cs" />
-    <Compile Include="src\graphics\common\IScreen.cs" />
-    <Compile Include="src\graphics\common\ImageData.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\ScreenOpentk.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\OpenTkPrimitives.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\TexturesOpentk.cs" />
-    <Compile Include="src\graphics\common\impl\opentk\TransformOpentk.cs" />
-    <Compile Include="src\graphics\common\IPrimitives.cs" />
-    <Compile Include="src\graphics\common\ITransform.cs" />
-    <Compile Include="src\graphics\common\Model.cs" />
-    <Compile Include="src\graphics\common\Render2d.cs" />
-    <Compile Include="src\graphics\common\ITexture.cs" />
-    <Compile Include="src\graphics\common\Vertex2d.cs" />
-    <Compile Include="src\graphics\common\Vertex3d.cs" />
-    <Compile Include="src\input\IAnalogStick.cs" />
-    <Compile Include="src\input\IButton.cs" />
-    <Compile Include="src\input\IController.cs" />
-    <Compile Include="src\input\IInput.cs" />
-    <Compile Include="src\instantiable\Instantiable.cs" />
-    <Compile Include="src\instantiable\Instantiator.cs" />
-    <Compile Include="src\pipeline\IConverter.cs" />
-    <Compile Include="src\data\collections\grid\ArrayGrid.cs" />
-    <Compile Include="src\data\collections\grid\IGrid.cs" />
-    <Compile Include="src\emulation\gb\Processor.cs" />
-    <Compile Include="src\exception\InvalidIndexException.cs" />
-    <Compile Include="src\function\RecurrentCaller.cs" />
-    <Compile Include="src\graphics\common\IGraphics.cs" />
-    <Compile Include="src\log\Logger.cs" />
-    <Compile Include="src\pipeline\IPipelineStep.cs" />
-    <Compile Include="src\app\impl\opentk\OpenTkApp.cs" />
-    <Compile Include="src\app\IApp.cs" />
-    <Compile Include="src\app\IWindow.cs" />
-    <Compile Include="src\app\Resolution.cs" />
-    <Compile Include="src\graphics\retro\Canvas.cs" />
-    <Compile Include="src\graphics\retro\Sprite.cs" />
-    <Compile Include="src\graphics\retro\Text.cs" />
-    <Compile Include="src\graphics\retro\TileLayer.cs" />
-    <Compile Include="src\graphics\retro\TileMap.cs" />
-    <Compile Include="src\app\SimpleActor.cs" />
-    <Compile Include="src\app\IScene.cs" />
-    <Compile Include="src\resource\Resource.cs" />
-    <Compile Include="src\resource\ResourceUri.cs" />
-    <Compile Include="src\settings\Settings.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <PackageReference Include="Microsoft.Win32.SystemEvents" Version="4.6.0-preview.19073.11" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="OpenTK" Version="3.1.0" />
+    <PackageReference Include="RSG.Promise" Version="3.0.1" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.6.0-preview.19073.11" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="FinCSharp.ruleset" />
-    <None Include="OpenTK.dll.config" />
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="resources\" />
-    <Folder Include="src\audio\" />
-    <Folder Include="src\data\collections\list\" />
-    <Folder Include="src\data\collections\map\" />
-    <Folder Include="src\data\collections\queue\" />
-    <Folder Include="src\data\collections\stack\" />
-    <Folder Include="src\data\string\" />
-    <Folder Include="src\input\impl\opentk\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="src\pipeline\PipelineStep.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

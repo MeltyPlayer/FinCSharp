@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SimpleGame.fin.emulation.gb {
+﻿namespace SimpleGame.fin.emulation.gb {
   class Processor {
     private void init() {
       // 4. LD n,A

@@ -1,13 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29311.281
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinCSharp", "FinCSharp\FinCSharp.csproj", "{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinCSharpTests", "FinCSharpTests\FinCSharpTests.csproj", "{26DCC53F-3800-41B8-B35D-A4CD5312A4AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66} = {7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simple", "Simple\Simple.csproj", "{46A375EA-C29C-4EA1-AF93-44B3D1BF48BF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66} = {7AA8EDE7-DD00-4FD3-9902-ACAFC827CF66}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
