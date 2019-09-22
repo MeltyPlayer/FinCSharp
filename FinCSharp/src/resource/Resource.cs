@@ -11,7 +11,7 @@ namespace fin.resource {
   public abstract class Resource {
     public delegate Promise<T> LoaderFunction<T>(ResourceUri uri);
 
-    private static Dictionary<Type, LoaderFunction<Resource>>
+    /*private static Dictionary<Type, LoaderFunction<Resource>>
       loaderFuncs_ =
         new Dictionary<Type, LoaderFunction<Resource>>();
 
@@ -28,16 +28,15 @@ namespace fin.resource {
 
   public class Resource<T> : Resource {
     // TODO: Keep track of progress.
-    private T value_;
+    /*private T value_;
 
     public Resource(T value) {
       this.value_ = value;
     }
 
     public Resource(IPromise<T> valuePromise) {
-      valuePromise.Then((value) =>
-        this.value_ = value);
-    }
+      valuePromise.Then((value) => this.value_ = value);
+    }*/
 
     // TODO: Allow default values.
   }

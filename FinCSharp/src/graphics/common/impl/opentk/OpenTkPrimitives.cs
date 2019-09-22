@@ -1,18 +1,23 @@
 ﻿using OpenTK.Graphics.OpenGL;
 
 namespace fin.graphics.common.impl.opentk {
+
   public class OpenTkPrimitives : IPrimitives {
+
     public override IPrimitives Begin(PrimitiveType primitiveType) {
       switch (primitiveType) {
         case PrimitiveType.POINTS:
           GL.Begin(BeginMode.Points);
           break;
+
         case PrimitiveType.LINE_STRIP:
           GL.Begin(BeginMode.LineStrip);
           break;
+
         case PrimitiveType.TRIANGLES:
           GL.Begin(BeginMode.Triangles);
           break;
+
         case PrimitiveType.QUADS:
           GL.Begin(BeginMode.Quads);
           break;

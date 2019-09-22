@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 
 namespace fin.generic {
-  public class TypedDictionary<T> {
+  public class TypedSetDictionary<T> {
     private readonly Dictionary<Type, ISet<T>> data_;
 
-    public TypedDictionary() {
+    public TypedSetDictionary() {
       this.data_ = new Dictionary<Type, ISet<T>>();
     }
 

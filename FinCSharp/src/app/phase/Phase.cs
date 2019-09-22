@@ -48,11 +48,11 @@ namespace fin.app.phase {
 
     public void Tick() {
       foreach (var manager in this.managerSequence_) {
-        this.OnPhase(manager);
+        this.OnPhase_(manager);
       }
     }
 
-    private void OnPhase<TPhaseManager>(TPhaseManager manager)
+    private void OnPhase_<TPhaseManager>(TPhaseManager manager)
       where TPhaseManager : IPhaseManager {
       var managerType = this.managerToTypeMap_[manager];
       var untypedHandlers = this.managerTypeToHandlerSetMap_[managerType];

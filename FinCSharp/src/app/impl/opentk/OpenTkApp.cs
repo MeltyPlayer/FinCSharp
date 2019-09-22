@@ -1,13 +1,16 @@
-﻿using fin.function;
+﻿using System;
+
+using fin.function;
 using fin.graphics.common;
 using fin.graphics.common.impl.opentk;
 using fin.settings;
+
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using System;
 
 namespace fin.app.impl.opentk {
+
   public class OpenTkApp : IApp {
     private readonly Window window_;
     private readonly RecurrentCaller ticker_;
@@ -33,7 +36,7 @@ namespace fin.app.impl.opentk {
 
     private void Tick_() {
       this.window_.Title = "SimpleGame (" +
-                           (int) this.ticker_.ActualFrequency +
+                           (int)this.ticker_.ActualFrequency +
                            ")";
 
       this.window_.Render(this.g_);
@@ -61,7 +64,7 @@ namespace fin.app.impl.opentk {
           0,
           GraphicsContextFlags.Default);
         this.glContext_.MakeCurrent(windowInfo);
-        ((IGraphicsContextInternal) this.glContext_).LoadAll();
+        ((IGraphicsContextInternal)this.glContext_).LoadAll();
       }
 
       public void Render(IGraphics g) {
@@ -70,23 +73,22 @@ namespace fin.app.impl.opentk {
         g.S.Clear(Color.FromRgbF(0, 1, 1));
         GL.Viewport(0, 0, this.Width, this.Height);
 
-
         this.glContext_.SwapBuffers();
       }
 
       public string Title {
-        get { return this.window_.Title; }
-        set { this.window_.Title = value; }
+        get => this.window_.Title;
+        set => this.window_.Title = value;
       }
 
       public int Width {
-        get { return this.window_.Width; }
-        set { this.window_.Width = value; }
+        get => this.window_.Width;
+        set => this.window_.Width = value;
       }
 
       public int Height {
-        get { return this.window_.Height; }
-        set { this.window_.Height = value; }
+        get => this.window_.Height;
+        set => this.window_.Height = value;
       }
 
       public void Close() => this.window_.Close();

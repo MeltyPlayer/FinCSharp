@@ -6,14 +6,16 @@ using System.Threading.Tasks;
 
 namespace fin.app {
   public abstract class ISceneNode {
-    private ISceneNode parent_;
+    private ISceneNode? parent_;
     private readonly IList<ISceneNode> children_ = new List<ISceneNode>();
+
+    // TODO: Use SafeDisposableNode
 
     /**
      * Child actor logic.
      */
     // TODO: Make this only accessible from Scenes to prevent spaghetti code.
-    protected ISceneNode GetParent() => this.parent_;
+    protected ISceneNode? GetParent() => this.parent_;
     protected IList<ISceneNode> GetChildren() => this.children_;
 
     protected ISceneNode Append(params ISceneNode[] children) {

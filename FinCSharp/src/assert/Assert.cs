@@ -13,12 +13,12 @@ namespace fin.assert {
       Assert.True(!value, message);
     }
 
-    public static void Nonnull(object instance,
+    public static void Nonnull(object? instance,
       string message = "Expected reference to be nonnull.") {
       Assert.True(instance != null, message);
     }
 
-    public static void Null(object instance,
+    public static void Null(object? instance,
       string message = "Expected reference to be null.") {
       Assert.True(instance == null, message);
     }

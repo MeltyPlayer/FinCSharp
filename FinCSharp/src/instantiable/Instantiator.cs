@@ -17,10 +17,10 @@
       where TParams : IInstantiableParams {
       protected delegate void OnInstantiationEventHandler(TParams tParams);
 
-      protected event OnInstantiationEventHandler OnInstantiationEvent;
+      protected event OnInstantiationEventHandler OnInstantiationEvent = delegate { };
         
       protected IInstantiable(InstantiatorKey key, TParams tParams) {
-        this.OnInstantiationEvent?.Invoke(tParams);
+        this.OnInstantiationEvent(tParams);
       }
     }
   }

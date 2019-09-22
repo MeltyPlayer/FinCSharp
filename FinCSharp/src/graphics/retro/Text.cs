@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace fin.graphics.retro {
-  class Text {
-    private string text;
+  public class Text {
+    //private string text;
   }
 }

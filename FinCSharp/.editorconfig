@@ -1,0 +1,22 @@
+﻿[*.cs]
+
+# IDE0027: Use expression body for accessors
+csharp_style_expression_bodied_accessors = true:suggestion
+
+# CS8604: Possible null reference argument.
+dotnet_diagnostic.CS8604.severity = error
+
+# CS8618: Non-nullable field is uninitialized. Consider declaring as nullable.
+dotnet_diagnostic.CS8618.severity = error
+
+# CS8602: Dereference of a possibly null reference.
+dotnet_diagnostic.CS8602.severity = error
+
+# CS8601: Possible null reference assignment.
+dotnet_diagnostic.CS8601.severity = error
+
+# CS8600: Converting null literal or possible null value to non-nullable type.
+dotnet_diagnostic.CS8600.severity = error
+
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using fin.assert;
 
 namespace fin.dispose {
@@ -8,19 +7,19 @@ namespace fin.dispose {
   public class UnsafeDisposable : IDisposable {
     public delegate void OnDisposeEventHandler();
 
-    public event OnDisposeEventHandler OnDisposeEvent;
+    public event OnDisposeEventHandler OnDisposeEvent = delegate { };
     public bool IsDisposed { get; private set; }
 
     ~UnsafeDisposable() {
-      this.Dispose(false);
+      this.Dispose_(false);
     }
 
     public void Dispose() {
-      this.Dispose(true);
+      this.Dispose_(true);
       GC.SuppressFinalize(this);
     }
 
-    private void Dispose(bool disposing) {
+    private void Dispose_(bool disposing) {
       if (this.IsDisposed) {
         return;
       }
@@ -31,29 +30,29 @@ namespace fin.dispose {
         return;
       }
 
-      this.OnDisposeEvent?.Invoke();
+      this.OnDisposeEvent();
     }
   }
 
   public class UnsafeDisposableDataNode<T> : UnsafeDisposable {
     public T Data { get; }
 
-    public UnsafeDisposableDataNode<T> Parent { get; private set; }
+    public UnsafeDisposableDataNode<T>? Parent { get; private set; }
     public ISet<UnsafeDisposableDataNode<T>> Children { get; }
     public ISet<T> ChildData { get; }
 
-    public UnsafeDisposableDataNode(T data, UnsafeDisposableDataNode<T> parent) {
+    public UnsafeDisposableDataNode(T data, UnsafeDisposableDataNode<T>? parent) {
       this.Data = data;
       parent?.Attach(this);
 
       this.Children = new HashSet<UnsafeDisposableDataNode<T>>();
       this.ChildData = new HashSet<T>();
 
-      this.OnDisposeEvent += this.OnDispose;
+      this.OnDisposeEvent += this.OnDispose_;
     }
 
-    private void OnDispose() {
-      this.Parent?.RemoveSingle(this);
+    private void OnDispose_() {
+      this.Parent?.RemoveSingle_(this);
 
       foreach (var child in this.Children) {
         child.Dispose();
@@ -66,12 +65,12 @@ namespace fin.dispose {
     public UnsafeDisposableDataNode<T> Attach(
       params UnsafeDisposableDataNode<T>[] children) {
       foreach (var child in children) {
-        this.AttachSingle(child);
+        this.AttachSingle_(child);
       }
       return this;
     }
 
-    private void AttachSingle(UnsafeDisposableDataNode<T> child) {
+    private void AttachSingle_(UnsafeDisposableDataNode<T> child) {
       Assert.False(this.IsDisposed);
       Assert.Different(this, child);
       Assert.Nonnull(child);
@@ -83,11 +82,11 @@ namespace fin.dispose {
       this.Children.Add(child);
       this.ChildData.Add(child.Data);
 
-      child.Parent?.RemoveSingle(child);
+      child.Parent?.RemoveSingle_(child);
       child.Parent = this;
     }
 
-    private void RemoveSingle(UnsafeDisposableDataNode<T> child) {
+    private void RemoveSingle_(UnsafeDisposableDataNode<T> child) {
       Assert.False(this.IsDisposed);
       Assert.Different(this, child);
       Assert.Nonnull(child);
@@ -102,8 +101,8 @@ namespace fin.dispose {
       child.Parent = null;
     }
 
-    public override bool Equals(object obj) {
-      return this.Equals(obj as UnsafeDisposableDataNode<T>);
+    public override bool Equals(object? obj) {
+      return obj is UnsafeDisposableDataNode<T> otherUnsafeNode && this.Equals(otherUnsafeNode);
     }
 
     public bool Equals(UnsafeDisposableDataNode<T> other) {
@@ -120,16 +119,14 @@ namespace fin.dispose {
       // Return true if the fields match.
       // Note that the base class is not invoked because it is
       // System.Object, which defines Equals as reference equality.
-      return this.Data.Equals(other.Data);
+      return this.Data?.Equals(other.Data) ?? false;
     }
 
     public override int GetHashCode() {
-      return this.Data.GetHashCode();
+      return this.Data?.GetHashCode() ?? 0;
     }
 
-    public static bool operator ==(
-      UnsafeDisposableDataNode<T> lhs,
-      UnsafeDisposableDataNode<T> rhs) {
+    public static bool operator ==(UnsafeDisposableDataNode<T> lhs, UnsafeDisposableDataNode<T> rhs) {
       // Check for null on left side.
       if (Object.ReferenceEquals(lhs, null)) {
         if (Object.ReferenceEquals(rhs, null)) {
@@ -141,7 +138,7 @@ namespace fin.dispose {
         return false;
       }
       // Equals handles case of null on right side.
-      return lhs.Data.Equals(rhs.Data);
+      return lhs.Data?.Equals(rhs.Data) ?? false;
     }
 
     public static bool operator !=(
@@ -154,24 +151,25 @@ namespace fin.dispose {
   public class SafeDisposableNode {
     protected delegate void OnDisposeEventHandler();
 
-    protected event OnDisposeEventHandler OnDisposeEvent;
+    protected event OnDisposeEventHandler OnDisposeEvent = delegate { };
     private readonly UnsafeDisposableDataNode<SafeDisposableNode> impl_;
 
     // TODO: Switch out null for the parent based on current scope.
-    public SafeDisposableNode(SafeDisposableNode parent = null) {
+    public SafeDisposableNode(SafeDisposableNode? parent = null) {
       this.impl_ = new UnsafeDisposableDataNode<SafeDisposableNode>(this,
         parent?.impl_);
 
-      this.impl_.OnDisposeEvent += this.OnDispose;
+      this.impl_.OnDisposeEvent += this.OnDispose_;
     }
 
     protected void TriggerDispose() => this.impl_.Dispose();
 
-    private void OnDispose() {
-      this.OnDisposeEvent?.Invoke();
+    private void OnDispose_() {
+      this.OnDisposeEvent();
     }
 
-    public SafeDisposableNode Parent => this.impl_.Parent.Data;
+    // TODO: Switch out null for the parent based on current scope.
+    public SafeDisposableNode? Parent => this.impl_.Parent?.Data;
     public ISet<SafeDisposableNode> Children => this.impl_.ChildData;
 
     public SafeDisposableNode Attach(params SafeDisposableNode[] children) {
