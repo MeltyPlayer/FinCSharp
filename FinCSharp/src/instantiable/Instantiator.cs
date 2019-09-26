@@ -1,29 +1,39 @@
-﻿namespace fin.instantiable {
-  public class Instantiation {
-    public class InstantiatorKey {
-      private InstantiatorKey() {}
-    }
+﻿using System;
 
+namespace fin.instantiable {
+  /*public class Instantiation {
     public class Instantiator {
-      /*public IInstantiable<TParams> Instantiate<TParams>(TParams tParams)
-        where TParams : IInstantiableParams {
-        var key = new InstantiatorKey();
-      }*/
-    }
+      private class InstantiatorKey {
+        public InstantiatorKey() {
+        }
+      }
 
-    public interface IInstantiableParams {}
+      public abstract class WithoutParams {
+        protected WithoutParams(InstantiatorKey key) {
+          this.OnInstantiation();
+        }
 
-    public abstract class IInstantiable<TParams>
-      where TParams : IInstantiableParams {
-      protected delegate void OnInstantiationEventHandler(TParams tParams);
+        protected abstract void OnInstantiation();
+      }
 
-      protected event OnInstantiationEventHandler OnInstantiationEvent = delegate { };
-        
-      protected IInstantiable(InstantiatorKey key, TParams tParams) {
-        this.OnInstantiationEvent(tParams);
+      public abstract class WithParams<TParams> {
+        protected WithParams(InstantiatorKey key, TParams tParams) {
+          this.OnInstantiation(tParams);
+        }
+
+        protected abstract void OnInstantiation(TParams tParams);
+      }
+
+      public TInstantiable Instantiate<TInstantiable>() where TInstantiable : Instantiable {
+        // TODO: Memoize these constructors?
+        var ctor = typeof(TInstantiable).GetConstructor(new Type[] { typeof(InstantiatorKey) });
+        return (TInstantiable)ctor!.Invoke(new object[] { new InstantiatorKey() });
+      }
+
+      public TInstantiableWithParams Instantiate<TInstantiableWithParams, TParams>(TParams param) where TInstantiableWithParams : Instantiable<TParams> {
+        var ctor = typeof(TInstantiableWithParams).GetConstructor(new Type[] { typeof(InstantiatorKey), typeof(TParams) });
+        return (TInstantiableWithParams)ctor!.Invoke(new object[] { new InstantiatorKey(), param! });
       }
     }
-  }
-
-  //public class A : Instantiation.IInstantiable<> {}
+  }*/
 }

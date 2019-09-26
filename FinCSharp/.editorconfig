@@ -20,3 +20,15 @@ dotnet_diagnostic.CS8600.severity = error
 
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = true
+
+# IDE0009: Member access should be qualified.
+dotnet_style_qualification_for_property = true:error
+
+# IDE0009: Member access should be qualified.
+dotnet_style_qualification_for_event = true:error
+
+# IDE0009: Member access should be qualified.
+dotnet_style_qualification_for_method = true:error
+
+# IDE0009: Member access should be qualified.
+dotnet_style_qualification_for_field = true:error

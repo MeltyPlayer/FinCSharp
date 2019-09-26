@@ -1,7 +1,8 @@
 ﻿using fin.app.phase;
 
 namespace fin.graphics.common {
-  public abstract class IGraphics : IPhaseManager {
+
+  public abstract class IGraphics {
     public abstract IScreen S { get; }
     public abstract IPrimitives P { get; }
     public abstract ITransform T { get; }

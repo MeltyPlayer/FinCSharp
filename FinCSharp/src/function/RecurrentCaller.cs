@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Threading;
+using System.Threading.Tasks;
+
 using fin.log;
 
 namespace fin.function {
@@ -45,7 +46,7 @@ namespace fin.function {
 
         // Calculate the remaining time in the iteration, sleep for that # of millis.
         var remainingMillis = millisPerIteration - frameMillis;
-        var truncatedRemainingMillis = (int) remainingMillis;
+        var truncatedRemainingMillis = (int)remainingMillis;
 
         if (truncatedRemainingMillis > 0) {
           Logger.Log(LogType.PERFORMANCE,
@@ -55,8 +56,7 @@ namespace fin.function {
 
           // TODO: Find a way to sleep without breaking vsync.
           //Thread.Sleep(truncatedRemainingMillis);
-        }
-        else {
+        } else {
           Logger.Log(LogType.PERFORMANCE,
             LogSeverity.WARNING,
             ". Time: " + frameMillis + "ms, Rem.: " + remainingMillis + "ms" +

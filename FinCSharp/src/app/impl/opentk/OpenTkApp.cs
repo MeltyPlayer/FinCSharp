@@ -68,6 +68,8 @@ namespace fin.app.impl.opentk {
       }
 
       public void Render(IGraphics g) {
+        this.window_.ProcessEvents();
+
         this.glContext_.MakeCurrent(this.window_.WindowInfo);
 
         g.S.Clear(Color.FromRgbF(0, 1, 1));

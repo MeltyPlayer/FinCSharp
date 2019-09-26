@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using fin.assert;
 
 namespace fin.dispose {
+
   // TODO: Rename this.
   public class UnsafeDisposable : IDisposable {
+
     public delegate void OnDisposeEventHandler();
 
     public event OnDisposeEventHandler OnDisposeEvent = delegate { };
+
     public bool IsDisposed { get; private set; }
 
     ~UnsafeDisposable() {
@@ -71,9 +74,9 @@ namespace fin.dispose {
     }
 
     private void AttachSingle_(UnsafeDisposableDataNode<T> child) {
-      Assert.False(this.IsDisposed);
-      Assert.Different(this, child);
-      Assert.Nonnull(child);
+      Asserts.False(this.IsDisposed);
+      Asserts.Different(this, child);
+      Asserts.Nonnull(child);
 
       if (this.Children.Contains(child)) {
         return;
@@ -87,9 +90,9 @@ namespace fin.dispose {
     }
 
     private void RemoveSingle_(UnsafeDisposableDataNode<T> child) {
-      Assert.False(this.IsDisposed);
-      Assert.Different(this, child);
-      Assert.Nonnull(child);
+      Asserts.False(this.IsDisposed);
+      Asserts.Different(this, child);
+      Asserts.Nonnull(child);
 
       if (!this.Children.Contains(child)) {
         return;
@@ -107,7 +110,7 @@ namespace fin.dispose {
 
     public bool Equals(UnsafeDisposableDataNode<T> other) {
       // If parameter is null, return false.
-      if (Object.ReferenceEquals(other, null)) {
+      if (other is null) {
         return false;
       }
 
@@ -128,8 +131,8 @@ namespace fin.dispose {
 
     public static bool operator ==(UnsafeDisposableDataNode<T> lhs, UnsafeDisposableDataNode<T> rhs) {
       // Check for null on left side.
-      if (Object.ReferenceEquals(lhs, null)) {
-        if (Object.ReferenceEquals(rhs, null)) {
+      if (lhs is null) {
+        if (rhs is null) {
           // null == null = true.
           return true;
         }
@@ -149,9 +152,11 @@ namespace fin.dispose {
   }
 
   public class SafeDisposableNode {
+
     protected delegate void OnDisposeEventHandler();
 
     protected event OnDisposeEventHandler OnDisposeEvent = delegate { };
+
     private readonly UnsafeDisposableDataNode<SafeDisposableNode> impl_;
 
     // TODO: Switch out null for the parent based on current scope.
@@ -170,6 +175,7 @@ namespace fin.dispose {
 
     // TODO: Switch out null for the parent based on current scope.
     public SafeDisposableNode? Parent => this.impl_.Parent?.Data;
+
     public ISet<SafeDisposableNode> Children => this.impl_.ChildData;
 
     public SafeDisposableNode Attach(params SafeDisposableNode[] children) {
