@@ -21,59 +21,47 @@ namespace fin.app.phase {
       LOG += text + "_";
     }
 
-    public static void AssertLog(string log) {
-      Assert.AreEqual(log, LOG);
-    }
+    public static void AssertLog(string log) => Assert.AreEqual(log, LOG);
 
     public class ManagerA { }
 
-    public class HandlerA : IPhaseHandler<ManagerA> {
+    public class HandlerA : ReflectivePhaseHandler, IReflectivePhaseHandler<ManagerA> {
 
-      public void OnPhase(ManagerA manager) {
-        PrintToLog("A");
-      }
+      public void OnPhase(ManagerA manager) => PrintToLog("A");
     }
 
     public class ManagerB { }
 
-    public class HandlerB : IPhaseHandler<ManagerB> {
+    public class HandlerB : ReflectivePhaseHandler, IReflectivePhaseHandler<ManagerB> {
 
-      public void OnPhase(ManagerB manager) {
-        PrintToLog("B");
-      }
+      public void OnPhase(ManagerB manager) => PrintToLog("B");
     }
 
     public abstract class ManagerCBase { }
 
     public class ManagerC : ManagerCBase { }
 
-    public class HandlerC : IPhaseHandler<ManagerCBase> {
+    public class HandlerC : ReflectivePhaseHandler, IReflectivePhaseHandler<ManagerCBase> {
 
-      public void OnPhase(ManagerCBase manager) {
-        PrintToLog("C");
-      }
+      public void OnPhase(ManagerCBase manager) => PrintToLog("C");
     }
 
     public interface IManagerDBase { }
 
     public class ManagerD : IManagerDBase { }
 
-    public class HandlerD : IPhaseHandler<IManagerDBase> {
+    public class HandlerD : ReflectivePhaseHandler, IReflectivePhaseHandler<IManagerDBase> {
 
-      public void OnPhase(IManagerDBase manager) {
-        PrintToLog("D");
-      }
+      public void OnPhase(IManagerDBase manager) => PrintToLog("D");
     }
 
     public class ManagerE { }
 
-    public interface IHandlerE : IPhaseHandler<ManagerE> { }
+    public interface IHandlerE : IReflectivePhaseHandler<ManagerE> { }
 
-    public class HandlerE : IHandlerE {
+    public class HandlerE : ReflectivePhaseHandler, IHandlerE {
 
-      public void OnPhase(ManagerE manager) {
-        PrintToLog("E");
-      }
+      public void OnPhase(ManagerE manager) => PrintToLog("E");
     }
 
     public abstract class ManagerF { }
@@ -82,30 +70,26 @@ namespace fin.app.phase {
 
     public class ManagerFGH : ManagerF, IManagerG { }
 
-    public class HandlerF : IPhaseHandler<ManagerF> {
+    public class HandlerF : ReflectivePhaseHandler, IReflectivePhaseHandler<ManagerF> {
 
       public void OnPhase(ManagerF manager) => PrintToLog("F");
     }
 
-    public class HandlerG : IPhaseHandler<IManagerG> {
+    public class HandlerG : ReflectivePhaseHandler, IReflectivePhaseHandler<IManagerG> {
 
       public void OnPhase(IManagerG manager) => PrintToLog("G");
     }
 
-    public class HandlerFGH : IPhaseHandler<ManagerFGH> {
+    public class HandlerFGH : ReflectivePhaseHandler, IReflectivePhaseHandler<ManagerFGH> {
 
       public void OnPhase(ManagerFGH manager) => PrintToLog("FGH");
     }
 
-    public class HandlerAB : IPhaseHandler<ManagerA>, IPhaseHandler<ManagerB> {
+    public class HandlerAB : ReflectivePhaseHandler, IReflectivePhaseHandler<ManagerA>, IReflectivePhaseHandler<ManagerB> {
 
-      public void OnPhase(ManagerA manager) {
-        PrintToLog("A*");
-      }
+      public void OnPhase(ManagerA manager) => PrintToLog("A*");
 
-      public void OnPhase(ManagerB manager) {
-        PrintToLog("B*");
-      }
+      public void OnPhase(ManagerB manager) => PrintToLog("B*");
     }
 
     [TestInitialize]
@@ -121,17 +105,17 @@ namespace fin.app.phase {
       MANAGER_E = new ManagerE();
       MANAGER_FGH = new ManagerFGH();
 
-      TICK_HANDLER.AddHandlers(new IPhaseHandler[] {
-            new HandlerA(),
-            new HandlerB(),
-            new HandlerC(),
-            new HandlerD(),
-            new HandlerE(),
-            new HandlerF(),
-            new HandlerG(),
-            new HandlerFGH(),
-            new HandlerAB(),
-          });
+      TICK_HANDLER.AddHandlers(
+        new HandlerA(),
+        new HandlerB(),
+        new HandlerC(),
+        new HandlerD(),
+        new HandlerE(),
+        new HandlerF(),
+        new HandlerG(),
+        new HandlerFGH(),
+        new HandlerAB()
+      );
     }
 
     [TestMethod]

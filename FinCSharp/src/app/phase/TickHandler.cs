@@ -1,70 +1,91 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+
 using fin.generic;
 
 namespace fin.app.phase {
 
-  public interface ITickHandler {
+  public interface ITickHandler : IPhaseHandler {
 
     void Tick(params object[] phaseDatas);
   }
 
   public class TickHandler : ITickHandler {
-    private readonly Dictionary<Type, ISet<IPhaseHandler>> dataTypeToHandlerSetMap_;
+    private readonly SetDictionary<Type, IPhaseHandler> dataTypeToHandlerSetMap_;
 
     public TickHandler() {
-      this.dataTypeToHandlerSetMap_ = new Dictionary<Type, ISet<IPhaseHandler>>();
+      this.dataTypeToHandlerSetMap_ = new SetDictionary<Type, IPhaseHandler>();
     }
 
     // TODO: Disposal
 
-    public void Tick(params object[] datas) {
-      var allHandledDataTypes = this.dataTypeToHandlerSetMap_.Keys;
+    public void Tick(params object[] phaseDatas) {
+      foreach (var phaseData in phaseDatas) {
+        this.OnPhase(phaseData);
+      }
+    }
 
-      foreach (var data in datas) {
-        var providedDataType = data.GetType();
+    public void OnPhase(object phaseData) {
+      var providedDataType = phaseData.GetType();
+      var handledDataTypes = ReflectivePhaseManager.ReflectivelyAcquireCompatibleDataTypesImpl_(this.HandledPhaseTypes, ReflectivePhaseManager.ReflectivelyAcquireAllTypesImpl_(providedDataType));
 
-        // TODO: Make sure these are in a good order.
-        // TODO: Memoize these.
-        var possibleDataTypes = new HashSet<Type>();
-        possibleDataTypes.UnionWith(TypeUtil.GetAllBaseTypes(providedDataType));
-        possibleDataTypes.UnionWith(TypeUtil.GetAllInterfaces(providedDataType));
-        possibleDataTypes.Add(providedDataType);
-
-        // TODO: Look this up in a cheap way.
-        var handledDataTypes = possibleDataTypes.Intersect(allHandledDataTypes);
-
-        foreach (var handledDataType in handledDataTypes) {
-          // TODO: Memoize this in the map.
-          var phaseHandlerType = typeof(IPhaseHandler<>).MakeGenericType(new[] { handledDataType });
-          var onPhase = phaseHandlerType.GetMethod("OnPhase");
-
-          var dataArray = new[] { data };
-
-          var untypedHandlers = this.dataTypeToHandlerSetMap_[handledDataType];
-          foreach (var untypedHandler in untypedHandlers) {
-            onPhase!.Invoke(untypedHandler, dataArray);
-          }
+      foreach (var handledDataType in handledDataTypes) {
+        var untypedHandlers = this.dataTypeToHandlerSetMap_[handledDataType];
+        foreach (var untypedHandler in untypedHandlers) {
+          untypedHandler.OnPhase(phaseData);
         }
       }
     }
+
+    // TODO: Automatically handle when/if this updates.
+    public IEnumerable<Type> HandledPhaseTypes => this.dataTypeToHandlerSetMap_.Keys;
+
+    public void AddHandlers(params IPhaseHandler[] handlers) => Array.ForEach(handlers, h => this.AddHandler(h));
 
     public void AddHandler(IPhaseHandler handler) {
-      // TODO: Memoize this based on the type.
-      var handlerTypes = TypeUtil.GetImplementationsOfGenericInterface(handler, typeof(IPhaseHandler<>));
-      var dataTypes = handlerTypes.Select(t => t.GetGenericArguments()[0]).ToArray();
-
-      foreach (var dataType in dataTypes) {
-        if (!this.dataTypeToHandlerSetMap_.TryGetValue(dataType, out ISet<IPhaseHandler>? handlers)) {
-          this.dataTypeToHandlerSetMap_[dataType] = handlers = new HashSet<IPhaseHandler>();
-        }
-        handlers!.Add(handler);
+      foreach (var dataType in handler.HandledPhaseTypes) {
+        this.dataTypeToHandlerSetMap_.Add(dataType, handler);
       }
     }
 
-    public void AddHandlers(params IPhaseHandler[] handlers) {
-      Array.ForEach(handlers, h => this.AddHandler(h));
+    public void RemoveHandlers(params IPhaseHandler[] handlers) => Array.ForEach(handlers, h => this.RemoveHandler(h));
+
+    public void RemoveHandler(IPhaseHandler handler) {
+      foreach (var dataType in handler.HandledPhaseTypes) {
+        this.dataTypeToHandlerSetMap_.Remove(dataType, handler);
+      }
+    }
+  }
+
+  public class SetDictionary<TKey, TValue> where TKey : notnull where TValue : notnull {
+    private readonly IDictionary<TKey, ISet<TValue>> setDictionary_;
+
+    public SetDictionary() {
+      this.setDictionary_ = new Dictionary<TKey, ISet<TValue>>();
+    }
+
+    public ICollection<TKey> Keys => this.setDictionary_.Keys;
+
+    public ICollection<TValue> this[TKey key] => this.setDictionary_[key];
+
+    public bool Add(TKey key, TValue value) {
+      if (!this.setDictionary_.TryGetValue(key, out ISet<TValue>? set)) {
+        this.setDictionary_[key] = set = new HashSet<TValue>();
+      }
+      return set!.Add(value);
+    }
+
+    public bool Remove(TKey key, TValue value) {
+      bool didRemove = false;
+      if (this.setDictionary_.TryGetValue(key, out ISet<TValue>? set)) {
+        didRemove = set.Remove(value);
+        if (didRemove && set.Count == 0) {
+          this.setDictionary_.Remove(key);
+        }
+      }
+      return didRemove;
     }
   }
 }

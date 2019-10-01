@@ -1,48 +1,67 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using fin.app.phase;
 using fin.dispose;
 
 namespace fin.app {
 
-  public abstract class SceneNode : ITickHandler {
+  public class DisposePhase {
+  }
+
+  public abstract class SceneNode : IPhaseHandler, IReflectivePhaseHandler, IReflectivePhaseHandler<DisposePhase>, ITickHandler {
 
     protected delegate void OnDisposeEventHandler();
 
     protected event OnDisposeEventHandler OnDisposeEvent = delegate { };
 
-    private readonly UnsafeDisposableDataNode<SceneNode> impl_;
+    private bool markedForDisposal_ = false;
+
+    private readonly UnsafeDisposableDataNode<SceneNode> disposableNodeimpl_;
+    private readonly ReflectivePhaseManager reflectivePhaseManagerImpl_;
+    private readonly TickHandler tickHandlerImpl_;
 
     // TODO: Switch out null for the parent based on current scope.
     public SceneNode(SceneNode? parent = null) {
-      this.impl_ = new UnsafeDisposableDataNode<SceneNode>(this, parent?.impl_);
+      this.disposableNodeimpl_ = new UnsafeDisposableDataNode<SceneNode>(this, parent?.disposableNodeimpl_);
+      this.disposableNodeimpl_.OnDisposeEvent += this.OnDispose_;
 
-      this.impl_.OnDisposeEvent += this.OnDispose_;
+      this.reflectivePhaseManagerImpl_ = new ReflectivePhaseManager(this);
+
+      this.tickHandlerImpl_ = new TickHandler();
+      this.tickHandlerImpl_.AddHandler(this.reflectivePhaseManagerImpl_);
     }
 
-    protected void TriggerDispose() => this.impl_.Dispose();
+    protected void TriggerDispose() => this.markedForDisposal_ = true;
 
-    private void OnDispose_() {
-      this.OnDisposeEvent();
-    }
-
-    private SceneNode? parent_;
-    private readonly IList<SceneNode> children_ = new List<SceneNode>();
+    private void OnDispose_() => this.OnDisposeEvent();
 
     // TODO: Switch out null for the parent based on current scope.
-    public SceneNode? Parent => this.impl_.Parent?.Data;
+    public SceneNode? Parent => this.disposableNodeimpl_.Parent?.Data;
 
-    public ISet<SceneNode> Children => this.impl_.ChildData;
+    public ISet<SceneNode> Children => this.disposableNodeimpl_.ChildData;
 
+    // TODO: Remove tick handler when remove child.
     public SceneNode Attach(params SceneNode[] children) {
-      foreach (var child in children) {
-        this.impl_.Attach(child.impl_);
-      }
+      this.tickHandlerImpl_.AddHandlers(children);
+      Array.ForEach(children, (SceneNode child) => this.disposableNodeimpl_.Attach(child.disposableNodeimpl_));
       return this;
     }
 
-    private readonly TickHandler tickHandler_ = new TickHandler();
+    public void Tick(params object[] phaseDatas) => this.tickHandlerImpl_.Tick(phaseDatas);
 
-    public void Tick(params object[] phaseDatas) => this.tickHandler_.Tick(phaseDatas);
+    public void OnPhase(object phaseData) {
+      if (!this.disposableNodeimpl_.IsDisposed) {
+        this.tickHandlerImpl_.OnPhase(phaseData);
+      }
+    }
+
+    public void OnPhase(DisposePhase phaseData) {
+      if (this.markedForDisposal_) {
+        this.disposableNodeimpl_.Dispose();
+      }
+    }
+
+    public IEnumerable<Type> HandledPhaseTypes => this.tickHandlerImpl_.HandledPhaseTypes;
   }
 }

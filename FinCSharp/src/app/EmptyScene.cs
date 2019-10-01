@@ -1,11 +1,9 @@
 ﻿namespace fin.app {
 
-  public class EmptyScene : IScene {
+  public class EmptyScene : Scene {
 
-    public void SetUp() {
-    }
-
-    public void TearDown() {
+    public override void OnPhase(SceneInit phaseData) {
+      throw new System.NotImplementedException();
     }
   }
 }

@@ -1,4 +1,5 @@
 ﻿namespace fin.app {
+
   public interface IWindow {
     string Title { get; set; }
 

@@ -4,39 +4,6 @@ using fin.assert;
 
 namespace fin.dispose {
 
-  // TODO: Rename this.
-  public class UnsafeDisposable : IDisposable {
-
-    public delegate void OnDisposeEventHandler();
-
-    public event OnDisposeEventHandler OnDisposeEvent = delegate { };
-
-    public bool IsDisposed { get; private set; }
-
-    ~UnsafeDisposable() {
-      this.Dispose_(false);
-    }
-
-    public void Dispose() {
-      this.Dispose_(true);
-      GC.SuppressFinalize(this);
-    }
-
-    private void Dispose_(bool disposing) {
-      if (this.IsDisposed) {
-        return;
-      }
-      this.IsDisposed = true;
-
-      if (!disposing) {
-        // TODO: Free unmanaged resources here?
-        return;
-      }
-
-      this.OnDisposeEvent();
-    }
-  }
-
   public class UnsafeDisposableDataNode<T> : UnsafeDisposable {
     public T Data { get; }
 
@@ -148,41 +115,6 @@ namespace fin.dispose {
       UnsafeDisposableDataNode<T> lhs,
       UnsafeDisposableDataNode<T> rhs) {
       return !(lhs == rhs);
-    }
-  }
-
-  public class SafeDisposableNode {
-
-    protected delegate void OnDisposeEventHandler();
-
-    protected event OnDisposeEventHandler OnDisposeEvent = delegate { };
-
-    private readonly UnsafeDisposableDataNode<SafeDisposableNode> impl_;
-
-    // TODO: Switch out null for the parent based on current scope.
-    public SafeDisposableNode(SafeDisposableNode? parent = null) {
-      this.impl_ = new UnsafeDisposableDataNode<SafeDisposableNode>(this,
-        parent?.impl_);
-
-      this.impl_.OnDisposeEvent += this.OnDispose_;
-    }
-
-    protected void TriggerDispose() => this.impl_.Dispose();
-
-    private void OnDispose_() {
-      this.OnDisposeEvent();
-    }
-
-    // TODO: Switch out null for the parent based on current scope.
-    public SafeDisposableNode? Parent => this.impl_.Parent?.Data;
-
-    public ISet<SafeDisposableNode> Children => this.impl_.ChildData;
-
-    public SafeDisposableNode Attach(params SafeDisposableNode[] children) {
-      foreach (var child in children) {
-        this.impl_.Attach(child.impl_);
-      }
-      return this;
     }
   }
 }
