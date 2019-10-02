@@ -1,4 +1,2 @@
-﻿using fin.app.phase;
-
-namespace fin.app {
+﻿namespace fin.app {
 }

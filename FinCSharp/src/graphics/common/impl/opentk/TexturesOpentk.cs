@@ -1,6 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL;
-using fin.data.collections.grid;
+﻿using fin.data.collections.grid;
 using fin.dispose;
+using OpenTK.Graphics.OpenGL;
 
 namespace fin.graphics.common.impl.opentk {
 

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace fin.graphics.common {
 
-namespace fin.graphics.common {
   public enum PrimitiveType {
     POINTS,
 
@@ -17,7 +12,9 @@ namespace fin.graphics.common {
   }
 
   public abstract class IPrimitives {
+
     public abstract IPrimitives Begin(PrimitiveType primitiveType);
+
     public abstract IPrimitives End();
 
     public abstract IPrimitives V(Vertex2d v);

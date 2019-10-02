@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace fin.input {
+﻿namespace fin.input {
 
   public interface IDpad {
     ButtonState UpState { get; }

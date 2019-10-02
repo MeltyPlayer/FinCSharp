@@ -1,5 +1,5 @@
-﻿using RSG;
-using fin.generic;
+﻿using fin.generic;
+using RSG;
 
 namespace fin.file {
   public static class FileUtil {

@@ -1,9 +1,10 @@
-﻿using fin.assert;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace fin.generic {
+
   public class DivergingTypedHandlerMap<T> {
+
     public delegate TResult Handler<out TResult>(T value);
 
     private readonly Dictionary<Type, Handler<object>> handlers_ =

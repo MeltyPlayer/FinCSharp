@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace fin.instantiable {
+﻿namespace fin.instantiable {
   /*public class Instantiation {
     public class Instantiator {
       private class InstantiatorKey {

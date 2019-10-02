@@ -18,6 +18,6 @@
     private void op(string instruction,
       string parameters,
       string opcode,
-      int cycles) {}
+      int cycles) { }
   }
 }

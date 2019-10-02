@@ -1,8 +1,7 @@
-﻿using RSG;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using fin.generic;
+using RSG;
 
 namespace fin.file {
   internal static class LocalFileUtil {
@@ -27,8 +26,7 @@ namespace fin.file {
             var text = await reader.ReadToEndAsync();
             promise.Resolve(text);
           }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           promise.Reject(e);
         }
       });
@@ -45,8 +43,7 @@ namespace fin.file {
             await writer.WriteAsync(text);
             promise.Resolve();
           }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           promise.Reject(e);
         }
       });

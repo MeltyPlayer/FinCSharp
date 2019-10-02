@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using fin.assert;
+﻿using System.Collections.Generic;
 
 namespace fin.dispose {
 

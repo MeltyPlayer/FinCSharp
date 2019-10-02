@@ -1,6 +1,4 @@
-﻿using fin.app.phase;
-
-namespace fin.graphics.common {
+﻿namespace fin.graphics.common {
 
   public abstract class IGraphics {
     public abstract IScreen S { get; }
