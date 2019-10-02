@@ -1,6 +1,9 @@
 ﻿using System;
+
 using fin.app.phase;
 using fin.graphics.common;
+using fin.input;
+using fin.input.impl.opentk;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -10,12 +13,13 @@ namespace fin.app.impl.opentk {
 
   public partial class OpenTkApp : IApp {
 
-    private class OpenTkWindow : ReflectivePhaseHandler, IWindow, IRenderHandler {
+    private class OpenTkWindow : ReflectivePhaseHandler, IWindow, IReflectivePhaseHandler<StartTickPhase>, IRenderHandler {
+      private readonly IKeyStateDictionary ksd_;
+
       private readonly INativeWindow window_;
       private readonly IGraphicsContext glContext_;
 
-      // TODO: Prevent instantiation by anyone other than game.
-      public OpenTkWindow(int width, int height, Action onClose) {
+      public OpenTkWindow(int width, int height, IKeyStateDictionary ksd, Action onClose) {
         this.window_ = new NativeWindow(width,
           height,
           "SimpleGame",
@@ -24,6 +28,11 @@ namespace fin.app.impl.opentk {
           DisplayDevice.Default) {
           Visible = true
         };
+
+        this.ksd_ = ksd;
+        this.window_.KeyDown += (sender, args) => ksd.OnKeyDown(OpenTkKeyToKeyIdConverter.Convert(args.Key));
+        this.window_.KeyUp += (sender, args) => ksd.OnKeyUp(OpenTkKeyToKeyIdConverter.Convert(args.Key));
+
         this.window_.Closed += (s, e) => onClose();
 
         var windowInfo = this.window_.WindowInfo;
@@ -36,10 +45,15 @@ namespace fin.app.impl.opentk {
         ((IGraphicsContextInternal)this.glContext_).LoadAll();
       }
 
-      public void OnPhase(IGraphics g) {
+      public void OnPhase(StartTickPhase phase) {
         this.window_.ProcessEvents();
+        this.ksd_.HandleTransitions();
+      }
 
+      public void OnPhase(IGraphics g) {
         this.glContext_.MakeCurrent(this.window_.WindowInfo);
+
+        GL.Enable(EnableCap.DepthTest);
 
         g.S.Clear(Color.FromRgbF(0, 1, 1));
         GL.Viewport(0, 0, this.Width, this.Height);

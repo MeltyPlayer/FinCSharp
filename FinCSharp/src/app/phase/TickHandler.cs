@@ -66,6 +66,13 @@ namespace fin.app.phase {
       this.setDictionary_ = new Dictionary<TKey, ISet<TValue>>();
     }
 
+    public void Clear() {
+      foreach (var set in this.setDictionary_.Values) {
+        set.Clear();
+      }
+      this.setDictionary_.Clear();
+    }
+
     public ICollection<TKey> Keys => this.setDictionary_.Keys;
 
     public ICollection<TValue> this[TKey key] => this.setDictionary_[key];

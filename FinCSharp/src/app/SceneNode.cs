@@ -9,7 +9,16 @@ namespace fin.app {
   public class DisposePhase {
   }
 
-  public abstract class SceneNode : IPhaseHandler, IReflectivePhaseHandler, IReflectivePhaseHandler<DisposePhase>, ITickHandler {
+  public abstract class UiSceneNode : SceneNode<UiSceneNode> {
+  }
+
+  public abstract class TwoDSceneNode : SceneNode<TwoDSceneNode> {
+  }
+
+  public abstract class ThreeDSceneNode : SceneNode<ThreeDSceneNode> {
+  }
+
+  public abstract class SceneNode<TMe> : IPhaseHandler, IReflectivePhaseHandler, IReflectivePhaseHandler<DisposePhase> where TMe : SceneNode<TMe> {
 
     protected delegate void OnDisposeEventHandler();
 
@@ -17,13 +26,13 @@ namespace fin.app {
 
     private bool markedForDisposal_ = false;
 
-    private readonly UnsafeDisposableDataNode<SceneNode> disposableNodeimpl_;
+    private readonly UnsafeDisposableDataNode<SceneNode<TMe>> disposableNodeimpl_;
     private readonly ReflectivePhaseManager reflectivePhaseManagerImpl_;
     private readonly TickHandler tickHandlerImpl_;
 
     // TODO: Switch out null for the parent based on current scope.
-    public SceneNode(SceneNode? parent = null) {
-      this.disposableNodeimpl_ = new UnsafeDisposableDataNode<SceneNode>(this, parent?.disposableNodeimpl_);
+    public SceneNode(SceneNode<TMe>? parent = null) {
+      this.disposableNodeimpl_ = new UnsafeDisposableDataNode<SceneNode<TMe>>(this, parent?.disposableNodeimpl_);
       this.disposableNodeimpl_.OnDisposeEvent += this.OnDispose_;
 
       this.reflectivePhaseManagerImpl_ = new ReflectivePhaseManager(this);
@@ -37,14 +46,14 @@ namespace fin.app {
     private void OnDispose_() => this.OnDisposeEvent();
 
     // TODO: Switch out null for the parent based on current scope.
-    public SceneNode? Parent => this.disposableNodeimpl_.Parent?.Data;
+    public SceneNode<TMe>? Parent => this.disposableNodeimpl_.Parent?.Data;
 
-    public ISet<SceneNode> Children => this.disposableNodeimpl_.ChildData;
+    public ISet<SceneNode<TMe>> Children => this.disposableNodeimpl_.ChildData;
 
     // TODO: Remove tick handler when remove child.
-    public SceneNode Attach(params SceneNode[] children) {
+    public SceneNode<TMe> Attach(params SceneNode<TMe>[] children) {
       this.tickHandlerImpl_.AddHandlers(children);
-      Array.ForEach(children, (SceneNode child) => this.disposableNodeimpl_.Attach(child.disposableNodeimpl_));
+      Array.ForEach(children, (SceneNode<TMe> child) => this.disposableNodeimpl_.Attach(child.disposableNodeimpl_));
       return this;
     }
 

@@ -21,6 +21,8 @@ namespace fin.app.phase {
   ANIMATION = 8,
   RENDER = 9,*/
 
+  public class StartTickPhase { }
+
   public interface IPhaseHandler {
     IEnumerable<Type> HandledPhaseTypes { get; }
 
