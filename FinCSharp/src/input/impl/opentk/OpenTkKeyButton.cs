@@ -25,10 +25,11 @@ namespace fin.input.impl.opentk {
       };
   }
 
-  public class IKeyButtonDictionary {
+  public interface IKeyButtonDictionary {
+    IButton this[KeyId keyId] { get; }
   }
 
-  public class OpenTkKeyButtonDictionary {
+  public class OpenTkKeyButtonDictionary : IKeyButtonDictionary {
 
     public OpenTkKeyButtonDictionary(IKeyStateDictionary ksd) {
       this.GetButtonImpl_ = Memoization.Memoize((KeyId keyId) => new OpenTkKeyButton(keyId, ksd));

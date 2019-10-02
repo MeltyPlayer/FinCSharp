@@ -15,8 +15,8 @@ namespace fin.app.impl.opentk {
     private readonly OpenTkGraphics g_ = new OpenTkGraphics();
     private readonly EndTickPhase etp_ = new EndTickPhase();
 
-    private readonly KeyStateDictionary ksd_ = new KeyStateDictionary();
     private readonly OpenTkWindow window_;
+    private readonly KeyStateDictionary ksd_ = new KeyStateDictionary();
 
     private readonly TickHandler tickHandler_ = new TickHandler();
 
@@ -27,8 +27,7 @@ namespace fin.app.impl.opentk {
       this.ticker_ = RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
       this.OnDisposeEvent += this.ticker_.Stop;
 
-      this.tickHandler_.AddHandlers(
-        this.window_);
+      this.tickHandler_.AddHandlers(this.window_);
     }
 
     public override void Launch(Scene scene) {
