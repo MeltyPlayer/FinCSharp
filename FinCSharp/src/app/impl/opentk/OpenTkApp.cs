@@ -23,9 +23,9 @@ namespace fin.app.impl.opentk {
     public OpenTkApp() {
       var settings = Settings.Load();
 
-      this.window_ = new OpenTkWindow(settings.Resolution.Width, settings.Resolution.Height, this.ksd_, this.Dispose);
+      this.window_ = new OpenTkWindow(settings.Resolution.Width, settings.Resolution.Height, this.ksd_, this.Discard);
       this.ticker_ = RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
-      this.OnDisposeEvent += this.ticker_.Stop;
+      this.OnDiscardEvent += this.ticker_.Stop;
 
       this.tickHandler_.AddHandlers(this.window_);
     }

@@ -6,8 +6,8 @@ namespace simple {
   public class EntryPoint {
 
     public static void Main() {
-      using var app = new OpenTkApp();
-      app.Launch(new EmptyScene());
+      //using var app = new OpenTkApp();
+      //app.Launch(new EmptyScene());
     }
   }
 }

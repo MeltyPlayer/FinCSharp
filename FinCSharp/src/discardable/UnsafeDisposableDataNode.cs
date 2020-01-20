@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using fin.assert;
 
-namespace fin.dispose {
+namespace fin.discard {
 
-  public class UnsafeDisposableDataNode<T> : UnsafeDisposable {
+  public class UnsafeDisposableDataNode<T> : IDiscardable {
     public T Data { get; }
 
     public UnsafeDisposableDataNode<T>? Parent { get; private set; }
@@ -18,14 +18,14 @@ namespace fin.dispose {
       this.Children = new HashSet<UnsafeDisposableDataNode<T>>();
       this.ChildData = new HashSet<T>();
 
-      this.OnDisposeEvent += this.OnDispose_;
+      this.OnDiscardEvent += this.OnDispose_;
     }
 
     private void OnDispose_() {
       this.Parent?.RemoveSingle_(this);
 
       foreach (var child in this.Children) {
-        child.Dispose();
+        child.Discard();
       }
 
       this.Children.Clear();
@@ -41,7 +41,7 @@ namespace fin.dispose {
     }
 
     private void AttachSingle_(UnsafeDisposableDataNode<T> child) {
-      Asserts.False(this.IsDisposed);
+      Asserts.False(this.IsDiscarded);
       Asserts.Different(this, child);
       Asserts.Nonnull(child);
 
@@ -57,7 +57,7 @@ namespace fin.dispose {
     }
 
     private void RemoveSingle_(UnsafeDisposableDataNode<T> child) {
-      Asserts.False(this.IsDisposed);
+      Asserts.False(this.IsDiscarded);
       Asserts.Different(this, child);
       Asserts.Nonnull(child);
 

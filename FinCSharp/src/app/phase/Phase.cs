@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using fin.data.collections.set;
 using fin.function;
 using fin.generic;
 using fin.graphics.common;
@@ -49,10 +50,10 @@ namespace fin.app.phase {
     public ReflectivePhaseManager(IReflectivePhaseHandler reflectivePhaseHandler) {
       this.reflectivePhaseHandler_ = reflectivePhaseHandler;
 
-      this.dataTypeToHandler_ = ReflectivelyAcquireDataTypesToHandlerDictionaryImpl_(this.reflectivePhaseHandler_.GetType());
+      this.dataTypeToHandler_ = ReflectivelyAcquireDataTypesToHandlerDictionaryImpl_.Invoke(this.reflectivePhaseHandler_.GetType());
     }
 
-    private static Func<Type, DataTypeToHandlerDictionary> ReflectivelyAcquireDataTypesToHandlerDictionaryImpl_ { get; } = Memoization.Memoize((Type myType) => {
+    public static MemoizedFunc<Type, DataTypeToHandlerDictionary> ReflectivelyAcquireDataTypesToHandlerDictionaryImpl_ { get; } = Memoization.MemoizeDebug((Type myType) => {
       var dataTypeToHandler = new DataTypeToHandlerDictionary();
 
       var handlerTypes = TypeUtil.GetImplementationsOfGenericInterface(myType, typeof(IReflectivePhaseHandler<>));
@@ -70,19 +71,20 @@ namespace fin.app.phase {
     public IEnumerable<Type> HandledPhaseTypes => this.dataTypeToHandler_.Keys;
 
     public void OnPhase(object phaseData) {
-      var handledDataTypes = ReflectivelyAcquireCompatibleDataTypesImpl_(this.HandledPhaseTypes, ReflectivelyAcquireAllTypesImpl_(phaseData.GetType()));
+      /*var handledDataTypes = ReflectivelyAcquireCompatibleDataTypesImpl_.Invoke(this.HandledPhaseTypes, ReflectivelyAcquireAllTypesImpl_.Invoke(phaseData.GetType()));
       foreach (var handledDataType in handledDataTypes) {
         var dataArray = new[] { phaseData };
         var onPhase = this.dataTypeToHandler_[handledDataType];
         onPhase!.Invoke(this.reflectivePhaseHandler_, dataArray);
-      }
+      }*/
     }
 
-    public static Func<IEnumerable<Type>, IEnumerable<Type>, Type[]> ReflectivelyAcquireCompatibleDataTypesImpl_ { get; } = Memoization.Memoize((IEnumerable<Type> myHandledTypes, IEnumerable<Type> possibleDataTypes) => possibleDataTypes.Intersect(myHandledTypes).ToArray());
+    public static MemoizedFunc<IEnumerable<Type>, IEnumerable<Type>, Type[]> ReflectivelyAcquireCompatibleDataTypesImpl_ { get; } =
+      Memoization.MemoizeDebug((IEnumerable<Type> myHandledTypes, IEnumerable<Type> possibleDataTypes) => possibleDataTypes.Intersect(myHandledTypes).ToArray());
 
-    public static Func<Type, ISet<Type>> ReflectivelyAcquireAllTypesImpl_ { get; } = Memoization.Memoize((Type t) => {
+    public static MemoizedFunc<Type, ISet<Type>> ReflectivelyAcquireAllTypesImpl_ { get; } = Memoization.MemoizeDebug((Type t) => {
       // TODO: Make sure these are in a good order.
-      var allTypes = new HashSet<Type>();
+      ISet<Type> allTypes = new HashSet<Type>();
       allTypes.UnionWith(TypeUtil.GetAllBaseTypes(t));
       allTypes.UnionWith(TypeUtil.GetAllInterfaces(t));
       allTypes.Add(t);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using fin.function;
 
 namespace fin.app.phase {
 
@@ -25,15 +26,20 @@ namespace fin.app.phase {
 
     public void OnPhase(object phaseData) {
       var providedDataType = phaseData.GetType();
-      var handledDataTypes = ReflectivePhaseManager.ReflectivelyAcquireCompatibleDataTypesImpl_(this.HandledPhaseTypes, ReflectivePhaseManager.ReflectivelyAcquireAllTypesImpl_(providedDataType));
+      var handledDataTypes = ReflectivelyAcquireCompatibleDataTypesImpl_(this.HandledPhaseTypes, providedDataType);
 
-      foreach (var handledDataType in handledDataTypes) {
+      /*foreach (var handledDataType in handledDataTypes) {
         var untypedHandlers = this.dataTypeToHandlerSetMap_[handledDataType];
         foreach (var untypedHandler in untypedHandlers) {
           untypedHandler.OnPhase(phaseData);
         }
       }
+      */
     }
+
+    public static Func<IEnumerable<Type>, Type, Type[]> ReflectivelyAcquireCompatibleDataTypesImpl_ { get; } =
+      Memoization.Memoize((IEnumerable<Type> handledPhaseTypes, Type providedDataType) =>
+        ReflectivePhaseManager.ReflectivelyAcquireCompatibleDataTypesImpl_.Invoke(handledPhaseTypes, ReflectivePhaseManager.ReflectivelyAcquireAllTypesImpl_.Invoke(providedDataType)));
 
     // TODO: Automatically handle when/if this updates.
     public IEnumerable<Type> HandledPhaseTypes => this.dataTypeToHandlerSetMap_.Keys;
@@ -41,6 +47,7 @@ namespace fin.app.phase {
     public void AddHandlers(params IPhaseHandler[] handlers) => Array.ForEach(handlers, h => this.AddHandler(h));
 
     public void AddHandler(IPhaseHandler handler) {
+      // TODO: Add self to handler.
       foreach (var dataType in handler.HandledPhaseTypes) {
         this.dataTypeToHandlerSetMap_.Add(dataType, handler);
       }
@@ -49,6 +56,7 @@ namespace fin.app.phase {
     public void RemoveHandlers(params IPhaseHandler[] handlers) => Array.ForEach(handlers, h => this.RemoveHandler(h));
 
     public void RemoveHandler(IPhaseHandler handler) {
+      // TODO: Remove self from handler.
       foreach (var dataType in handler.HandledPhaseTypes) {
         this.dataTypeToHandlerSetMap_.Remove(dataType, handler);
       }

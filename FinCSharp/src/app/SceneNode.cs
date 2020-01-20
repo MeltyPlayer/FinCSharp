@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 
 using fin.app.phase;
-using fin.dispose;
+using fin.data.collections.set;
+using fin.discard;
 
 namespace fin.app {
 
@@ -33,7 +34,7 @@ namespace fin.app {
     // TODO: Switch out null for the parent based on current scope.
     public SceneNode(SceneNode<TMe>? parent = null) {
       this.disposableNodeimpl_ = new UnsafeDisposableDataNode<SceneNode<TMe>>(this, parent?.disposableNodeimpl_);
-      this.disposableNodeimpl_.OnDisposeEvent += this.OnDispose_;
+      this.disposableNodeimpl_.OnDiscardEvent += this.OnDispose_;
 
       this.reflectivePhaseManagerImpl_ = new ReflectivePhaseManager(this);
 
@@ -48,7 +49,7 @@ namespace fin.app {
     // TODO: Switch out null for the parent based on current scope.
     public SceneNode<TMe>? Parent => this.disposableNodeimpl_.Parent?.Data;
 
-    public ISet<SceneNode<TMe>> Children => this.disposableNodeimpl_.ChildData;
+    public IEnumerable<SceneNode<TMe>> Children => this.disposableNodeimpl_.ChildData;
 
     // TODO: Remove tick handler when remove child.
     public SceneNode<TMe> Attach(params SceneNode<TMe>[] children) {
@@ -60,14 +61,14 @@ namespace fin.app {
     public void Tick(params object[] phaseDatas) => this.tickHandlerImpl_.Tick(phaseDatas);
 
     public void OnPhase(object phaseData) {
-      if (!this.disposableNodeimpl_.IsDisposed) {
+      if (!this.disposableNodeimpl_.IsDiscarded) {
         this.tickHandlerImpl_.OnPhase(phaseData);
       }
     }
 
     public void OnPhase(DisposePhase phaseData) {
       if (this.markedForDisposal_) {
-        this.disposableNodeimpl_.Dispose();
+        this.disposableNodeimpl_.Discard();
       }
     }
 

@@ -1,5 +1,5 @@
 ﻿using fin.data.collections.grid;
-using fin.dispose;
+using fin.discard;
 using OpenTK.Graphics.OpenGL;
 
 namespace fin.graphics.common.impl.opentk {
@@ -69,18 +69,18 @@ namespace fin.graphics.common.impl.opentk {
       return uintArray;
     }
 
-    private class TextureOpentk : UnsafeDisposable, ITexture {
+    private class TextureOpentk : IDiscardable, ITexture {
       private readonly uint textureId_;
 
       public TextureOpentk(uint textureId) {
         this.textureId_ = textureId;
-        this.OnDisposeEvent += this.DestroyTexture_;
+        this.OnDiscardEvent += this.DestroyTexture_;
       }
 
       private void DestroyTexture_() {
         var textureIdArray = new[] { this.textureId_ };
         GL.DeleteTextures(1, textureIdArray);
-        this.Dispose();
+        this.Discard();
       }
 
       public Color GetPixel(int x, int y) {

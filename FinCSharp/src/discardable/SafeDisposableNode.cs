@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace fin.dispose {
+namespace fin.discard {
 
   public class SafeDisposableNode {
 
@@ -15,10 +15,10 @@ namespace fin.dispose {
       this.impl_ = new UnsafeDisposableDataNode<SafeDisposableNode>(this,
         parent?.impl_);
 
-      this.impl_.OnDisposeEvent += this.OnDispose_;
+      this.impl_.OnDiscardEvent += this.OnDispose_;
     }
 
-    protected void TriggerDispose() => this.impl_.Dispose();
+    protected void TriggerDispose() => this.impl_.Discard();
 
     private void OnDispose_() {
       this.OnDisposeEvent();
