@@ -1,6 +1,7 @@
 ﻿using fin.exception;
 
 namespace fin.data.collections.grid {
+
   public class ArrayGrid<T> : IGrid<T> {
     private readonly T[] data_;
     public int Width { get; }

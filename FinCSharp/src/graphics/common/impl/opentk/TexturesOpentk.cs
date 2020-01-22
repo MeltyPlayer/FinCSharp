@@ -69,7 +69,7 @@ namespace fin.graphics.common.impl.opentk {
       return uintArray;
     }
 
-    private class TextureOpentk : IDiscardable, ITexture {
+    private class TextureOpentk : Discardable, ITexture {
       private readonly uint textureId_;
 
       public TextureOpentk(uint textureId) {

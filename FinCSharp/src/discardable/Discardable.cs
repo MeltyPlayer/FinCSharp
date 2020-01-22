@@ -2,7 +2,7 @@
 
 namespace fin.discard {
 
-  public abstract class IDiscardable {
+  public abstract class Discardable {
 
     public delegate void OnDiscardEventHandler();
 
@@ -10,7 +10,7 @@ namespace fin.discard {
 
     public bool IsDiscarded { get; private set; }
 
-    ~IDiscardable() {
+    ~Discardable() {
       this.Discard_(false);
     }
 

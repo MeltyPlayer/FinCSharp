@@ -4,7 +4,7 @@ using fin.assert;
 
 namespace fin.discard {
 
-  public class UnsafeDisposableDataNode<T> : IDiscardable {
+  public class UnsafeDisposableDataNode<T> : Discardable {
     public T Data { get; }
 
     public UnsafeDisposableDataNode<T>? Parent { get; private set; }

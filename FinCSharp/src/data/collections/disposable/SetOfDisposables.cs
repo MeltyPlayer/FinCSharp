@@ -5,7 +5,7 @@ using fin.discard;
 
 namespace fin.data.collections.disposable {
 
-  public class SetOfDisposables<T> where T : notnull, IDiscardable {
+  public class SetOfDisposables<T> where T : notnull, Discardable {
     private readonly ISet<T> impl_ = new HashSet<T>();
     private readonly ISet<T> toAdd_ = new HashSet<T>();
     private readonly ISet<T> toRemove_ = new HashSet<T>();
@@ -32,7 +32,7 @@ namespace fin.data.collections.disposable {
       }
     }
 
-    public void ForEach(Action<IDiscardable> handler) {
+    public void ForEach(Action<Discardable> handler) {
       ++this.iterationCount_;
       foreach (var t in this.impl_) {
         if (t.IsDiscarded) {
@@ -64,5 +64,5 @@ namespace fin.data.collections.disposable {
     }
   }
 
-  public class SetOfDisposables : SetOfDisposables<IDiscardable> { }
+  public class SetOfDisposables : SetOfDisposables<Discardable> { }
 }

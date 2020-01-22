@@ -1,4 +1,5 @@
 ﻿namespace fin.data.collections.grid {
+
   // TODO: Inherit from ICollection
   public interface IGrid<T> {
     int Width { get; }

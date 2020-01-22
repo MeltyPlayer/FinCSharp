@@ -6,13 +6,13 @@ using fin.discard;
 namespace fin.data.collections.disposable {
 
   public class MapOfDisposables<TValue> {
-    private readonly IDictionary<IDiscardable, TValue> impl_ = new Dictionary<IDiscardable, TValue>();
-    private readonly IDictionary<IDiscardable, TValue> toAdd_ = new Dictionary<IDiscardable, TValue>();
-    private readonly IDictionary<IDiscardable, TValue> toRemove_ = new Dictionary<IDiscardable, TValue>();
+    private readonly IDictionary<Discardable, TValue> impl_ = new Dictionary<Discardable, TValue>();
+    private readonly IDictionary<Discardable, TValue> toAdd_ = new Dictionary<Discardable, TValue>();
+    private readonly IDictionary<Discardable, TValue> toRemove_ = new Dictionary<Discardable, TValue>();
 
     private int iterationCount_ = 0;
 
-    public void Add(IDiscardable disposable) {
+    public void Add(Discardable disposable) {
       if (!disposable.IsDiscarded) {
         /*if (this.iterationCount_ == 0) {
           this.impl_.Add(disposable);
@@ -22,7 +22,7 @@ namespace fin.data.collections.disposable {
       }
     }
 
-    public void Remove(IDiscardable disposable) {
+    public void Remove(Discardable disposable) {
       if (!disposable.IsDiscarded) {
         /*if (this.iterationCount_ == 0) {
           this.impl_.Remove(disposable);
@@ -32,7 +32,7 @@ namespace fin.data.collections.disposable {
       }
     }
 
-    public void ForEach(Action<IDiscardable> handler) {
+    public void ForEach(Action<Discardable> handler) {
       ++this.iterationCount_;
       foreach (var disposable in this.impl_) {
         /*if (disposable.IsDisposed) {
