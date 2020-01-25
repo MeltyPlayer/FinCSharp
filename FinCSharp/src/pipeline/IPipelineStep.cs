@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -35,7 +35,7 @@ namespace fin.pipeline {
       // TODO: Detect cycles.
       /*if (typeof(OUTPUT_TYPE) == typeof(NEXT_OUTPUT_TYPE) && step.nextSteps_.Contains(this)) {
         throw new exception.CycleException("Cycle detected in pipeline.");
-      }*/
+      }
 
       if (nextSteps_.Contains(step)) {
         throw new exception.DuplicateInstanceException(
@@ -81,7 +81,7 @@ namespace fin.pipeline {
       // TODO: Detect cycles.
       /*if (typeof(OUTPUT_TYPE) == typeof(NEXT_OUTPUT_TYPE) && step.nextSteps_.Contains(this)) {
         throw new exception.CycleException("Cycle detected in pipeline.");
-      }*/
+      }
 
       if (nextSteps_.Contains(step)) {
         throw new exception.DuplicateInstanceException(
@@ -92,4 +92,4 @@ namespace fin.pipeline {
       return step;
     }
   }
-}
+}*/

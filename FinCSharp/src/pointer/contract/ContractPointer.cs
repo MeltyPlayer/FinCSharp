@@ -5,7 +5,7 @@ namespace fin.pointer.contract {
   public interface IContractPointer<T> {
     T Value { get; }
 
-    bool Join(IContractSet<T> set);
+    bool Join(IContractOwner<T> owner);
 
     bool IsBroken { get; }
 
@@ -15,20 +15,20 @@ namespace fin.pointer.contract {
   // TODO: Add tests.
 
   public class ContractPointer<T> : IContractPointer<T> {
-    private readonly ISet<IContractSet<T>> sets_ = new HashSet<IContractSet<T>>();
+    private readonly ISet<IContractOwner<T>> owners_ = new HashSet<IContractOwner<T>>();
 
-    public ContractPointer(T value, IContractSet<T>[] sets) {
+    public ContractPointer(T value, IContractOwner<T>[] owners) {
       this.Value = value;
-      foreach (var set in sets) {
-        this.Join(set);
+      foreach (var owner in owners) {
+        this.Join(owner);
       }
     }
 
     public T Value { get; private set; }
 
-    public bool Join(IContractSet<T> set) {
-      if (!this.IsBroken && this.sets_.Add(set)) {
-        set.Join(this);
+    public bool Join(IContractOwner<T> owner) {
+      if (!this.IsBroken && this.owners_.Add(owner)) {
+        owner.Join(this);
         return true;
       }
       return false;
@@ -39,18 +39,17 @@ namespace fin.pointer.contract {
     public bool Break() {
       if (!this.IsBroken) {
         this.IsBroken = true;
-        foreach (var set in this.sets_) {
-          set.Break(this);
+        foreach (var owner in this.owners_) {
+          owner.Break(this);
         }
-        this.sets_.Clear();
+        this.owners_.Clear();
         return true;
       }
       return false;
     }
   }
 
-  public interface IContractSet<T> {
-    IEnumerable<IContractPointer<T>> Contracts { get; }
+  public interface IContractOwner<T> {
 
     bool Join(IContractPointer<T> contract);
 
@@ -59,14 +58,19 @@ namespace fin.pointer.contract {
     void BreakAll();
   }
 
+  public interface IContractSet<T> : IContractOwner<T> {
+    IEnumerable<IContractPointer<T>> Contracts { get; }
+  }
+
   // TODO: Add tests.
 
   public class ContractSet<T> : IContractSet<T> {
-    private readonly ISet<IContractPointer<T>> contracts_ = new HashSet<IContractPointer<T>>();
+    private readonly LinkedList<IContractPointer<T>> contracts_ = new LinkedList<IContractPointer<T>>();
     public IEnumerable<IContractPointer<T>> Contracts => this.contracts_;
 
     public bool Join(IContractPointer<T> contract) {
-      if (this.contracts_.Add(contract)) {
+      if (!this.contracts_.Contains(contract)) {
+        this.contracts_.AddLast(contract);
         contract.Join(this);
         return true;
       }
@@ -83,10 +87,11 @@ namespace fin.pointer.contract {
 
     // TODO: This will cause a lot of churn, is there a way to optimize this from many Remove() calls to just a Clear()?
     public void BreakAll() {
-      foreach (var contract in this.contracts_) {
+      while (this.contracts_.Count > 0) {
+        var contract = this.contracts_.First!.Value;
         contract.Break();
+        // Break removes the node from the list.
       }
-      this.contracts_.Clear();
     }
   }
 }

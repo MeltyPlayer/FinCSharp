@@ -88,7 +88,7 @@ namespace fin.graphics.common.impl.opentk {
       }
 
       public IGrid<Color> GetAllPixels() {
-        return null;
+        throw new System.Exception();
       }
     }
   }

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 
 namespace fin.file {
+
   public class LocalFile : IFile {
     public string uri { get; }
 
@@ -15,7 +16,7 @@ namespace fin.file {
 
     // TODO: Use resources/ as base?
     public static LocalFile WithinResources(string relativePath) {
-      return null;
+      throw new System.Exception();
     }
 
     public bool Exists() {

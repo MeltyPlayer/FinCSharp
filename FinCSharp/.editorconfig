@@ -38,3 +38,6 @@ dotnet_diagnostic.CS8622.severity = error
 
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = silent
+
+# CS8603: Possible null reference return.
+dotnet_diagnostic.CS8603.severity = error

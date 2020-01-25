@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using fin.data.collections;
 using fin.data.collections.dictionary;
+using fin.pointer.contract;
 
 namespace fin.events {
 

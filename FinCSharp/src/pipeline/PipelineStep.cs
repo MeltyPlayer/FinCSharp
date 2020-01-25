@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Threading.Tasks;
 
 namespace fin.pipeline {
@@ -28,7 +28,9 @@ namespace fin.pipeline {
 
     public Task Call(INPUT_TYPE inputValue) {
       handler_(inputValue);
-      return null;
+
+      throw new Exception();
+      //return null;
       //return Task.CompletedTask;
     }
   }
@@ -58,4 +60,4 @@ namespace fin.pipeline {
       return Task.FromResult(handler_(inputValue));
     }
   }
-}
+}*/
