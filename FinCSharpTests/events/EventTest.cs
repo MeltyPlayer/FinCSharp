@@ -7,67 +7,67 @@ namespace fin.src.events {
 
     [TestMethod]
     public void TestEmitNoSubscriptions() {
-      var passString = new EventType<string>();
+      var passStringEvent = new EventType<string>();
       var emitter = new EventEmitter();
 
       string output = "";
-      emitter.Emit(passString, "foobar");
+      emitter.Emit(passStringEvent, "foobar");
 
       Assert.AreEqual(output, "");
     }
 
     [TestMethod]
     public void TestSimpleEmit() {
-      var passString = new EventType<string>();
+      var passStringEvent = new EventType<string>();
       var emitter = new EventEmitter();
       var listener = new EventListener();
 
       string output = "";
-      emitter.Subscribe(listener, passString, (string s) => output = s);
-      emitter.Emit(passString, "foobar");
+      emitter.Subscribe(listener, passStringEvent, (string s) => output = s);
+      emitter.Emit(passStringEvent, "foobar");
 
       Assert.AreEqual(output, "foobar");
     }
 
     [TestMethod]
     public void TestMultiEmit() {
-      var passString = new EventType<bool>();
+      var voidEvent = new EventType();
       var emitter = new EventEmitter();
       var fooListener = new EventListener();
       var barListener = new EventListener();
 
       string output = "";
-      emitter.Subscribe(fooListener, passString, (bool b) => output += "foo");
-      emitter.Subscribe(barListener, passString, (bool b) => output += "bar");
-      emitter.Emit(passString, true);
+      emitter.Subscribe(fooListener, voidEvent, () => output += "foo");
+      emitter.Subscribe(barListener, voidEvent, () => output += "bar");
+      emitter.Emit(voidEvent);
 
       Assert.AreEqual(output, "foobar");
     }
 
     [TestMethod]
     public void TestEmitAfterUnsubscribe() {
-      var passString = new EventType<string>();
+      var passStringEvent = new EventType<string>();
       var emitter = new EventEmitter();
       var listener = new EventListener();
 
       string output = "";
-      var subscription = emitter.Subscribe(listener, passString, (string s) => output = s);
+      var subscription = emitter.Subscribe(listener, passStringEvent, (string s) => output = s);
       subscription.Unsubscribe();
-      emitter.Emit(passString, "foobar");
+      emitter.Emit(passStringEvent, "foobar");
 
       Assert.AreEqual(output, "");
     }
 
     [TestMethod]
     public void TestEmitAfterUnsubscribeAll() {
-      var passString = new EventType<string>();
+      var passStringEvent = new EventType<string>();
       var emitter = new EventEmitter();
       var listener = new EventListener();
 
       string output = "";
-      emitter.Subscribe(listener, passString, (string s) => output = s);
+      emitter.Subscribe(listener, passStringEvent, (string s) => output = s);
       emitter.UnsubscribeAll();
-      emitter.Emit(passString, "foobar");
+      emitter.Emit(passStringEvent, "foobar");
 
       Assert.AreEqual(output, "");
     }

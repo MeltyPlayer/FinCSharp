@@ -1,4 +1,6 @@
-﻿using System;
+﻿// TODO: This whole damn file is a war crime.
+
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
@@ -8,6 +10,8 @@ namespace fin.src.events {
 
   public interface IEventType { }
 
+  public class EventType : IEventType { }
+
   public class EventType<T> : IEventType { }
 
   public interface IEventSubscription {
@@ -15,17 +19,51 @@ namespace fin.src.events {
     EventListener Listener { get; }
 
     IEventType IEventType { get; }
-    Action<object> Handler { get; }
     bool IsSubscribed { get; }
 
     void Unsubscribe();
   }
 
+  public interface IEventSubscriptionVoid : IEventSubscription {
+    EventType EventType { get; }
+    Action Handler { get; }
+  }
+
   public interface IEventSubscription<T> : IEventSubscription {
     EventType<T> EventType { get; }
+    Action<T> Handler { get; }
   }
 
   public abstract class ContractEventOwner {
+
+    private class ContractEventSubscription : IEventSubscriptionVoid {
+      public ContractPointer<IEventSubscription>? Contract { get; set; }
+
+      public EventSource Source { get; }
+
+      public EventListener Listener { get; }
+
+      public IEventType IEventType => this.EventType;
+
+      public EventType EventType { get; }
+      public Action Handler { get; }
+
+      public ContractEventSubscription(EventSource source, EventListener listener, EventType eventType, Action handler) {
+        this.Source = source;
+        this.Listener = listener;
+        this.EventType = eventType;
+        this.Handler = handler;
+      }
+
+      public bool IsSubscribed { get; private set; } = true;
+
+      public void Unsubscribe() {
+        if (this.IsSubscribed) {
+          this.Contract!.Break();
+          this.IsSubscribed = false;
+        }
+      }
+    }
 
     private class ContractEventSubscription<T> : IEventSubscription<T> {
       public ContractPointer<IEventSubscription>? Contract { get; set; }
@@ -37,9 +75,9 @@ namespace fin.src.events {
       public IEventType IEventType => this.EventType;
 
       public EventType<T> EventType { get; }
-      public Action<object> Handler { get; }
+      public Action<T> Handler { get; }
 
-      public ContractEventSubscription(EventSource source, EventListener listener, EventType<T> eventType, Action<object> handler) {
+      public ContractEventSubscription(EventSource source, EventListener listener, EventType<T> eventType, Action<T> handler) {
         this.Source = source;
         this.Listener = listener;
         this.EventType = eventType;
@@ -99,7 +137,15 @@ namespace fin.src.events {
     protected IContractSet<IEventSubscription> Get(IEventType eventType)
       => this.contractSets_.Get(eventType);
 
-    protected static ContractPointer<IEventSubscription> CreateContract<T>(EventSource source, EventListener listener, EventType<T> eventType, Action<object> action) {
+    protected static ContractPointer<IEventSubscription> CreateContract(EventSource source, EventListener listener, EventType eventType, Action action) {
+      var subscription = new ContractEventSubscription(source, listener, eventType, action);
+      var contract =
+        new ContractPointer<IEventSubscription>(subscription, new[] { source.contractSets_, listener.contractSets_, });
+      subscription.Contract = contract;
+      return contract!;
+    }
+
+    protected static ContractPointer<IEventSubscription> CreateContract<T>(EventSource source, EventListener listener, EventType<T> eventType, Action<T> action) {
       var subscription = new ContractEventSubscription<T>(source, listener, eventType, action);
       var contract =
         new ContractPointer<IEventSubscription>(subscription, new[] { source.contractSets_, listener.contractSets_, });
@@ -114,17 +160,38 @@ namespace fin.src.events {
 
   public abstract class EventSource : ContractEventOwner {
 
-    public IEventSubscription Subscribe<T>(EventListener listener, EventType<T> eventType, Action<T> action) =>
-      // TODO: Figure out how to do this without the wrapper.
-      ContractEventOwner.CreateContract(this, listener, eventType, (object o) => action((T)o)).Value;
+    public IEventSubscriptionVoid Subscribe(EventListener listener, EventType eventType, Action action) {
+      var contract = ContractEventOwner.CreateContract(this, listener, eventType, action);
+      var genericSubscription = contract.Value;
+      var subscription = genericSubscription as IEventSubscriptionVoid;
+      return subscription!;
+    }
+
+    public IEventSubscription<T> Subscribe<T>(EventListener listener, EventType<T> eventType, Action<T> action) {
+      var contract = ContractEventOwner.CreateContract(this, listener, eventType, action);
+      var genericSubscription = contract.Value;
+      var subscription = genericSubscription as IEventSubscription<T>;
+      return subscription!;
+    }
   }
 
   public class EventEmitter : EventSource {
 
-    public void Emit<T>(EventType<T> eventType, T value) where T : notnull {
+    public void Emit(EventType eventType) {
       var contracts = this.Get(eventType).Contracts;
       foreach (var contract in contracts) {
-        contract.Value.Handler(value);
+        var genericSubscription = contract.Value;
+        var subscription = genericSubscription as IEventSubscriptionVoid;
+        subscription!.Handler();
+      }
+    }
+
+    public void Emit<T>(EventType<T> eventType, T value) {
+      var contracts = this.Get(eventType).Contracts;
+      foreach (var contract in contracts) {
+        var genericSubscription = contract.Value;
+        var subscription = genericSubscription as IEventSubscription<T>;
+        subscription!.Handler(value);
       }
     }
   }
