@@ -8,8 +8,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestJoinFromContract() {
-      var setA = FACTORY.NewStrongSet<int>();
-      var setB = FACTORY.NewWeakSet<int>();
+      var setA = FACTORY.NewStrongOwner<int>();
+      var setB = FACTORY.NewWeakOwner<int>();
 
       var contract = setA.FormOpen(0);
       Assert.IsFalse(contract.Join(setA));
@@ -22,8 +22,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestJoinFromSet() {
-      var setA = FACTORY.NewStrongSet<int>();
-      var setB = FACTORY.NewWeakSet<int>();
+      var setA = FACTORY.NewStrongOwner<int>();
+      var setB = FACTORY.NewWeakOwner<int>();
 
       var contract = setA.FormOpen(0);
       Assert.IsFalse(setA.Join(contract));
@@ -36,8 +36,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestBreakFromContract() {
-      var setA = FACTORY.NewStrongSet<int>();
-      var setB = FACTORY.NewWeakSet<int>();
+      var setA = FACTORY.NewStrongOwner<int>();
+      var setB = FACTORY.NewWeakOwner<int>();
       var contract = setA.FormClosedWith(0, setB);
       Assert.IsTrue(contract.IsActive);
 
@@ -51,8 +51,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestBreakFromSetStrongFirst() {
-      var setA = FACTORY.NewStrongSet<int>();
-      var setB = FACTORY.NewWeakSet<int>();
+      var setA = FACTORY.NewStrongOwner<int>();
+      var setB = FACTORY.NewWeakOwner<int>();
       var contract = setA.FormClosedWith(0, setB);
       Assert.IsTrue(contract.IsActive);
 
@@ -68,8 +68,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestBreakFromSetWeakFirst() {
-      var setA = FACTORY.NewStrongSet<int>();
-      var setB = FACTORY.NewWeakSet<int>();
+      var setA = FACTORY.NewStrongOwner<int>();
+      var setB = FACTORY.NewWeakOwner<int>();
       var contract = setA.FormClosedWith(0, setB);
       Assert.IsTrue(contract.IsActive);
 

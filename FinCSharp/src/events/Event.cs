@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
-
+using fin.data.collections.set;
 using fin.pointer.contract;
 
-/*namespace fin.events {
+namespace fin.events {
+
   public interface IEventType { }
 
   public class EventType : IEventType { }
@@ -19,12 +21,6 @@ using fin.pointer.contract;
     EventListener Listener { get; }
 
     IEventType IEventType { get; }
-
-    // TODO: If this isn't needed it should probably be removed.
-
-    delegate void OnUnsubscribeHandler(IEventSubscription subscription);
-
-    event OnUnsubscribeHandler OnUnsubscribe;
 
     bool IsSubscribed { get; }
 
@@ -42,8 +38,9 @@ using fin.pointer.contract;
   }
 
   public abstract class ContractEventOwner {
+
     private class ContractEventSubscription : IEventSubscriptionVoid {
-      public ContractPointer<IEventSubscription>? Contract { get; set; }
+      public IClosedContractPointer<IEventSubscription>? Contract { get; set; }
 
       public EventSource Source { get; }
 
@@ -59,27 +56,15 @@ using fin.pointer.contract;
         this.Listener = listener;
         this.EventType = eventType;
         this.Handler = handler;
-
-        this.Contract!.OnBreak += contract => this.Unsubscribe();
       }
 
-      public event IEventSubscription.OnUnsubscribeHandler OnUnsubscribe = delegate { };
+      public bool IsSubscribed => this.Contract!.IsActive;
 
-      public bool IsSubscribed { get; private set; } = true;
-
-      public bool Unsubscribe() {
-        if (this.IsSubscribed) {
-          this.IsSubscribed = false;
-          this.Contract!.Break();
-          this.OnUnsubscribe.Invoke(this);
-          return true;
-        }
-        return false;
-      }
+      public bool Unsubscribe() => this.Contract!.Break();
     }
 
     private class ContractEventSubscription<T> : IEventSubscription<T> {
-      public ContractPointer<IEventSubscription>? Contract { get; set; }
+      public IContractPointer<IEventSubscription>? Contract { get; set; }
 
       public EventSource Source { get; }
 
@@ -95,46 +80,45 @@ using fin.pointer.contract;
         this.Listener = listener;
         this.EventType = eventType;
         this.Handler = handler;
-
-        this.Contract!.OnBreak += contract => this.Unsubscribe();
       }
 
-      public event IEventSubscription.OnUnsubscribeHandler OnUnsubscribe = delegate { };
+      public bool IsSubscribed => this.Contract!.IsActive;
 
-      public bool IsSubscribed { get; private set; } = true;
+      public bool Unsubscribe() => this.Contract!.Break();
+    }
 
-      public bool Unsubscribe() {
-        if (this.IsSubscribed) {
-          this.IsSubscribed = false;
-          this.Contract!.Break();
-          this.OnUnsubscribe.Invoke(this);
+    private class EventContractDictionary : IContractSet<IEventSubscription> {
+      private readonly OrderedSet<IContractPointer<IEventSubscription>> contracts_ = new OrderedSet<IContractPointer<IEventSubscription>>();
+
+      private readonly ConcurrentDictionary<IEventType, ISet<IContractPointer<IEventSubscription>>> sets_ =
+        new ConcurrentDictionary<IEventType, ISet<IContractPointer<IEventSubscription>>>();
+
+      public int Count => this.contracts_.Count;
+
+      public IEnumerable<IContractPointer<IEventSubscription>> Contracts => this.contracts_;
+
+      public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) {
+        this.sets_.TryGetValue(eventType, out ISet<IContractPointer<IEventSubscription>>? set);
+        return set;
+      }
+
+      public bool Add(IContractPointer<IEventSubscription> contract) {
+        if (this.contracts_.Add(contract)) {
+          var genericEventType = contract.Value.IEventType;
+          var set = this.sets_.GetOrAdd(genericEventType, genericEventType => new HashSet<IContractPointer<IEventSubscription>>());
+          set.Add(contract);
           return true;
         }
         return false;
       }
-    }
 
-    private class ContractEventSubscriptionDictionary : IContractOwner<IEventSubscription> {
-      // TODO: Is there a safer way to do this...
-      private readonly ConcurrentDictionary<IEventType, object> contractSets_ =
-        new ConcurrentDictionary<IEventType, object>();
-
-      public IContractSet<IEventSubscription> Get(IEventType eventType) {
-        var genericContractSet = this.contractSets_.GetOrAdd(eventType, eventType => new ContractSet<IEventSubscription>());
-        var contractSet = genericContractSet as IContractSet<IEventSubscription>;
-        return contractSet!;
-      }
-
-      public bool Join(IContractPointer<IEventSubscription> genericContract)
-        => this.Get(genericContract.Value.IEventType).Join(genericContract);
-
-      public bool Break(IContractPointer<IEventSubscription> contract) {
+      public bool Remove(IContractPointer<IEventSubscription> contract) {
         var genericEventType = contract.Value.IEventType;
-        if (this.contractSets_.TryGetValue(genericEventType, out object? genericContractSet)) {
-          var contractSet = genericContractSet as ContractSet<IEventSubscription>;
-          if (contractSet!.Break(contract)) {
-            if (contractSet.Contracts.Count() == 0) {
-              this.contractSets_.TryRemove(genericEventType, out object? _);
+        if (this.sets_.TryGetValue(genericEventType, out ISet<IContractPointer<IEventSubscription>>? set)) {
+          if (set!.Remove(contract)) {
+            if (set.Count() == 0) {
+              this.sets_.TryRemove(genericEventType, out ISet<IContractPointer<IEventSubscription>>? _);
+              this.contracts_.Remove(contract);
             }
             return true;
           }
@@ -142,51 +126,51 @@ using fin.pointer.contract;
         return false;
       }
 
-      public void BreakAll() {
-        foreach (var genericContractSet in this.contractSets_.Values) {
-          var contractSet = genericContractSet as ContractSet<IEventSubscription>;
-          contractSet!.BreakAll();
+      public void Clear(Action<IContractPointer<IEventSubscription>> breakHandler) {
+        while (this.contracts_.Count > 0) {
+          breakHandler(this.contracts_.First);
         }
-        this.contractSets_.Clear();
+        this.sets_.Clear();
       }
     }
 
-    private ContractEventSubscriptionDictionary contractSets_ = new ContractEventSubscriptionDictionary();
+    private EventContractDictionary set_ = new EventContractDictionary();
+    private IWeakContractOwner<IEventSubscription> owner_;
 
-    protected IContractSet<IEventSubscription> Get(IEventType eventType)
-      => this.contractSets_.Get(eventType);
+    public ContractEventOwner() {
+      this.owner_ = IContractFactory.Instance.NewWeakOwner(this.set_);
+    }
 
-    protected static ContractPointer<IEventSubscription> CreateContract(EventSource source, EventListener listener, EventType eventType, Action action) {
+    public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) => this.set_.Get(eventType);
+
+    protected static IContractPointer<IEventSubscription> CreateContract(EventSource source, EventListener listener, EventType eventType, Action action) {
       var subscription = new ContractEventSubscription(source, listener, eventType, action);
-      var contract =
-        new ContractPointer<IEventSubscription>(subscription, new[] { source.contractSets_, listener.contractSets_, });
+      var contract = source.owner_.FormClosedWith(subscription, listener.owner_);
       subscription.Contract = contract;
       return contract!;
     }
 
-    protected static ContractPointer<IEventSubscription> CreateContract<T>(EventSource source, EventListener listener, EventType<T> eventType, Action<T> action) {
+    protected static IContractPointer<IEventSubscription> CreateContract<T>(EventSource source, EventListener listener, EventType<T> eventType, Action<T> action) {
       var subscription = new ContractEventSubscription<T>(source, listener, eventType, action);
-      var contract =
-        new ContractPointer<IEventSubscription>(subscription, new[] { source.contractSets_, listener.contractSets_, });
+      var contract = source.owner_.FormClosedWith(subscription, listener.owner_);
       subscription.Contract = contract;
       return contract!;
     }
 
-    public void UnsubscribeAll() {
-      this.contractSets_.BreakAll();
-    }
+    public void UnsubscribeAll() => this.owner_.BreakAll();
   }
 
   public abstract class EventSource : ContractEventOwner {
+
     public IEventSubscriptionVoid Subscribe(EventListener listener, EventType eventType, Action action) {
-      var contract = ContractEventOwner.CreateContract(this, listener, eventType, action);
+      var contract = CreateContract(this, listener, eventType, action);
       var genericSubscription = contract.Value;
       var subscription = genericSubscription as IEventSubscriptionVoid;
       return subscription!;
     }
 
     public IEventSubscription<T> Subscribe<T>(EventListener listener, EventType<T> eventType, Action<T> action) {
-      var contract = ContractEventOwner.CreateContract(this, listener, eventType, action);
+      var contract = CreateContract(this, listener, eventType, action);
       var genericSubscription = contract.Value;
       var subscription = genericSubscription as IEventSubscription<T>;
       return subscription!;
@@ -194,25 +178,30 @@ using fin.pointer.contract;
   }
 
   public class EventEmitter : EventSource {
+
     public void Emit(EventType eventType) {
-      var contracts = this.Get(eventType).Contracts;
-      foreach (var contract in contracts) {
-        var genericSubscription = contract.Value;
-        var subscription = genericSubscription as IEventSubscriptionVoid;
-        subscription!.Handler();
+      var contracts = this.Get(eventType);
+      if (contracts != null) {
+        foreach (var contract in contracts) {
+          var genericSubscription = contract.Value;
+          var subscription = genericSubscription as IEventSubscriptionVoid;
+          subscription!.Handler();
+        }
       }
     }
 
     public void Emit<T>(EventType<T> eventType, T value) {
-      var contracts = this.Get(eventType).Contracts;
-      foreach (var contract in contracts) {
-        var genericSubscription = contract.Value;
-        var subscription = genericSubscription as IEventSubscription<T>;
-        subscription!.Handler(value);
+      var contracts = this.Get(eventType);
+      if (contracts != null) {
+        foreach (var contract in contracts) {
+          var genericSubscription = contract.Value;
+          var subscription = genericSubscription as IEventSubscription<T>;
+          subscription!.Handler(value);
+        }
       }
     }
   }
 
   public class EventListener : ContractEventOwner {
   }
-}*/
+}

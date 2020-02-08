@@ -1,18 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using fin.data.collections.set;
 
 namespace fin.pointer.contract.impl {
 
-  public partial class ContractFactory : IContractFactory {
-    // TODO: Add tests.
+  public sealed partial class ContractFactory : IContractFactory {
 
-    private abstract class ContractSetImpl<T> : IContractOwner<T> {
-      private readonly OrderedSet<ContractPointerImpl<T>> contracts_ = new OrderedSet<ContractPointerImpl<T>>();
-      public IEnumerable<IContractPointer<T>> Contracts => this.contracts_;
+    /// <summary>
+    ///   Do not inherit from this class directly.
+    /// </summary>
+    private abstract partial class ContractOwnerImpl<T> : IContractOwner<T> {
+      private readonly IContractSet<T> set_;
+
+      public ContractOwnerImpl(IContractSet<T> set) {
+        this.set_ = set;
+      }
+
+      public IEnumerable<IContractPointer<T>> Contracts => this.set_.Contracts;
 
       public IOpenContractPointer<T> FormOpen(T value) {
-        var contract = new OpenContractPointer<T>(value, this);
+        var contract = new ContractOwnerImpl<T>.OpenContractPointer(value, this);
 
         return contract;
       }
@@ -21,7 +27,7 @@ namespace fin.pointer.contract.impl {
         var owners = new HashSet<IContractOwner<T>> { this, other };
         owners.UnionWith(additional);
 
-        var contract = new OpenContractPointer<T>(value, owners.ToArray());
+        var contract = new ContractOwnerImpl<T>.OpenContractPointer(value, owners.ToArray());
 
         return contract;
       }
@@ -30,7 +36,7 @@ namespace fin.pointer.contract.impl {
         var owners = new HashSet<IContractOwner<T>> { this, other };
         owners.UnionWith(additional);
 
-        var contract = new ClosedContractPointer<T>(value, owners.ToArray());
+        var contract = new ContractOwnerImpl<T>.ClosedContractPointer(value, owners.ToArray());
 
         return contract;
       }
@@ -40,8 +46,8 @@ namespace fin.pointer.contract.impl {
           return false;
         }
 
-        var openContract = (contract as OpenContractPointer<T>)!;
-        if (this.contracts_.Add(openContract)) {
+        var openContract = (contract as ContractOwnerImpl<T>.OpenContractPointer)!;
+        if (this.set_.Add(openContract)) {
           contract.Join(this);
           return true;
         }
@@ -49,18 +55,21 @@ namespace fin.pointer.contract.impl {
       }
 
       // TODO: PLEASE find a way to get rid of this.
-      public bool JoinBackdoor(ContractPointerImpl<T> contract) {
+      private bool JoinBackdoor_(ContractOwnerImpl<T>.ContractPointerImpl contract) {
         if (!contract.IsActive) {
           return false;
         }
 
-        return this.contracts_.Add(contract);
+        if (this.set_.Add(contract)) {
+          return true;
+        }
+        return false;
       }
 
       public bool Break(IContractPointer<T> contract) {
-        var openContract = (contract as ContractPointerImpl<T>)!;
-        if (this.contracts_.Remove(openContract)) {
-          (contract as ContractPointerImpl<T>)!.BreakWith(this);
+        var openContract = (contract as ContractOwnerImpl<T>.ContractPointerImpl)!;
+        if (this.set_.Remove(openContract)) {
+          (contract as ContractOwnerImpl<T>.ContractPointerImpl)!.BreakWith(this);
           return true;
         }
         return false;
@@ -68,11 +77,7 @@ namespace fin.pointer.contract.impl {
 
       // TODO: This will cause a lot of churn, is there a way to optimize this from many Remove() calls to just a Clear()?
       public void BreakAll() {
-        while (this.contracts_.Count > 0) {
-          var contract = this.contracts_.First!;
-          contract.Break();
-          // Break removes the node from the list.
-        }
+        this.set_.Clear(contract => this.Break(contract));
       }
     }
   }

@@ -3,11 +3,14 @@ using fin.data.collections.set;
 
 namespace fin.pointer.contract.impl {
 
-  public partial class ContractFactory : IContractFactory {
+  public sealed partial class ContractFactory : IContractFactory {
 
-    private class OpenContractPointer<T> : ContractPointerImpl<T>, IOpenContractPointer<T> {
+    private abstract partial class ContractOwnerImpl<T> : IContractOwner<T> {
 
-      public OpenContractPointer(T value, params IContractOwner<T>[] owners) : base(value, owners) {
+      private class OpenContractPointer : ContractOwnerImpl<T>.ContractPointerImpl, IOpenContractPointer<T> {
+
+        public OpenContractPointer(T value, params IContractOwner<T>[] owners) : base(value, owners) {
+        }
       }
     }
   }

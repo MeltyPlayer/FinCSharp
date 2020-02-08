@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using fin.data.collections.set;
 using fin.pointer.contract.impl;
 
 namespace fin.pointer.contract {
@@ -35,6 +37,7 @@ namespace fin.pointer.contract {
   ///   Do not inherit this type directly.
   /// </summary>
   public interface IContractOwner<T> {
+    IEnumerable<IContractPointer<T>> Contracts { get; }
 
     IOpenContractPointer<T> FormOpen(T value);
 
@@ -55,12 +58,37 @@ namespace fin.pointer.contract {
   public interface IWeakContractOwner<T> : IContractOwner<T> {
   }
 
-  public interface IStrongContractSet<T> : IStrongContractOwner<T> {
+  /// <summary>
+  ///   Interface for the underlying storage of an IContractOwner. This type
+  ///   shouldn't perform any joining/breaking, just storing data.
+  /// </summary>
+  public interface IContractSet<T> {
     IEnumerable<IContractPointer<T>> Contracts { get; }
+    int Count { get; }
+
+    bool Add(IContractPointer<T> contract);
+
+    bool Remove(IContractPointer<T> contract);
+
+    void Clear(Action<IContractPointer<T>> breakHandler);
   }
 
-  public interface IWeakContractSet<T> : IWeakContractOwner<T> {
-    IEnumerable<IContractPointer<T>> Contracts { get; }
+  public class DefaultContractSet<T> : IContractSet<T> {
+    private OrderedSet<IContractPointer<T>> impl_ = new OrderedSet<IContractPointer<T>>();
+
+    public IEnumerable<IContractPointer<T>> Contracts => this.impl_;
+
+    public int Count => this.impl_.Count;
+
+    public bool Add(IContractPointer<T> contract) => this.impl_.Add(contract);
+
+    public bool Remove(IContractPointer<T> contract) => this.impl_.Remove(contract);
+
+    public void Clear(Action<IContractPointer<T>> breakHandler) {
+      while (this.impl_.Count > 0) {
+        breakHandler(this.impl_.First);
+      }
+    }
   }
 
   /// <summary>
@@ -73,8 +101,12 @@ namespace fin.pointer.contract {
 
     public static IContractFactory Instance { get; } = new ContractFactory();
 
-    IStrongContractSet<T> NewStrongSet<T>();
+    IStrongContractOwner<T> NewStrongOwner<T>();
 
-    IWeakContractSet<T> NewWeakSet<T>();
+    IStrongContractOwner<T> NewStrongOwner<T>(IContractSet<T> set);
+
+    IWeakContractOwner<T> NewWeakOwner<T>();
+
+    IWeakContractOwner<T> NewWeakOwner<T>(IContractSet<T> set);
   }
 }

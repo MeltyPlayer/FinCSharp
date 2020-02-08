@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-/*namespace fin.events {
+namespace fin.events {
+
   [TestClass]
   public partial class EventTest {
+
     [TestMethod]
     public void TestEmitNoSubscriptions() {
       var passStringEvent = new EventType<string>();
@@ -70,4 +72,4 @@
       Assert.AreEqual(output, "");
     }
   }
-}*/
+}

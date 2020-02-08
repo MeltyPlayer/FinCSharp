@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿namespace fin.pointer.contract.impl {
 
-namespace fin.pointer.contract.impl {
+  public sealed partial class ContractFactory : IContractFactory {
 
-  public partial class ContractFactory : IContractFactory {
+    public IWeakContractOwner<T> NewWeakOwner<T>() => this.NewWeakOwner(new DefaultContractSet<T>());
 
-    // TODO: Add tests.
-    public IWeakContractSet<T> NewWeakSet<T>() => new WeakContractSet<T>();
+    public IWeakContractOwner<T> NewWeakOwner<T>(IContractSet<T> set) => new WeakContractOwner<T>(set);
 
-    private class WeakContractSet<T> : ContractSetImpl<T>, IWeakContractSet<T> {
+    private class WeakContractOwner<T> : ContractOwnerImpl<T>, IWeakContractOwner<T> {
+
+      public WeakContractOwner(IContractSet<T> set) : base(set) {
+      }
     }
   }
 }
