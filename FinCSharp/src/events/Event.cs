@@ -1,4 +1,5 @@
 ﻿// TODO: This whole damn file is a war crime.
+// TODO: How much overhead does this all introduce?
 
 using System;
 using System.Collections.Concurrent;
@@ -6,8 +7,7 @@ using System.Linq;
 
 using fin.pointer.contract;
 
-namespace fin.src.events {
-
+/*namespace fin.events {
   public interface IEventType { }
 
   public class EventType : IEventType { }
@@ -19,9 +19,16 @@ namespace fin.src.events {
     EventListener Listener { get; }
 
     IEventType IEventType { get; }
+
+    // TODO: If this isn't needed it should probably be removed.
+
+    delegate void OnUnsubscribeHandler(IEventSubscription subscription);
+
+    event OnUnsubscribeHandler OnUnsubscribe;
+
     bool IsSubscribed { get; }
 
-    void Unsubscribe();
+    bool Unsubscribe();
   }
 
   public interface IEventSubscriptionVoid : IEventSubscription {
@@ -35,7 +42,6 @@ namespace fin.src.events {
   }
 
   public abstract class ContractEventOwner {
-
     private class ContractEventSubscription : IEventSubscriptionVoid {
       public ContractPointer<IEventSubscription>? Contract { get; set; }
 
@@ -53,15 +59,22 @@ namespace fin.src.events {
         this.Listener = listener;
         this.EventType = eventType;
         this.Handler = handler;
+
+        this.Contract!.OnBreak += contract => this.Unsubscribe();
       }
+
+      public event IEventSubscription.OnUnsubscribeHandler OnUnsubscribe = delegate { };
 
       public bool IsSubscribed { get; private set; } = true;
 
-      public void Unsubscribe() {
+      public bool Unsubscribe() {
         if (this.IsSubscribed) {
-          this.Contract!.Break();
           this.IsSubscribed = false;
+          this.Contract!.Break();
+          this.OnUnsubscribe.Invoke(this);
+          return true;
         }
+        return false;
       }
     }
 
@@ -82,23 +95,29 @@ namespace fin.src.events {
         this.Listener = listener;
         this.EventType = eventType;
         this.Handler = handler;
+
+        this.Contract!.OnBreak += contract => this.Unsubscribe();
       }
+
+      public event IEventSubscription.OnUnsubscribeHandler OnUnsubscribe = delegate { };
 
       public bool IsSubscribed { get; private set; } = true;
 
-      public void Unsubscribe() {
+      public bool Unsubscribe() {
         if (this.IsSubscribed) {
-          this.Contract!.Break();
           this.IsSubscribed = false;
+          this.Contract!.Break();
+          this.OnUnsubscribe.Invoke(this);
+          return true;
         }
+        return false;
       }
     }
 
     private class ContractEventSubscriptionDictionary : IContractOwner<IEventSubscription> {
-
       // TODO: Is there a safer way to do this...
-      private readonly ConcurrentDictionary<object, object> contractSets_ =
-        new ConcurrentDictionary<object, object>();
+      private readonly ConcurrentDictionary<IEventType, object> contractSets_ =
+        new ConcurrentDictionary<IEventType, object>();
 
       public IContractSet<IEventSubscription> Get(IEventType eventType) {
         var genericContractSet = this.contractSets_.GetOrAdd(eventType, eventType => new ContractSet<IEventSubscription>());
@@ -159,7 +178,6 @@ namespace fin.src.events {
   }
 
   public abstract class EventSource : ContractEventOwner {
-
     public IEventSubscriptionVoid Subscribe(EventListener listener, EventType eventType, Action action) {
       var contract = ContractEventOwner.CreateContract(this, listener, eventType, action);
       var genericSubscription = contract.Value;
@@ -176,7 +194,6 @@ namespace fin.src.events {
   }
 
   public class EventEmitter : EventSource {
-
     public void Emit(EventType eventType) {
       var contracts = this.Get(eventType).Contracts;
       foreach (var contract in contracts) {
@@ -198,4 +215,4 @@ namespace fin.src.events {
 
   public class EventListener : ContractEventOwner {
   }
-}
+}*/

@@ -7,7 +7,7 @@ using System.Linq;
 namespace fin.data.graph {
 
   [TestClass]
-  public partial class NodeTest {
+  public class NodeTest {
     private readonly ICollection emptyArray_ = Array.Empty<INode<int>>();
 
     [TestMethod]

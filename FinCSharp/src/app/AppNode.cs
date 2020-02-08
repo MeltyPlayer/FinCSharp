@@ -5,15 +5,13 @@ using fin.assert;
 using fin.data.graph;
 using fin.events;
 
-using EventHandler = fin.events.EventHandler;
-
 namespace fin.app {
 
   public class AppNode {
     private readonly Node<AppNode> node_;
-    private readonly IEventHandler handler_ = new EventHandler();
+    //private readonly EventListener listener_ = new EventListener();
 
-    private readonly IEventEmitter emitter_ = new EventEmitter();
+    //private readonly EventEmitter emitter_ = new EventEmitter();
 
     public delegate void OnDestroyHandler();
 
@@ -23,10 +21,7 @@ namespace fin.app {
       this.node_ = new Node<AppNode>(this);
       parent.AddChild(this);
 
-      this.OnDestroy += () => {
-        this.handler_.UnsubscribeFromAll();
-        this.emitter_.UnsubscribeAll();
-      };
+      //this.OnDestroy += this.UnsubscribeAll_;
     }
 
     public bool IsDestroyed => this.node_.IncomingNodes.Count() == 0;
@@ -57,11 +52,16 @@ namespace fin.app {
     }
 
     // Event logic.
-    public IEventSubscription<T> On<T>(EventType<T> eventType, Action<T> handler) =>
+    /*public IEventSubscription<T> On<T>(EventType<T> eventType, Action<T> handler) =>
       this.handler_.ListenTo(this.Parent.emitter_, eventType, handler);
 
-    public IEventSubscription<T> On<T>(IEventSource source, EventType<T> eventType, Action<T> handler) =>
-      this.handler_.ListenTo(source, eventType, handler);
+    public IEventSubscription<T> OnEventFromSource<T>(IEventSource source, EventType<T> eventType, Action<T> handler) =>
+      this.handler_.ListenTo(source, eventType, handler);*/
+
+    /*private void UnsubscribeAll_() {
+      this.listener_.UnsubscribeAll();
+      this.emitter_.UnsubscribeAll();
+    }
 
     /*public IEventSubscription<T> Subscribe<T>(IEventListener child, EventType<T> eventType, Action<T> handler) {
     }*/

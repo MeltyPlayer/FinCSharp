@@ -21,6 +21,11 @@ namespace fin.data.collections.set {
 
     public virtual bool IsReadOnly => this.dictionary_.IsReadOnly;
 
+    // TODO: May be null.
+    public T First => this.linkedList_.First!.Value;
+
+    public T Last => this.linkedList_.Last!.Value;
+
     void ICollection<T>.Add(T item) => this.Add(item);
 
     public bool Add(T item) {
