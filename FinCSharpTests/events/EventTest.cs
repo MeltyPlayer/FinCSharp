@@ -4,11 +4,12 @@ namespace fin.events {
 
   [TestClass]
   public partial class EventTest {
+    private static readonly IEventFactory FACTORY = IEventFactory.Instance;
 
     [TestMethod]
     public void TestEmitNoSubscriptions() {
       var passStringEvent = new EventType<string>();
-      var emitter = new EventEmitter();
+      var emitter = FACTORY.NewEmitter();
 
       string output = "";
       emitter.Emit(passStringEvent, "foobar");
@@ -19,8 +20,8 @@ namespace fin.events {
     [TestMethod]
     public void TestSimpleEmit() {
       var passStringEvent = new EventType<string>();
-      var emitter = new EventEmitter();
-      var listener = new EventListener();
+      var emitter = FACTORY.NewEmitter();
+      var listener = FACTORY.NewListener();
 
       string output = "";
       emitter.Subscribe(listener, passStringEvent, (string s) => output = s);
@@ -32,9 +33,9 @@ namespace fin.events {
     [TestMethod]
     public void TestMultiEmit() {
       var voidEvent = new EventType();
-      var emitter = new EventEmitter();
-      var fooListener = new EventListener();
-      var barListener = new EventListener();
+      var emitter = FACTORY.NewEmitter();
+      var fooListener = FACTORY.NewListener();
+      var barListener = FACTORY.NewListener();
 
       string output = "";
       emitter.Subscribe(fooListener, voidEvent, () => output += "foo");
@@ -47,8 +48,8 @@ namespace fin.events {
     [TestMethod]
     public void TestEmitAfterUnsubscribe() {
       var passStringEvent = new EventType<string>();
-      var emitter = new EventEmitter();
-      var listener = new EventListener();
+      var emitter = FACTORY.NewEmitter();
+      var listener = FACTORY.NewListener();
 
       string output = "";
       var subscription = emitter.Subscribe(listener, passStringEvent, (string s) => output = s);
@@ -61,8 +62,8 @@ namespace fin.events {
     [TestMethod]
     public void TestEmitAfterUnsubscribeAll() {
       var passStringEvent = new EventType<string>();
-      var emitter = new EventEmitter();
-      var listener = new EventListener();
+      var emitter = FACTORY.NewEmitter();
+      var listener = FACTORY.NewListener();
 
       string output = "";
       emitter.Subscribe(listener, passStringEvent, (string s) => output = s);
