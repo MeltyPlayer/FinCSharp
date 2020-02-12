@@ -12,17 +12,19 @@ namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
 
-    private abstract class ContractEventOwner {
+    private abstract class EventOwner {
 
-      private class EventContractDictionary : IContractSet<IEventSubscription> {
+      private class EventContractDictionary : IContractPointerSet<IEventSubscription> {
+
+        // TODO: Higher overhead than should be necessary.
         private readonly OrderedSet<IContractPointer<IEventSubscription>> contracts_ = new OrderedSet<IContractPointer<IEventSubscription>>();
 
         private readonly ConcurrentDictionary<IEventType, ISet<IContractPointer<IEventSubscription>>> sets_ =
           new ConcurrentDictionary<IEventType, ISet<IContractPointer<IEventSubscription>>>();
 
-        public int Count => this.contracts_.Count;
-
         public IEnumerable<IContractPointer<IEventSubscription>> Contracts => this.contracts_;
+
+        public int Count => this.contracts_.Count;
 
         public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) {
           this.sets_.TryGetValue(eventType, out ISet<IContractPointer<IEventSubscription>>? set);
@@ -53,7 +55,7 @@ namespace fin.events.impl {
           return false;
         }
 
-        public void Clear(Action<IContractPointer<IEventSubscription>> breakHandler) {
+        public void ClearAndBreak(Action<IContractPointer<IEventSubscription>> breakHandler) {
           while (this.contracts_.Count > 0) {
             breakHandler(this.contracts_.First);
           }
@@ -62,29 +64,64 @@ namespace fin.events.impl {
       }
 
       private EventContractDictionary set_ = new EventContractDictionary();
-      private IWeakContractOwner<IEventSubscription> owner_;
+      protected IWeakContractPointerOwner<IEventSubscription> owner_;
 
-      public ContractEventOwner() {
+      public EventOwner() {
         this.owner_ = IContractFactory.Instance.NewWeakOwner(this.set_);
       }
 
       public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) => this.set_.Get(eventType);
 
-      protected static IContractPointer<IEventSubscription> CreateContract(IEventSource source, IEventListener listener, EventType eventType, Action action) {
-        var subscription = new EventSubscription(source, listener, eventType, action);
+      protected EventSubscription CreateSubscription(IEventSource source, IEventListener listener, EventType eventType, Action action) {
+        var subscription = this.HasSubscription_(source, listener, eventType, action);
+        if (subscription != null) {
+          return subscription;
+        }
+
+        subscription = new EventSubscription(source, listener, eventType, action);
         var contract = (source as EventSource)!.owner_.FormClosedWith(subscription, (listener as EventListener)!.owner_);
         subscription.Contract = contract;
-        return contract!;
+        return subscription;
       }
 
-      protected static IContractPointer<IEventSubscription> CreateContract<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<T> action) {
-        var subscription = new EventSubscription<T>(source, listener, eventType, action);
+      protected EventSubscription<T> CreateSubscription<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<T> action) {
+        var subscription = this.HasSubscription_(source, listener, eventType, action);
+        if (subscription != null) {
+          return subscription;
+        }
+
+        subscription = new EventSubscription<T>(source, listener, eventType, action);
         var contract = (source as EventSource)!.owner_.FormClosedWith(subscription, (listener as EventListener)!.owner_);
         subscription.Contract = contract;
-        return contract!;
+        return subscription;
       }
 
-      public void UnsubscribeAll() => this.owner_.BreakAll();
+      // TODO: Find a faster way to do this.
+      private EventSubscription? HasSubscription_(IEventSource source, IEventListener listener, EventType eventType, Action action) {
+        var contracts = this.set_.Contracts;
+        foreach (var contract in contracts) {
+          var subscription = contract.Value as EventSubscription;
+          if (subscription != null) {
+            if (subscription.Source == source && subscription.Listener == listener && subscription.EventType == eventType && subscription.Handler == action) {
+              return subscription;
+            }
+          }
+        }
+        return null;
+      }
+
+      private EventSubscription<T>? HasSubscription_<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<T> action) {
+        var contracts = this.set_.Contracts;
+        foreach (var contract in contracts) {
+          var subscription = contract.Value as EventSubscription<T>;
+          if (subscription != null) {
+            if (subscription.Source == source && subscription.Listener == listener && subscription.EventType == eventType && subscription.Handler == action) {
+              return subscription;
+            }
+          }
+        }
+        return null;
+      }
     }
   }
 }

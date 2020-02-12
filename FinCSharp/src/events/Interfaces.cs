@@ -1,4 +1,5 @@
 ﻿using System;
+
 using fin.events.impl;
 
 namespace fin.events {
@@ -31,22 +32,37 @@ namespace fin.events {
   }
 
   public interface IEventListener {
-  }
 
-  public interface IEventSource {
+    IEventSubscriptionVoid SubscribeTo(IEventSource source, EventType eventType, Action action);
 
-    IEventSubscriptionVoid Subscribe(IEventListener listener, EventType eventType, Action action);
-
-    IEventSubscription<T> Subscribe<T>(IEventListener listener, EventType<T> eventType, Action<T> action);
+    IEventSubscription<T> SubscribeTo<T>(IEventSource source, EventType<T> eventType, Action<T> action);
 
     void UnsubscribeAll();
   }
 
+  public interface IEventSource {
+
+    IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action action);
+
+    IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<T> action);
+
+    void RemoveAllListeners();
+  }
+
   public interface IEventEmitter : IEventSource {
 
-    public void Emit(EventType eventType);
+    void Emit(EventType eventType);
 
-    public void Emit<T>(EventType<T> eventType, T value);
+    void Emit<T>(EventType<T> eventType, T value);
+  }
+
+  public interface IEventRelay : IEventEmitter {
+
+    void Destroy();
+
+    bool AddRelaySource(IEventSource source);
+
+    bool RemoveRelaySource(IEventSource source);
   }
 
   public interface IEventFactory {
@@ -55,5 +71,7 @@ namespace fin.events {
     IEventListener NewListener();
 
     IEventEmitter NewEmitter();
+
+    IEventRelay NewRelay();
   }
 }

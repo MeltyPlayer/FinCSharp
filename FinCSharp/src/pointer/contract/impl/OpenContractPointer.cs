@@ -5,11 +5,11 @@ namespace fin.pointer.contract.impl {
 
   public sealed partial class ContractFactory : IContractFactory {
 
-    private abstract partial class ContractOwnerImpl<T> : IContractOwner<T> {
+    private abstract partial class ContractPointerOwnerImpl<T> : IContractPointerOwner<T> {
 
-      private class OpenContractPointer : ContractOwnerImpl<T>.ContractPointerImpl, IOpenContractPointer<T> {
+      private class OpenContractPointer : ContractPointerImpl, IOpenContractPointer<T> {
 
-        public OpenContractPointer(T value, params IContractOwner<T>[] owners) : base(value, owners) {
+        public OpenContractPointer(T value, params IContractPointerOwner<T>[] owners) : base(value, owners) {
         }
       }
     }

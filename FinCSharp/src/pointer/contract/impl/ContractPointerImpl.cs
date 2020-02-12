@@ -4,13 +4,15 @@ namespace fin.pointer.contract.impl {
 
   public sealed partial class ContractFactory : IContractFactory {
 
-    private abstract partial class ContractOwnerImpl<T> : IContractOwner<T> {
+    private abstract partial class ContractPointerOwnerImpl<T> : IContractPointerOwner<T> {
 
       private abstract class ContractPointerImpl : IContractPointer<T> {
-        private readonly OrderedSet<IStrongContractOwner<T>> strongOwners_ = new OrderedSet<IStrongContractOwner<T>>();
-        private readonly OrderedSet<IWeakContractOwner<T>> weakOwners_ = new OrderedSet<IWeakContractOwner<T>>();
+        private readonly OrderedSet<IStrongContractPointerOwner<T>> strongOwners_ = new OrderedSet<IStrongContractPointerOwner<T>>();
+        private readonly OrderedSet<IWeakContractPointerOwner<T>> weakOwners_ = new OrderedSet<IWeakContractPointerOwner<T>>();
 
-        public ContractPointerImpl(T value, IContractOwner<T>[] owners) {
+        public T Value { get; private set; }
+
+        public ContractPointerImpl(T value, IContractPointerOwner<T>[] owners) {
           this.Value = value;
 
           this.IsActive = owners.Length > 0;
@@ -19,9 +21,7 @@ namespace fin.pointer.contract.impl {
           }
         }
 
-        public T Value { get; private set; }
-
-        public bool Join(IContractOwner<T> owner) {
+        public bool Join(IContractPointerOwner<T> owner) {
           if (!this.IsActive) {
             return false;
           }
@@ -29,13 +29,13 @@ namespace fin.pointer.contract.impl {
           // TODO: This is not great but I can't think of how else to do this.
           // TODO: Seriously, figure out a better way to do this at some point.
           // TODO: Please.
-          if (owner is StrongContractOwner<T> strongOwner) {
+          if (owner is StrongContractPointerOwner<T> strongOwner) {
             if (this.strongOwners_.Add(strongOwner)) {
               strongOwner.JoinBackdoor_(this);
               return true;
             }
           } else {
-            var weakOwner = (owner as WeakContractOwner<T>)!;
+            var weakOwner = (owner as WeakContractPointerOwner<T>)!;
             if (this.weakOwners_.Add(weakOwner)) {
               weakOwner.JoinBackdoor_(this);
               return true;
@@ -46,6 +46,8 @@ namespace fin.pointer.contract.impl {
         }
 
         public bool IsActive { get; private set; }
+
+        public event IContract.OnBreakHandler OnBreak = delegate { };
 
         public bool Break() {
           if (!this.IsActive) {
@@ -64,19 +66,21 @@ namespace fin.pointer.contract.impl {
           }
           this.weakOwners_.Clear();
 
+          this.OnBreak(this);
+
           return true;
         }
 
         /// <summary>
         ///   Inaccessible from IContractPointer types.
         /// </summary>
-        public void BreakWith(IContractOwner<T> owner) {
+        public void BreakWith(IContractPointerOwner<T> owner) {
           bool removed;
 
-          if (owner is IStrongContractOwner<T> strongOwner) {
+          if (owner is IStrongContractPointerOwner<T> strongOwner) {
             removed = this.strongOwners_.Remove(strongOwner);
           } else {
-            var weakOwner = (owner as IWeakContractOwner<T>)!;
+            var weakOwner = (owner as IWeakContractPointerOwner<T>)!;
             removed = this.weakOwners_.Remove(weakOwner);
           }
 

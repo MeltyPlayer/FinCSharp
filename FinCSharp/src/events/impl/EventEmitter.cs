@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace fin.events.impl {
+﻿namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
 
