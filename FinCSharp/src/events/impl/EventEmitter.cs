@@ -1,29 +1,29 @@
-﻿namespace fin.events.impl {
+﻿using fin.type;
+
+namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
-
     public IEventEmitter NewEmitter() => new EventEmitter();
 
     private class EventEmitter : EventSource, IEventEmitter {
-
-      public void Emit(EventType eventType) {
-        var contracts = this.Get(eventType);
+      public void Emit(SafeType<Event> eventType, Event evt) {
+        var contracts = this.Get(new SafeType<IEvent>(eventType.Value));
         if (contracts != null) {
           foreach (var contract in contracts) {
             var genericSubscription = contract.Value;
             var subscription = genericSubscription as IEventSubscriptionVoid;
-            subscription!.Handler(eventType);
+            subscription!.Handler(evt);
           }
         }
       }
 
-      public void Emit<T>(EventType<T> eventType, T value) {
-        var contracts = this.Get(eventType);
+      public void Emit<T>(SafeType<Event<T>> eventType, Event<T> evt, T value) {
+        var contracts = this.Get(new SafeType<IEvent>(eventType.Value));
         if (contracts != null) {
           foreach (var contract in contracts) {
             var genericSubscription = contract.Value;
             var subscription = genericSubscription as IEventSubscription<T>;
-            subscription!.Handler(eventType, value);
+            subscription!.Handler(evt, value);
           }
         }
       }

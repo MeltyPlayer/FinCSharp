@@ -4,6 +4,7 @@ using System.Linq;
 using fin.assert;
 using fin.data.graph;
 using fin.events;
+using fin.type;
 
 namespace fin.app.node {
 
@@ -61,11 +62,11 @@ namespace fin.app.node {
     }
 
     // Event logic.
-    public IEventSubscription<T> OnTick<T>(EventType<T> eventType, Action<EventType<T>, T> handler) {
+    public IEventSubscription<T> OnTick<T>(SafeType<Event<T>> eventType, Action<Event<T>, T> handler) {
       return this.Parent.downwardRelay_.AddListener(this.listener_, eventType, handler);
     }
 
-    public IEventSubscription OnTick(EventType eventType, Action<EventType> handler) {
+    public IEventSubscription OnTick(SafeType<Event> eventType, Action<Event> handler) {
       return this.Parent.downwardRelay_.AddListener(this.listener_, eventType, handler);
     }
 

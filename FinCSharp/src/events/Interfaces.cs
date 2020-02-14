@@ -1,20 +1,21 @@
 ﻿using System;
 
 using fin.events.impl;
+using fin.type;
 
 namespace fin.events {
 
-  public interface IEventType { }
+  public interface IEvent { }
 
-  public class EventType : IEventType { }
+  public class Event : IEvent { }
 
-  public class EventType<T> : IEventType { }
+  public class Event<T> : IEvent { }
 
   public interface IEventSubscription {
     IEventSource Source { get; }
     IEventListener Listener { get; }
 
-    IEventType IEventType { get; }
+    SafeType<IEvent> GenericEventType { get; }
 
     bool IsSubscribed { get; }
 
@@ -22,42 +23,39 @@ namespace fin.events {
   }
 
   public interface IEventSubscriptionVoid : IEventSubscription {
-    EventType EventType { get; }
-    Action<EventType> Handler { get; }
+    SafeType<Event> EventType { get; }
+    Action<Event> Handler { get; }
   }
 
   public interface IEventSubscription<T> : IEventSubscription {
-    EventType<T> EventType { get; }
-    Action<EventType<T>, T> Handler { get; }
+    SafeType<Event<T>> EventType { get; }
+    Action<Event<T>, T> Handler { get; }
   }
 
   public interface IEventListener {
+    IEventSubscriptionVoid SubscribeTo(IEventSource source, SafeType<Event> eventType, Action<Event> action);
 
-    IEventSubscriptionVoid SubscribeTo(IEventSource source, EventType eventType, Action<EventType> action);
-
-    IEventSubscription<T> SubscribeTo<T>(IEventSource source, EventType<T> eventType, Action<EventType<T>, T> action);
+    IEventSubscription<T> SubscribeTo<T>(IEventSource source, SafeType<Event<T>> eventType, Action<Event<T>, T> action);
 
     void UnsubscribeAll();
   }
 
   public interface IEventSource {
+    IEventSubscriptionVoid AddListener(IEventListener listener, SafeType<Event> eventType, Action<Event> action);
 
-    IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action<EventType> action);
-
-    IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action);
+    IEventSubscription<T> AddListener<T>(IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> action);
 
     void RemoveAllListeners();
   }
 
   public interface IEventEmitter : IEventSource {
+    // TODO: This is a bit redundant... can we fix this?
+    void Emit(SafeType<Event> eventType, Event evt);
 
-    void Emit(EventType eventType);
-
-    void Emit<T>(EventType<T> eventType, T value);
+    void Emit<T>(SafeType<Event<T>> eventType, Event<T> evt, T value);
   }
 
   public interface IEventRelay : IEventEmitter {
-
     void Destroy();
 
     bool AddRelaySource(IEventSource source);

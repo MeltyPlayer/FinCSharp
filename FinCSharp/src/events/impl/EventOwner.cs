@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using fin.data.collections.set;
 using fin.pointer.contract;
+using fin.type;
 
 namespace fin.events.impl {
 
@@ -19,21 +20,21 @@ namespace fin.events.impl {
         // TODO: Higher overhead than should be necessary.
         private readonly OrderedSet<IContractPointer<IEventSubscription>> contracts_ = new OrderedSet<IContractPointer<IEventSubscription>>();
 
-        private readonly ConcurrentDictionary<IEventType, ISet<IContractPointer<IEventSubscription>>> sets_ =
-          new ConcurrentDictionary<IEventType, ISet<IContractPointer<IEventSubscription>>>();
+        private readonly ConcurrentDictionary<SafeType<IEvent>, ISet<IContractPointer<IEventSubscription>>> sets_ =
+          new ConcurrentDictionary<SafeType<IEvent>, ISet<IContractPointer<IEventSubscription>>>();
 
         public IEnumerable<IContractPointer<IEventSubscription>> Contracts => this.contracts_;
 
         public int Count => this.contracts_.Count;
 
-        public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) {
-          this.sets_.TryGetValue(eventType, out ISet<IContractPointer<IEventSubscription>>? set);
+        public IEnumerable<IContractPointer<IEventSubscription>>? Get(SafeType<IEvent> genericEventType) {
+          this.sets_.TryGetValue(genericEventType, out ISet<IContractPointer<IEventSubscription>>? set);
           return set;
         }
 
         public bool Add(IContractPointer<IEventSubscription> contract) {
           if (this.contracts_.Add(contract)) {
-            var genericEventType = contract.Value.IEventType;
+            var genericEventType = contract.Value.GenericEventType;
             var set = this.sets_.GetOrAdd(genericEventType, genericEventType => new HashSet<IContractPointer<IEventSubscription>>());
             set.Add(contract);
             return true;
@@ -42,7 +43,7 @@ namespace fin.events.impl {
         }
 
         public bool Remove(IContractPointer<IEventSubscription> contract) {
-          var genericEventType = contract.Value.IEventType;
+          var genericEventType = contract.Value.GenericEventType;
           if (this.sets_.TryGetValue(genericEventType, out ISet<IContractPointer<IEventSubscription>>? set)) {
             if (set!.Remove(contract)) {
               if (set.Count() == 0) {
@@ -70,9 +71,9 @@ namespace fin.events.impl {
         this.owner_ = IContractFactory.Instance.NewWeakOwner(this.set_);
       }
 
-      public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) => this.set_.Get(eventType);
+      public IEnumerable<IContractPointer<IEventSubscription>>? Get(SafeType<IEvent> genericEventType) => this.set_.Get(genericEventType);
 
-      protected EventSubscription CreateSubscription(IEventSource source, IEventListener listener, EventType eventType, Action<EventType> action) {
+      protected EventSubscription CreateSubscription(IEventSource source, IEventListener listener, SafeType<Event> eventType, Action<Event> action) {
         var subscription = this.HasSubscription_(source, listener, eventType, action);
         if (subscription != null) {
           return subscription;
@@ -84,7 +85,7 @@ namespace fin.events.impl {
         return subscription;
       }
 
-      protected EventSubscription<T> CreateSubscription<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action) {
+      protected EventSubscription<T> CreateSubscription<T>(IEventSource source, IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> action) {
         var subscription = this.HasSubscription_(source, listener, eventType, action);
         if (subscription != null) {
           return subscription;
@@ -97,7 +98,7 @@ namespace fin.events.impl {
       }
 
       // TODO: Find a faster way to do this.
-      private EventSubscription? HasSubscription_(IEventSource source, IEventListener listener, EventType eventType, Action<EventType> action) {
+      private EventSubscription? HasSubscription_(IEventSource source, IEventListener listener, SafeType<Event> eventType, Action<Event> action) {
         var contracts = this.set_.Contracts;
         foreach (var contract in contracts) {
           if (contract.Value is EventSubscription subscription) {
@@ -109,7 +110,7 @@ namespace fin.events.impl {
         return null;
       }
 
-      private EventSubscription<T>? HasSubscription_<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action) {
+      private EventSubscription<T>? HasSubscription_<T>(IEventSource source, IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> action) {
         var contracts = this.set_.Contracts;
         foreach (var contract in contracts) {
           if (contract.Value is EventSubscription<T> subscription) {

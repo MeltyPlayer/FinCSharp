@@ -1,17 +1,16 @@
 ﻿using System;
+using fin.type;
 
 namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
-
     public IEventListener NewListener() => new EventListener();
 
     private class EventListener : EventOwner, IEventListener {
-
-      public IEventSubscriptionVoid SubscribeTo(IEventSource source, EventType eventType, Action<EventType> action) =>
+      public IEventSubscriptionVoid SubscribeTo(IEventSource source, SafeType<Event> eventType, Action<Event> action) =>
         this.CreateSubscription((source as EventSource)!, this, eventType, action);
 
-      public IEventSubscription<T> SubscribeTo<T>(IEventSource source, EventType<T> eventType, Action<EventType<T>, T> action) =>
+      public IEventSubscription<T> SubscribeTo<T>(IEventSource source, SafeType<Event<T>> eventType, Action<Event<T>, T> action) =>
         this.CreateSubscription((source as EventSource)!, this, eventType, action);
 
       public void UnsubscribeAll() => this.owner_.BreakAll();

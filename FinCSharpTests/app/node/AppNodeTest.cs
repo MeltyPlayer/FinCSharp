@@ -1,21 +1,17 @@
-﻿using fin.events;
-
-namespace fin.app.node {
+﻿namespace fin.app.node {
 
   public class AppNodeTest {
-    private static readonly EventType<string> PASS_STRING = new EventType<string>();
+    /*private static readonly Event<string> PASS_STRING = new Event<string>();
 
-    private class PassStringEvent : EventType<string> { }
+    private class PassStringEvent : Event<string> { }
 
     private class Foo : AppNode {
     }
 
     private class Bar : AppNode {
-
       [OnTick]
-
-      public void PrintToLog(PassString private event, ) {
+      public void PrintToLog(PassStringEvent evt) {
       }
-      }
-    }
+    }*/
   }
+}

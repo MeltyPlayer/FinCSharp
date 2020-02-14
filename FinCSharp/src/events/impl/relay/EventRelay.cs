@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using fin.type;
 
 namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
+    public IEventRelay NewRelay() => new EventRelay();
 
-    public IEventRelay NewRelay() => new EventRelayer();
-
-    private sealed partial class EventRelayer : IEventRelay {
+    private sealed partial class EventRelay : IEventRelay {
       private readonly ISet<IEventSource> relaySources_ = new HashSet<IEventSource>();
-      private readonly IDictionary<EventType, RelayStream> voidRelays_ = new Dictionary<EventType, RelayStream>();
-      private readonly IDictionary<IEventType, IRelayStream> tRelays_ = new Dictionary<IEventType, IRelayStream>();
+      private readonly IDictionary<SafeType<Event>, RelayStream> voidRelays_ = new Dictionary<SafeType<Event>, RelayStream>();
+      private readonly IDictionary<SafeType<IEvent>, IRelayStream> tRelays_ = new Dictionary<SafeType<IEvent>, IRelayStream>();
 
       private readonly IEventListener listener_ = IEventFactory.Instance.NewListener();
       private readonly IEventEmitter emitter_ = IEventFactory.Instance.NewEmitter();
 
-      public EventRelayer() {
+      public EventRelay() {
       }
 
       public void Destroy() {
@@ -59,7 +59,7 @@ namespace fin.events.impl {
         return false;
       }
 
-      public IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action<EventType> handler) {
+      public IEventSubscriptionVoid AddListener(IEventListener listener, SafeType<Event> eventType, Action<Event> handler) {
         if (!this.voidRelays_.TryGetValue(eventType, out RelayStream? relay)) {
           relay = new RelayStream(this, eventType);
           this.voidRelays_.Add(eventType, relay);
@@ -67,23 +67,24 @@ namespace fin.events.impl {
         return relay.AddListener(listener, handler);
       }
 
-      public IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> handler) {
+      public IEventSubscription<T> AddListener<T>(IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> handler) {
+        var genericEventType = new SafeType<IEvent>(eventType.Value);
         RelayStream<T> relay;
-        if (this.tRelays_.TryGetValue(eventType, out IRelayStream? genericRelay)) {
+        if (this.tRelays_.TryGetValue(genericEventType, out IRelayStream? genericRelay)) {
           relay = (genericRelay as RelayStream<T>)!;
         } else {
           relay = new RelayStream<T>(this, eventType);
-          this.tRelays_.Add(eventType, relay);
+          this.tRelays_.Add(genericEventType, relay);
         }
         return relay.AddListener(listener, handler);
       }
 
       public void RemoveAllListeners() => this.emitter_.RemoveAllListeners();
 
-      public void Emit(EventType eventType) => this.emitter_.Emit(eventType);
+      public void Emit(SafeType<Event> eventType, Event evt) => this.emitter_.Emit(eventType, evt);
 
-      public void Emit<T>(EventType<T> eventType, T value) =>
-        this.emitter_.Emit(eventType, value);
+      public void Emit<T>(SafeType<Event<T>> eventType, Event<T> evt, T value) =>
+        this.emitter_.Emit(eventType, evt, value);
     }
   }
 }

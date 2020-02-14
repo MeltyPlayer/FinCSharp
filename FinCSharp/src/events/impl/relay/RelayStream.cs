@@ -3,15 +3,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 using fin.pointer.contract;
+using fin.type;
 
 namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
 
-    private sealed partial class EventRelayer : IEventRelay {
+    private sealed partial class EventRelay : IEventRelay {
 
       private interface IRelayStream {
-
         void Destroy();
 
         bool AddSource(IEventSource source);
@@ -19,57 +19,56 @@ namespace fin.events.impl {
         bool RemoveSource(IEventSource source);
       }
 
-      private class RelayStream : RelayStreamImpl<EventType, Action<EventType>, EventSubscription> {
-
-        public RelayStream(EventRelayer parent, EventType eventType) :
+      private class RelayStream : RelayStreamImpl<Event, Action<Event>, EventSubscription> {
+        public RelayStream(EventRelay parent, SafeType<Event> eventType) :
           base(parent, eventType) { }
 
         protected override void RemoveFromParent()
           => this.parent_.voidRelays_.Remove(this.eventType_);
 
-        protected override Action<EventType> GenerateConvertSourceToThisEmit()
-          => eventType => this.parent_.Emit(eventType);
+        protected override Action<Event> GenerateConvertSourceToThisEmit()
+          => eventType => this.parent_.Emit(this.eventType_, eventType);
 
-        protected override EventSubscription SubscribeToSource(IEventSource source, Action<EventType> handler)
+        protected override EventSubscription SubscribeToSource(IEventSource source, Action<Event> handler)
           => (this.parent_.listener_.SubscribeTo(source, this.eventType_, handler) as EventSubscription)!;
 
-        protected override EventSubscription AddListenerToEmitter(IEventListener listener, Action<EventType> handler)
+        protected override EventSubscription AddListenerToEmitter(IEventListener listener, Action<Event> handler)
           => (this.parent_.emitter_.AddListener(listener, this.eventType_, handler) as EventSubscription)!;
 
-        protected override Action<EventType> GetActionFromSubscription(EventSubscription subscription)
+        protected override Action<Event> GetActionFromSubscription(EventSubscription subscription)
           => subscription.Handler;
 
         protected override IContractPointer<IEventSubscription> GetContractFromSubscription(EventSubscription subscription)
           => subscription.Contract!;
       }
 
-      private class RelayStream<T> : RelayStreamImpl<EventType<T>, Action<EventType<T>, T>, EventSubscription<T>> {
-
-        public RelayStream(EventRelayer parent, EventType<T> eventType) :
+      private class RelayStream<T> : RelayStreamImpl<Event<T>, Action<Event<T>, T>, EventSubscription<T>> {
+        public RelayStream(EventRelay parent, SafeType<Event<T>> eventType) :
           base(parent, eventType) { }
 
         protected override void RemoveFromParent()
-          => this.parent_.tRelays_.Remove(this.eventType_);
+          => this.parent_.tRelays_.Remove(this.genericEventType_);
 
-        protected override Action<EventType<T>, T> GenerateConvertSourceToThisEmit()
-          => (eventType, value) => this.parent_.Emit(eventType, value);
+        protected override Action<Event<T>, T> GenerateConvertSourceToThisEmit()
+          => (eventType, value) => this.parent_.Emit(this.eventType_, eventType, value);
 
-        protected override EventSubscription<T> SubscribeToSource(IEventSource source, Action<EventType<T>, T> handler)
+        protected override EventSubscription<T> SubscribeToSource(IEventSource source, Action<Event<T>, T> handler)
           => (this.parent_.listener_.SubscribeTo(source, this.eventType_, handler) as EventSubscription<T>)!;
 
-        protected override EventSubscription<T> AddListenerToEmitter(IEventListener listener, Action<EventType<T>, T> handler)
+        protected override EventSubscription<T> AddListenerToEmitter(IEventListener listener, Action<Event<T>, T> handler)
           => (this.parent_.emitter_.AddListener(listener, this.eventType_, handler) as EventSubscription<T>)!;
 
-        protected override Action<EventType<T>, T> GetActionFromSubscription(EventSubscription<T> subscription)
+        protected override Action<Event<T>, T> GetActionFromSubscription(EventSubscription<T> subscription)
           => subscription.Handler;
 
         protected override IContractPointer<IEventSubscription> GetContractFromSubscription(EventSubscription<T> subscription)
           => subscription.Contract!;
       }
 
-      private abstract class RelayStreamImpl<TEventType, TAction, TSubscription> : IRelayStream where TEventType : IEventType where TAction : Delegate where TSubscription : IEventSubscription {
-        protected readonly EventRelayer parent_;
-        protected readonly TEventType eventType_;
+      private abstract class RelayStreamImpl<TEvent, TAction, TSubscription> : IRelayStream where TEvent : IEvent where TAction : Delegate where TSubscription : IEventSubscription {
+        protected readonly EventRelay parent_;
+        protected readonly SafeType<IEvent> genericEventType_;
+        protected readonly SafeType<TEvent> eventType_;
         protected readonly TAction convertSourceToThisEmit_;
 
         private readonly ConcurrentDictionary<IEventSource, TSubscription> sources_ = new ConcurrentDictionary<IEventSource, TSubscription>();
@@ -78,9 +77,10 @@ namespace fin.events.impl {
         private readonly ConcurrentDictionary<IEventListener, ISet<TSubscription>> listeners_ = new ConcurrentDictionary<IEventListener, ISet<TSubscription>>();
         private ISuperContract? listenersSuperContract_;
 
-        public RelayStreamImpl(EventRelayer parent, TEventType eventType) {
+        public RelayStreamImpl(EventRelay parent, SafeType<TEvent> eventType) {
           this.parent_ = parent;
           this.convertSourceToThisEmit_ = this.GenerateConvertSourceToThisEmit();
+          this.genericEventType_ = new SafeType<IEvent>(eventType.Value);
           this.eventType_ = eventType;
 
           foreach (var source in this.parent_.relaySources_) {
