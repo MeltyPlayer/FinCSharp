@@ -72,7 +72,7 @@ namespace fin.events.impl {
 
       public IEnumerable<IContractPointer<IEventSubscription>>? Get(IEventType eventType) => this.set_.Get(eventType);
 
-      protected EventSubscription CreateSubscription(IEventSource source, IEventListener listener, EventType eventType, Action action) {
+      protected EventSubscription CreateSubscription(IEventSource source, IEventListener listener, EventType eventType, Action<EventType> action) {
         var subscription = this.HasSubscription_(source, listener, eventType, action);
         if (subscription != null) {
           return subscription;
@@ -84,7 +84,7 @@ namespace fin.events.impl {
         return subscription;
       }
 
-      protected EventSubscription<T> CreateSubscription<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<T> action) {
+      protected EventSubscription<T> CreateSubscription<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action) {
         var subscription = this.HasSubscription_(source, listener, eventType, action);
         if (subscription != null) {
           return subscription;
@@ -97,11 +97,10 @@ namespace fin.events.impl {
       }
 
       // TODO: Find a faster way to do this.
-      private EventSubscription? HasSubscription_(IEventSource source, IEventListener listener, EventType eventType, Action action) {
+      private EventSubscription? HasSubscription_(IEventSource source, IEventListener listener, EventType eventType, Action<EventType> action) {
         var contracts = this.set_.Contracts;
         foreach (var contract in contracts) {
-          var subscription = contract.Value as EventSubscription;
-          if (subscription != null) {
+          if (contract.Value is EventSubscription subscription) {
             if (subscription.Source == source && subscription.Listener == listener && subscription.EventType == eventType && subscription.Handler == action) {
               return subscription;
             }
@@ -110,11 +109,10 @@ namespace fin.events.impl {
         return null;
       }
 
-      private EventSubscription<T>? HasSubscription_<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<T> action) {
+      private EventSubscription<T>? HasSubscription_<T>(IEventSource source, IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action) {
         var contracts = this.set_.Contracts;
         foreach (var contract in contracts) {
-          var subscription = contract.Value as EventSubscription<T>;
-          if (subscription != null) {
+          if (contract.Value is EventSubscription<T> subscription) {
             if (subscription.Source == source && subscription.Listener == listener && subscription.EventType == eventType && subscription.Handler == action) {
               return subscription;
             }

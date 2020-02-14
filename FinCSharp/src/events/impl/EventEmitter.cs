@@ -12,7 +12,7 @@
           foreach (var contract in contracts) {
             var genericSubscription = contract.Value;
             var subscription = genericSubscription as IEventSubscriptionVoid;
-            subscription!.Handler();
+            subscription!.Handler(eventType);
           }
         }
       }
@@ -23,7 +23,7 @@
           foreach (var contract in contracts) {
             var genericSubscription = contract.Value;
             var subscription = genericSubscription as IEventSubscription<T>;
-            subscription!.Handler(value);
+            subscription!.Handler(eventType, value);
           }
         }
       }

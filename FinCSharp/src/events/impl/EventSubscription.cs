@@ -17,9 +17,9 @@ namespace fin.events.impl {
       public IEventType IEventType => this.EventType;
 
       public EventType<T> EventType { get; }
-      public Action<T> Handler { get; }
+      public Action<EventType<T>, T> Handler { get; }
 
-      public EventSubscription(IEventSource source, IEventListener listener, EventType<T> eventType, Action<T> handler) {
+      public EventSubscription(IEventSource source, IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> handler) {
         this.Source = source;
         this.Listener = listener;
         this.EventType = eventType;

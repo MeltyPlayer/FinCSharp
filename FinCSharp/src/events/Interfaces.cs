@@ -23,28 +23,28 @@ namespace fin.events {
 
   public interface IEventSubscriptionVoid : IEventSubscription {
     EventType EventType { get; }
-    Action Handler { get; }
+    Action<EventType> Handler { get; }
   }
 
   public interface IEventSubscription<T> : IEventSubscription {
     EventType<T> EventType { get; }
-    Action<T> Handler { get; }
+    Action<EventType<T>, T> Handler { get; }
   }
 
   public interface IEventListener {
 
-    IEventSubscriptionVoid SubscribeTo(IEventSource source, EventType eventType, Action action);
+    IEventSubscriptionVoid SubscribeTo(IEventSource source, EventType eventType, Action<EventType> action);
 
-    IEventSubscription<T> SubscribeTo<T>(IEventSource source, EventType<T> eventType, Action<T> action);
+    IEventSubscription<T> SubscribeTo<T>(IEventSource source, EventType<T> eventType, Action<EventType<T>, T> action);
 
     void UnsubscribeAll();
   }
 
   public interface IEventSource {
 
-    IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action action);
+    IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action<EventType> action);
 
-    IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<T> action);
+    IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action);
 
     void RemoveAllListeners();
   }

@@ -6,10 +6,10 @@ namespace fin.events.impl {
 
     private abstract class EventSource : EventOwner, IEventSource {
 
-      public IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action action) =>
+      public IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action<EventType> action) =>
         this.CreateSubscription(this, (listener as EventListener)!, eventType, action);
 
-      public IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<T> action) =>
+      public IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> action) =>
         this.CreateSubscription(this, (listener as EventListener)!, eventType, action);
 
       public void RemoveAllListeners() => this.owner_.BreakAll();

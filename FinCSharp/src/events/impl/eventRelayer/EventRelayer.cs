@@ -59,7 +59,7 @@ namespace fin.events.impl {
         return false;
       }
 
-      public IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action handler) {
+      public IEventSubscriptionVoid AddListener(IEventListener listener, EventType eventType, Action<EventType> handler) {
         if (!this.voidRelays_.TryGetValue(eventType, out RelayStream? relay)) {
           relay = new RelayStream(this, eventType);
           this.voidRelays_.Add(eventType, relay);
@@ -67,7 +67,7 @@ namespace fin.events.impl {
         return relay.AddListener(listener, handler);
       }
 
-      public IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<T> handler) {
+      public IEventSubscription<T> AddListener<T>(IEventListener listener, EventType<T> eventType, Action<EventType<T>, T> handler) {
         RelayStream<T> relay;
         if (this.tRelays_.TryGetValue(eventType, out IRelayStream? genericRelay)) {
           relay = (genericRelay as RelayStream<T>)!;
