@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 
 using fin.assert;
@@ -52,9 +51,7 @@ namespace fin.app.node {
       var type = this.GetType();
       var methods = type.GetMethods();
 
-      var onTicks = methods.Where(m => m.Name == "OnTick");
-      var onTickVoid = onTicks.Where(m => !m.IsGenericMethod).Single();
-      var onTickT = onTicks.Where(m => m.IsGenericMethod).Single();
+      var onTick = methods.Where(m => m.Name == "OnTick").Single();
 
       var onTickHandlers = methods
         .Where(m => m.GetCustomAttributes(typeof(OnTickAttribute), true).Length > 0)
@@ -64,30 +61,15 @@ namespace fin.app.node {
         var eventParameter = parameters[0];
 
         var eventParameterType = eventParameter.ParameterType;
-        var baseEventParameterType = eventParameterType.BaseType;
 
-        // TODO: Check this more robustly.
-        // TODO: Blegh. Better way to do this?
-        if (baseEventParameterType == typeof(Event)) {
-          var safeEventParameterType = new SafeType<Event>(eventParameterType);
+        var safeTypeType = typeof(SafeType<>).MakeGenericType(eventParameterType!);
+        var safeTypeConstructor = safeTypeType.GetConstructor(Array.Empty<Type>());
+        var safeEventParameterType = safeTypeConstructor!.Invoke(Array.Empty<object>());
 
-          var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
-          Action<Event> handler = evt => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt });
+        var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
+        Action<dynamic> handler = evt => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt });
 
-          onTickVoid.Invoke(this, new object[] { safeEventParameterType, handler });
-        }
-        // TODO: Blegh. Better way to do this?
-        else {
-          var safeTypeType = typeof(SafeType<>).MakeGenericType(baseEventParameterType!);
-          var safeTypeConstructor = safeTypeType.GetConstructors().Single();
-          var safeEventParameterType = safeTypeConstructor!.Invoke(new[] { eventParameterType });
-
-          var genericType = baseEventParameterType!.GetGenericArguments()[0];
-          var actionType = typeof(Action<,>).MakeGenericType(eventParameterType, genericType);
-          Action<dynamic, dynamic> handler = (evt, value) => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt, value });
-
-          onTickT.MakeGenericMethod(genericType).Invoke(this, new object[] { safeEventParameterType, handler });
-        }
+        onTick.MakeGenericMethod(eventParameterType).Invoke(this, new object[] { safeEventParameterType, handler });
       }
     }
 
@@ -137,15 +119,8 @@ namespace fin.app.node {
     }
 
     // Event logic.
-    public void Emit(Event evt) => this.downwardRelay_.Emit(evt);
-    public void Emit<T>(Event<T> evt, T value) => this.downwardRelay_.Emit(evt, value);
-    public IEventSubscription? OnTick(SafeType<Event> eventType, Action<Event> handler) {
-      if (this.ParentImpl != null) {
-        return this.ParentImpl.downwardRelay_.AddListener(this.listener_, eventType, handler);
-      }
-      return null;
-    }
-    public IEventSubscription<T>? OnTick<T>(SafeType<Event<T>> eventType, Action<Event<T>, T> handler) {
+    public void Emit<TEvent>(TEvent evt) where TEvent : IEvent => this.downwardRelay_.Emit(evt);
+    public IEventSubscription? OnTick<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent {
       if (this.ParentImpl != null) {
         return this.ParentImpl.downwardRelay_.AddListener(this.listener_, eventType, handler);
       }

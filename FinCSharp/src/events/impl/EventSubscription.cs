@@ -7,20 +7,18 @@ namespace fin.events.impl {
 
   public sealed partial class EventFactory : IEventFactory {
 
-    private class EventSubscription<T> : IEventSubscription<T> {
+    private class EventSubscription<TEvent> : IEventSubscription {
       public IClosedContractPointer<IEventSubscription>? Contract { get; set; }
 
       public IEventSource Source { get; }
       public IEventListener Listener { get; }
-      public SafeType<IEvent> GenericEventType { get; }
-      public SafeType<Event<T>> EventType { get; }
-      public Action<Event<T>, T> Handler { get; }
+      public SafeType<IEvent> EventType { get; }
+      public Action<TEvent> Handler { get; }
 
-      public EventSubscription(IEventSource source, IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> handler) {
+      public EventSubscription(IEventSource source, IEventListener listener, SafeType<TEvent> eventType, Action<TEvent> handler) {
         this.Source = source;
         this.Listener = listener;
-        this.GenericEventType = new SafeType<IEvent>(eventType.Value);
-        this.EventType = eventType;
+        this.EventType = new SafeType<IEvent>(eventType.Value);
         this.Handler = handler;
       }
 

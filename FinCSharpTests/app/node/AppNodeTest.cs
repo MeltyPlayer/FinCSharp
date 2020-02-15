@@ -1,15 +1,25 @@
 ﻿using fin.events;
 using fin.type;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.app.node {
 
   [TestClass]
   public class AppNodeTest {
+    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
 
-    private class PassStringEvent : Event<string> { }
+    private class PassStringEvent : EventImpl {
+      public string Str { get; }
 
-    private class VoidEvent : Event { }
+      public PassStringEvent(string str) {
+        this.Str = str;
+      }
+    }
+
+    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
+
+    private class VoidEvent : EventImpl { }
 
     private static readonly Log LOG = new Log();
 
@@ -22,7 +32,7 @@ namespace fin.app.node {
       public void AssertText(string expectedText) => Assert.AreEqual(expectedText, this.actualText_);
     }
 
-    private class StringEvent : Event { }
+    private class StringEvent : EventImpl { }
 
     private class Foo : AppNode {
       public Foo(AppNodeImpl parent) : base(parent) {
@@ -32,7 +42,7 @@ namespace fin.app.node {
       public void PrintToLog(VoidEvent evt) => LOG.Write("Foo");
 
       [OnTick]
-      public void PrintToLog(PassStringEvent evt, string value) => LOG.Write("Foo(" + value + ")");
+      public void PrintToLog(PassStringEvent evt) => LOG.Write("Foo(" + evt.Str + ")");
     }
 
     private class Bar : AppNode {
@@ -43,7 +53,7 @@ namespace fin.app.node {
       public void PrintToLog(VoidEvent evt) => LOG.Write("Bar");
 
       [OnTick]
-      public void PrintToLog(PassStringEvent evt, string value) => LOG.Write("Bar(" + value + ")");
+      public void PrintToLog(PassStringEvent evt) => LOG.Write("Bar(" + evt.Str + ")");
     }
 
     [TestInitialize]
@@ -67,8 +77,8 @@ namespace fin.app.node {
       var foo = new AppNode(root);
       var bar = new AppNode(foo);
 
-      foo.OnTick(new SafeType<Event>(typeof(VoidEvent)), _ => LOG.Write("Foo"));
-      bar.OnTick(new SafeType<Event>(typeof(VoidEvent)), _ => LOG.Write("Bar"));
+      foo.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Foo"));
+      bar.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Bar"));
 
       root.Emit(new VoidEvent());
 
@@ -81,10 +91,10 @@ namespace fin.app.node {
       var foo = new AppNode(root);
       var bar = new AppNode(foo);
 
-      foo.OnTick(new SafeType<Event<string>>(typeof(PassStringEvent)), (_, s) => LOG.Write("Foo(" + s + ")"));
-      bar.OnTick(new SafeType<Event<string>>(typeof(PassStringEvent)), (_, s) => LOG.Write("Bar(" + s + ")"));
+      foo.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Foo(" + evt.Str + ")"));
+      bar.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Bar(" + evt.Str + ")"));
 
-      root.Emit(new PassStringEvent(), "_");
+      root.Emit(new PassStringEvent("_"));
 
       LOG.AssertText("Foo(_)Bar(_)");
     }
@@ -106,7 +116,7 @@ namespace fin.app.node {
       var foo = new Foo(root);
       _ = new Bar(foo);
 
-      root.Emit(new PassStringEvent(), "_");
+      root.Emit(new PassStringEvent("_"));
 
       LOG.AssertText("Foo(_)Bar(_)");
     }

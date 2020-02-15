@@ -9,13 +9,19 @@ namespace fin.events {
   public class EventRelayerTest {
     private static readonly IEventFactory FACTORY = IEventFactory.Instance;
 
-    private class PassStringEvent : Event<string> { }
+    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
 
-    private SafeType<Event<string>> passStringEventType_ = new SafeType<Event<string>>(typeof(PassStringEvent));
+    private class PassStringEvent : EventImpl {
+      public string Str { get; }
 
-    private class VoidEvent : Event { }
+      public PassStringEvent(string str) {
+        this.Str = str;
+      }
+    }
 
-    private SafeType<Event> voidEventType_ = new SafeType<Event>(typeof(VoidEvent));
+    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
+
+    private class VoidEvent : EventImpl { }
 
     [TestMethod]
     public void TestEmptyEmit() {
@@ -24,7 +30,7 @@ namespace fin.events {
 
       relay.AddRelaySource(emitter);
       string output = "";
-      emitter.Emit(new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "");
     }
@@ -37,8 +43,8 @@ namespace fin.events {
 
       relay.AddRelaySource(emitter);
       string output = "";
-      relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
-      emitter.Emit(new PassStringEvent(), "foobar");
+      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }
@@ -50,9 +56,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
+      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
       relay.AddRelaySource(emitter);
-      emitter.Emit(new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }
@@ -65,9 +71,9 @@ namespace fin.events {
 
       Assert.IsTrue(relay.AddRelaySource(emitter));
       string output = "";
-      relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
+      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
       Assert.IsFalse(relay.AddRelaySource(emitter));
-      emitter.Emit(new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }
@@ -79,11 +85,11 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      Action<Event<string>, string> addToOutput = (_, s) => output += s;
-      var firstSubscription = relay.AddListener(listener, this.passStringEventType_, addToOutput);
-      var secondSubscription = relay.AddListener(listener, this.passStringEventType_, addToOutput);
+      Action<PassStringEvent> addToOutput = evt => output += evt.Str;
+      var firstSubscription = relay.AddListener(listener, PASS_STRING_EVENT_TYPE, addToOutput);
+      var secondSubscription = relay.AddListener(listener, PASS_STRING_EVENT_TYPE, addToOutput);
       relay.AddRelaySource(emitter);
-      emitter.Emit(new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(firstSubscription, secondSubscription);
       Assert.AreEqual(output, "foobar");
@@ -96,11 +102,11 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
+      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
       relay.AddRelaySource(emitter);
       relay.RemoveRelaySource(emitter);
       relay.AddRelaySource(emitter);
-      emitter.Emit(new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }
@@ -113,8 +119,8 @@ namespace fin.events {
       var barListener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(fooListener, this.voidEventType_, _ => output += "foo");
-      relay.AddListener(barListener, this.voidEventType_, _ => output += "bar");
+      relay.AddListener(fooListener, VOID_EVENT_TYPE, _ => output += "foo");
+      relay.AddListener(barListener, VOID_EVENT_TYPE, _ => output += "bar");
       relay.AddRelaySource(emitter);
       emitter.Emit(new VoidEvent());
 
@@ -127,8 +133,8 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
-      relay.Emit(new PassStringEvent(), "foobar");
+      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      relay.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }
@@ -141,8 +147,8 @@ namespace fin.events {
 
       string output = "";
       relay.AddRelaySource(parent);
-      parent.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
-      parent.Emit(new PassStringEvent(), "foobar");
+      parent.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      parent.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }
@@ -157,8 +163,8 @@ namespace fin.events {
       string output = "";
       middle.AddRelaySource(top);
       bottom.AddRelaySource(middle);
-      bottom.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
-      top.Emit(new PassStringEvent(), "foobar");
+      bottom.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      top.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
     }

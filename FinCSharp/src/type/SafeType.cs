@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace fin.type {
 
+  // TODO: Add tests.
   public static class SafeType {
     public static SafeType<T> TypeOf<T>(T _) {
       return new SafeType<T>(typeof(T));
@@ -20,6 +21,10 @@ namespace fin.type {
   /// </summary>
   public sealed class SafeType<T> : Type, ISafeType {
     public Type Value { get; }
+
+    public SafeType() {
+      this.Value = typeof(T);
+    }
 
     public SafeType(Type value) {
       this.Value = value;

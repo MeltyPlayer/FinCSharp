@@ -1,5 +1,4 @@
-﻿// TODO: This whole damn file is a war crime.
-// TODO: How much overhead does this all introduce?
+﻿// TODO: How much overhead does this all introduce?
 
 using System;
 using System.Collections.Concurrent;
@@ -34,7 +33,7 @@ namespace fin.events.impl {
 
         public bool Add(IContractPointer<IEventSubscription> contract) {
           if (this.contracts_.Add(contract)) {
-            var genericEventType = contract.Value.GenericEventType;
+            var genericEventType = contract.Value.EventType;
             var set = this.sets_.GetOrAdd(genericEventType, genericEventType => new HashSet<IContractPointer<IEventSubscription>>());
             set.Add(contract);
             return true;
@@ -43,7 +42,7 @@ namespace fin.events.impl {
         }
 
         public bool Remove(IContractPointer<IEventSubscription> contract) {
-          var genericEventType = contract.Value.GenericEventType;
+          var genericEventType = contract.Value.EventType;
           if (this.sets_.TryGetValue(genericEventType, out ISet<IContractPointer<IEventSubscription>>? set)) {
             if (set!.Remove(contract)) {
               if (set.Count() == 0) {
@@ -73,47 +72,23 @@ namespace fin.events.impl {
 
       public IEnumerable<IContractPointer<IEventSubscription>>? Get(SafeType<IEvent> genericEventType) => this.set_.Get(genericEventType);
 
-      protected EventSubscription CreateSubscription(IEventSource source, IEventListener listener, SafeType<Event> eventType, Action<Event> action) {
+      protected EventSubscription<TEvent> CreateSubscription<TEvent>(IEventSource source, IEventListener listener, SafeType<TEvent> eventType, Action<TEvent> action) where TEvent : IEvent {
         var subscription = this.HasSubscription_(source, listener, eventType, action);
         if (subscription != null) {
           return subscription;
         }
 
-        subscription = new EventSubscription(source, listener, eventType, action);
-        var contract = (source as EventSource)!.owner_.FormClosedWith(subscription, (listener as EventListener)!.owner_);
-        subscription.Contract = contract;
-        return subscription;
-      }
-
-      protected EventSubscription<T> CreateSubscription<T>(IEventSource source, IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> action) {
-        var subscription = this.HasSubscription_(source, listener, eventType, action);
-        if (subscription != null) {
-          return subscription;
-        }
-
-        subscription = new EventSubscription<T>(source, listener, eventType, action);
+        subscription = new EventSubscription<TEvent>(source, listener, eventType, action);
         var contract = (source as EventSource)!.owner_.FormClosedWith(subscription, (listener as EventListener)!.owner_);
         subscription.Contract = contract;
         return subscription;
       }
 
       // TODO: Find a faster way to do this.
-      private EventSubscription? HasSubscription_(IEventSource source, IEventListener listener, SafeType<Event> eventType, Action<Event> action) {
+      private EventSubscription<TEvent>? HasSubscription_<TEvent>(IEventSource source, IEventListener listener, SafeType<TEvent> eventType, Action<TEvent> action) {
         var contracts = this.set_.Contracts;
         foreach (var contract in contracts) {
-          if (contract.Value is EventSubscription subscription) {
-            if (subscription.Source == source && subscription.Listener == listener && subscription.EventType == eventType && subscription.Handler == action) {
-              return subscription;
-            }
-          }
-        }
-        return null;
-      }
-
-      private EventSubscription<T>? HasSubscription_<T>(IEventSource source, IEventListener listener, SafeType<Event<T>> eventType, Action<Event<T>, T> action) {
-        var contracts = this.set_.Contracts;
-        foreach (var contract in contracts) {
-          if (contract.Value is EventSubscription<T> subscription) {
+          if (contract.Value is EventSubscription<TEvent> subscription) {
             if (subscription.Source == source && subscription.Listener == listener && subscription.EventType == eventType && subscription.Handler == action) {
               return subscription;
             }
