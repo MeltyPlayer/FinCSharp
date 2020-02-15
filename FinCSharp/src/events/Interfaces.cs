@@ -5,11 +5,31 @@ using fin.type;
 
 namespace fin.events {
 
-  public interface IEvent { }
+  public interface IEvent {
+    SafeType<IEvent> GenericSafeType { get; }
+  }
 
-  public class Event : IEvent { }
+  public class Event : IEvent {
+    public SafeType<IEvent> GenericSafeType { get; }
+    public SafeType<Event> SafeType { get; }
 
-  public class Event<T> : IEvent { }
+    public Event() {
+      var type = this.GetType();
+      this.GenericSafeType = new SafeType<IEvent>(type);
+      this.SafeType = new SafeType<Event>(type);
+    }
+  }
+
+  public class Event<T> : IEvent {
+    public SafeType<IEvent> GenericSafeType { get; }
+    public SafeType<Event<T>> SafeType { get; }
+
+    public Event() {
+      var type = this.GetType();
+      this.GenericSafeType = new SafeType<IEvent>(type);
+      this.SafeType = new SafeType<Event<T>>(type);
+    }
+  }
 
   public interface IEventSubscription {
     IEventSource Source { get; }
@@ -50,9 +70,9 @@ namespace fin.events {
 
   public interface IEventEmitter : IEventSource {
     // TODO: This is a bit redundant... can we fix this?
-    void Emit(SafeType<Event> eventType, Event evt);
+    void Emit(Event evt);
 
-    void Emit<T>(SafeType<Event<T>> eventType, Event<T> evt, T value);
+    void Emit<T>(Event<T> evt, T value);
   }
 
   public interface IEventRelay : IEventEmitter {

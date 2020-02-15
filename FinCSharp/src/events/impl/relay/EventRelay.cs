@@ -81,10 +81,9 @@ namespace fin.events.impl {
 
       public void RemoveAllListeners() => this.emitter_.RemoveAllListeners();
 
-      public void Emit(SafeType<Event> eventType, Event evt) => this.emitter_.Emit(eventType, evt);
+      public void Emit(Event evt) => this.emitter_.Emit(evt);
 
-      public void Emit<T>(SafeType<Event<T>> eventType, Event<T> evt, T value) =>
-        this.emitter_.Emit(eventType, evt, value);
+      public void Emit<T>(Event<T> evt, T value) => this.emitter_.Emit(evt, value);
     }
   }
 }

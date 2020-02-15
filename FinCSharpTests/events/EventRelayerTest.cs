@@ -24,7 +24,7 @@ namespace fin.events {
 
       relay.AddRelaySource(emitter);
       string output = "";
-      emitter.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(output, "");
     }
@@ -38,7 +38,7 @@ namespace fin.events {
       relay.AddRelaySource(emitter);
       string output = "";
       relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
-      emitter.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(output, "foobar");
     }
@@ -52,7 +52,7 @@ namespace fin.events {
       string output = "";
       relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
       relay.AddRelaySource(emitter);
-      emitter.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(output, "foobar");
     }
@@ -67,7 +67,7 @@ namespace fin.events {
       string output = "";
       relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
       Assert.IsFalse(relay.AddRelaySource(emitter));
-      emitter.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(output, "foobar");
     }
@@ -83,7 +83,7 @@ namespace fin.events {
       var firstSubscription = relay.AddListener(listener, this.passStringEventType_, addToOutput);
       var secondSubscription = relay.AddListener(listener, this.passStringEventType_, addToOutput);
       relay.AddRelaySource(emitter);
-      emitter.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(firstSubscription, secondSubscription);
       Assert.AreEqual(output, "foobar");
@@ -100,7 +100,7 @@ namespace fin.events {
       relay.AddRelaySource(emitter);
       relay.RemoveRelaySource(emitter);
       relay.AddRelaySource(emitter);
-      emitter.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      emitter.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(output, "foobar");
     }
@@ -116,19 +116,49 @@ namespace fin.events {
       relay.AddListener(fooListener, this.voidEventType_, _ => output += "foo");
       relay.AddListener(barListener, this.voidEventType_, _ => output += "bar");
       relay.AddRelaySource(emitter);
-      emitter.Emit(this.voidEventType_, new VoidEvent());
+      emitter.Emit(new VoidEvent());
 
       Assert.AreEqual(output, "foobar");
     }
 
     [TestMethod]
-    public void TestEmitFromRelay() {
+    public void TestRelayAddListenerThenEmit() {
       var relay = FACTORY.NewRelay();
       var listener = FACTORY.NewListener();
 
       string output = "";
       relay.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
-      relay.Emit(this.passStringEventType_, new PassStringEvent(), "foobar");
+      relay.Emit(new PassStringEvent(), "foobar");
+
+      Assert.AreEqual(output, "foobar");
+    }
+
+    [TestMethod]
+    public void TestRelayAddSourceThenEmit() {
+      var parent = FACTORY.NewRelay();
+      var relay = FACTORY.NewRelay();
+      var listener = FACTORY.NewListener();
+
+      string output = "";
+      relay.AddRelaySource(parent);
+      parent.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
+      parent.Emit(new PassStringEvent(), "foobar");
+
+      Assert.AreEqual(output, "foobar");
+    }
+
+    [TestMethod]
+    public void TestChainingRelays() {
+      var top = FACTORY.NewRelay();
+      var middle = FACTORY.NewRelay();
+      var bottom = FACTORY.NewRelay();
+      var listener = FACTORY.NewListener();
+
+      string output = "";
+      middle.AddRelaySource(top);
+      bottom.AddRelaySource(middle);
+      bottom.AddListener(listener, this.passStringEventType_, (_, s) => output += s);
+      top.Emit(new PassStringEvent(), "foobar");
 
       Assert.AreEqual(output, "foobar");
     }

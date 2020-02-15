@@ -6,8 +6,8 @@ namespace fin.events.impl {
     public IEventEmitter NewEmitter() => new EventEmitter();
 
     private class EventEmitter : EventSource, IEventEmitter {
-      public void Emit(SafeType<Event> eventType, Event evt) {
-        var contracts = this.Get(new SafeType<IEvent>(eventType.Value));
+      public void Emit(Event evt) {
+        var contracts = this.Get(evt.GenericSafeType);
         if (contracts != null) {
           foreach (var contract in contracts) {
             var genericSubscription = contract.Value;
@@ -17,8 +17,8 @@ namespace fin.events.impl {
         }
       }
 
-      public void Emit<T>(SafeType<Event<T>> eventType, Event<T> evt, T value) {
-        var contracts = this.Get(new SafeType<IEvent>(eventType.Value));
+      public void Emit<T>(Event<T> evt, T value) {
+        var contracts = this.Get(evt.GenericSafeType);
         if (contracts != null) {
           foreach (var contract in contracts) {
             var genericSubscription = contract.Value;

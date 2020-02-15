@@ -8,10 +8,10 @@ namespace fin.events.impl {
 
     private class EventListener : EventOwner, IEventListener {
       public IEventSubscriptionVoid SubscribeTo(IEventSource source, SafeType<Event> eventType, Action<Event> action) =>
-        this.CreateSubscription((source as EventSource)!, this, eventType, action);
+        this.CreateSubscription(source, this, eventType, action);
 
       public IEventSubscription<T> SubscribeTo<T>(IEventSource source, SafeType<Event<T>> eventType, Action<Event<T>, T> action) =>
-        this.CreateSubscription((source as EventSource)!, this, eventType, action);
+        this.CreateSubscription(source, this, eventType, action);
 
       public void UnsubscribeAll() => this.owner_.BreakAll();
     }

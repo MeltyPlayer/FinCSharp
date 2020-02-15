@@ -27,10 +27,10 @@ namespace fin.events.impl {
           => this.parent_.voidRelays_.Remove(this.eventType_);
 
         protected override Action<Event> GenerateConvertSourceToThisEmit()
-          => eventType => this.parent_.Emit(this.eventType_, eventType);
+          => eventType => this.parent_.Emit(eventType);
 
         protected override EventSubscription SubscribeToSource(IEventSource source, Action<Event> handler)
-          => (this.parent_.listener_.SubscribeTo(source, this.eventType_, handler) as EventSubscription)!;
+          => (source.AddListener(this.parent_.listener_, this.eventType_, handler) as EventSubscription)!;
 
         protected override EventSubscription AddListenerToEmitter(IEventListener listener, Action<Event> handler)
           => (this.parent_.emitter_.AddListener(listener, this.eventType_, handler) as EventSubscription)!;
@@ -50,10 +50,10 @@ namespace fin.events.impl {
           => this.parent_.tRelays_.Remove(this.genericEventType_);
 
         protected override Action<Event<T>, T> GenerateConvertSourceToThisEmit()
-          => (eventType, value) => this.parent_.Emit(this.eventType_, eventType, value);
+          => (eventType, value) => this.parent_.Emit(eventType, value);
 
         protected override EventSubscription<T> SubscribeToSource(IEventSource source, Action<Event<T>, T> handler)
-          => (this.parent_.listener_.SubscribeTo(source, this.eventType_, handler) as EventSubscription<T>)!;
+          => (source.AddListener(this.parent_.listener_, this.eventType_, handler) as EventSubscription<T>)!;
 
         protected override EventSubscription<T> AddListenerToEmitter(IEventListener listener, Action<Event<T>, T> handler)
           => (this.parent_.emitter_.AddListener(listener, this.eventType_, handler) as EventSubscription<T>)!;
