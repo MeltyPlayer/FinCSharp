@@ -1,7 +1,7 @@
 ﻿using System;
 using fin.app.events;
 using fin.app.node;
-using fin.graphics.common;
+using fin.graphics.common.color;
 using fin.input;
 using fin.input.impl.opentk;
 
@@ -55,13 +55,13 @@ namespace fin.app.impl.opentk {
 
       [OnTick]
       private void Render_(RenderEvent evt) {
-        var g = evt.G;
+        var g = evt.Graphics;
 
         this.glContext_.MakeCurrent(this.window_.WindowInfo);
 
         GL.Enable(EnableCap.DepthTest);
 
-        g.S.Clear(Color.FromRgbF(0, 1, 1));
+        g.Screen.Clear(ColorConstants.CYAN);
         GL.Viewport(0, 0, this.Width, this.Height);
 
         this.glContext_.SwapBuffers();

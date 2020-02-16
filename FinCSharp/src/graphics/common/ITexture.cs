@@ -1,11 +1,11 @@
 ﻿using fin.data.collections.grid;
+using fin.graphics.common.color;
 
 namespace fin.graphics.common {
 
   public interface ITexture {
+    IColor GetPixel(int x, int y);
 
-    Color GetPixel(int x, int y);
-
-    IGrid<Color> GetAllPixels();
+    IGrid<IColor> GetAllPixels();
   }
 }

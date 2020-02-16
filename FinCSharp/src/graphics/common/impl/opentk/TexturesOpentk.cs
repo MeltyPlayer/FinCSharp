@@ -1,11 +1,12 @@
 ﻿using fin.data.collections.grid;
 using fin.discard;
+using fin.graphics.common.color;
+
 using OpenTK.Graphics.OpenGL;
 
 namespace fin.graphics.common.impl.opentk {
 
   public class TexturesOpentk : ITextures {
-
     public ITexture Create(ImageData imageData) {
       var textureFormat =
         TexturesOpentk.ConvertImageTypeToTextureFormat_(imageData.imageType);
@@ -83,11 +84,11 @@ namespace fin.graphics.common.impl.opentk {
         this.Discard();
       }
 
-      public Color GetPixel(int x, int y) {
+      public IColor GetPixel(int x, int y) {
         return Color.FromRgba(0);
       }
 
-      public IGrid<Color> GetAllPixels() {
+      public IGrid<IColor> GetAllPixels() {
         throw new System.Exception();
       }
     }

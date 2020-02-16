@@ -1,5 +1,20 @@
-﻿namespace fin.graphics.common {
-  public struct Color {
+﻿namespace fin.graphics.common.color {
+
+  public interface IColor {
+    uint I { get; }
+
+    byte Rb { get; }
+    byte Gb { get; }
+    byte Bb { get; }
+    byte Ab { get; }
+
+    float Rf { get; }
+    float Gf { get; }
+    float Bf { get; }
+    float Af { get; }
+  }
+
+  public struct Color : IColor {
     public uint I { get; }
 
     private Color(uint i) {

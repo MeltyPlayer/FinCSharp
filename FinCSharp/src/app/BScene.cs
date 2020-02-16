@@ -13,6 +13,6 @@ namespace fin.app {
     }
 
     [OnTick]
-    public abstract void Init(SceneInitEvent evt);
+    protected abstract void Init(SceneInitEvent evt);
   }
 }

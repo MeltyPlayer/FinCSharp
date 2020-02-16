@@ -1,6 +1,9 @@
-﻿namespace fin.graphics.common {
-  public abstract class IScreen {
-    public abstract IScreen Clear();
-    public abstract IScreen Clear(Color color);
+﻿using fin.graphics.common.color;
+
+namespace fin.graphics.common {
+
+  public interface IScreen {
+    public IScreen Clear();
+    public IScreen Clear(IColor color);
   }
 }

@@ -1,10 +1,11 @@
 ﻿namespace fin.graphics.common {
-  enum MatrixType {
+
+  internal enum MatrixType {
     PROJECTION,
-    MODELVIEW
+    MODELVIEW,
   };
 
-  public abstract class ITransform {
+  public interface ITransform {
     /*public abstract void set_target_matrix(MatrixType matrixType);
 
     public abstract void print_matrix();

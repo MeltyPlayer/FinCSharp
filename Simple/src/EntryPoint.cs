@@ -1,4 +1,5 @@
 ﻿using fin.app;
+using fin.app.events;
 using fin.app.impl.opentk;
 using fin.app.node;
 
@@ -10,11 +11,15 @@ namespace simple {
       app.Launch(new TestScene(app));
     }
 
-    private class TestScene : BScene {
+    private sealed class TestScene : BScene {
       public TestScene(BApp app) : base(app) {
       }
 
-      public override void Init(SceneInitEvent evt) {
+      protected override void Init(SceneInitEvent evt) {
+      }
+
+      [OnTick]
+      protected void Render(RenderEvent evt) {
       }
     }
   }

@@ -1,6 +1,8 @@
 ﻿using fin.data.collections.grid;
+using fin.graphics.common.color;
 
 namespace fin.graphics.common {
+
   public enum ImageType {
     GRAYSCALE,
     RGB,

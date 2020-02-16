@@ -56,12 +56,13 @@ namespace fin.app.node {
       OnTickAttribute.SniffAndAddMethods(this, this);
     }
 
-    // TODO: This will be invalid for root nodes.
-    public bool IsDestroyed => this.node_.IncomingNodes.Count() == 0;
+    public bool IsDestroyed { get; private set; }
 
     // TODO: Schedule for destruction, handle this at a later time.
     public void Destroy() {
-      Asserts.False(this.IsDestroyed);
+      if (this.IsDestroyed) {
+        return;
+      }
 
       this.node_.RemoveAllIncoming();
       this.OnDestroy();
@@ -80,6 +81,10 @@ namespace fin.app.node {
         return null;
       }
       set {
+        if (this.IsDestroyed) {
+          return;
+        }
+
         var oldParent = this.ParentImpl;
         if (oldParent != null) {
           oldParent.node_.RemoveOutgoing(this.node_);
@@ -96,6 +101,10 @@ namespace fin.app.node {
     }
 
     public void ForChildren(Action<BAppNodeInternal> handler) {
+      if (this.IsDestroyed) {
+        return;
+      }
+
       foreach (var childNode in this.node_.OutgoingNodes) {
         var child = childNode.Value;
         handler(child);
@@ -103,8 +112,18 @@ namespace fin.app.node {
     }
 
     // Event logic.
-    public void Emit<TEvent>(TEvent evt) where TEvent : IEvent => this.downwardRelay_.Emit(evt);
+    public void Emit<TEvent>(TEvent evt) where TEvent : IEvent {
+      if (this.IsDestroyed) {
+        return;
+      }
+
+      this.downwardRelay_.Emit(evt);
+    }
+
     public IEventSubscription? OnTick<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent {
+      if (this.IsDestroyed) {
+        return null;
+      }
       if (this.ParentImpl != null) {
         return this.ParentImpl.downwardRelay_.AddListener(this.listener_, eventType, handler);
       }
@@ -114,6 +133,10 @@ namespace fin.app.node {
       => this.OnTick(eventType, handler);
 
     private void UnsubscribeAll_() {
+      if (this.IsDestroyed) {
+        return;
+      }
+
       this.listener_.UnsubscribeAll();
       this.downwardRelay_.Destroy();
     }

@@ -7,10 +7,10 @@ namespace fin.app {
   }
 
   public class RenderEvent : BEvent {
-    public IGraphics G { get; }
+    public IGraphics Graphics { get; }
 
     public RenderEvent(IGraphics g) {
-      this.G = g;
+      this.Graphics = g;
     }
   }
 }

@@ -1,18 +1,22 @@
-﻿namespace fin.graphics.common {
+﻿using fin.graphics.common.color;
+
+namespace fin.graphics.common {
 
   public enum PrimitiveType {
     POINTS,
 
+    LINES,
     LINE_STRIP,
     LINE_LOOP,
 
     TRIANGLES,
+    TRIANGLE_STRIP,
+    TRIANGLE_FAN,
 
     QUADS,
   }
 
   public abstract class IPrimitives {
-
     public abstract IPrimitives Begin(PrimitiveType primitiveType);
 
     public abstract IPrimitives End();

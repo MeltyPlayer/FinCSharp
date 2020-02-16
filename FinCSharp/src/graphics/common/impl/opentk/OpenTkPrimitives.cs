@@ -1,27 +1,32 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using System.Collections.Generic;
+
+using fin.graphics.common.color;
+
+using OpenTK.Graphics.OpenGL;
+
+using OpenTkPrimitiveType = OpenTK.Graphics.OpenGL.PrimitiveType;
 
 namespace fin.graphics.common.impl.opentk {
 
   public class OpenTkPrimitives : IPrimitives {
 
+    private readonly IDictionary<PrimitiveType, OpenTkPrimitiveType> finPrimitiveTypeToOpenTkPrimitiveType_ = new Dictionary<PrimitiveType, OpenTkPrimitiveType>()
+        {
+            { PrimitiveType.POINTS, OpenTkPrimitiveType.Points },
+
+            { PrimitiveType.LINES, OpenTkPrimitiveType.Lines },
+            { PrimitiveType.LINE_STRIP, OpenTkPrimitiveType.LineStrip },
+            { PrimitiveType.LINE_LOOP, OpenTkPrimitiveType.LineLoop },
+
+            { PrimitiveType.TRIANGLES, OpenTkPrimitiveType.Triangles },
+            { PrimitiveType.TRIANGLE_STRIP, OpenTkPrimitiveType.TriangleStrip },
+            { PrimitiveType.TRIANGLE_FAN, OpenTkPrimitiveType.TriangleFan },
+
+            { PrimitiveType.QUADS, OpenTkPrimitiveType.Quads },
+        };
+
     public override IPrimitives Begin(PrimitiveType primitiveType) {
-      switch (primitiveType) {
-        case PrimitiveType.POINTS:
-          GL.Begin(BeginMode.Points);
-          break;
-
-        case PrimitiveType.LINE_STRIP:
-          GL.Begin(BeginMode.LineStrip);
-          break;
-
-        case PrimitiveType.TRIANGLES:
-          GL.Begin(BeginMode.Triangles);
-          break;
-
-        case PrimitiveType.QUADS:
-          GL.Begin(BeginMode.Quads);
-          break;
-      }
+      GL.Begin(this.finPrimitiveTypeToOpenTkPrimitiveType_[primitiveType]);
       return this;
     }
 
