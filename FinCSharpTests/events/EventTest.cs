@@ -12,7 +12,7 @@ namespace fin.events {
 
     private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
 
-    private class PassStringEvent : EventImpl {
+    private class PassStringEvent : BEvent {
       public string Str { get; }
 
       public PassStringEvent(string str) {
@@ -22,7 +22,7 @@ namespace fin.events {
 
     private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
 
-    private class VoidEvent : EventImpl { }
+    private class VoidEvent : BEvent { }
 
     [TestMethod]
     public void TestEmitNoSubscriptions() {

@@ -1,4 +1,5 @@
-﻿using fin.events;
+﻿using fin.app.events;
+using fin.events;
 using fin.type;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -9,7 +10,7 @@ namespace fin.app.node {
   public class AppNodeTest {
     private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
 
-    private class PassStringEvent : EventImpl {
+    private class PassStringEvent : BEvent {
       public string Str { get; }
 
       public PassStringEvent(string str) {
@@ -19,7 +20,7 @@ namespace fin.app.node {
 
     private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
 
-    private class VoidEvent : EventImpl { }
+    private class VoidEvent : BEvent { }
 
     private static readonly Log LOG = new Log();
 
@@ -32,28 +33,28 @@ namespace fin.app.node {
       public void AssertText(string expectedText) => Assert.AreEqual(expectedText, this.actualText_);
     }
 
-    private class StringEvent : EventImpl { }
+    private class StringEvent : BEvent { }
 
-    private class Foo : AppNode {
-      public Foo(AppNodeImpl parent) : base(parent) {
+    private class Foo : AppNodeInternal {
+      public Foo(BAppNodeInternal parent) : base(parent) {
       }
 
       [OnTick]
-      public void PrintToLog(VoidEvent evt) => LOG.Write("Foo");
+      private void PrintToLog_(VoidEvent evt) => LOG.Write("Foo");
 
       [OnTick]
-      public void PrintToLog(PassStringEvent evt) => LOG.Write("Foo(" + evt.Str + ")");
+      private void PrintToLog_(PassStringEvent evt) => LOG.Write("Foo(" + evt.Str + ")");
     }
 
-    private class Bar : AppNode {
-      public Bar(AppNodeImpl parent) : base(parent) {
+    private class Bar : AppNodeInternal {
+      public Bar(BAppNodeInternal parent) : base(parent) {
       }
 
       [OnTick]
-      public void PrintToLog(VoidEvent evt) => LOG.Write("Bar");
+      private void PrintToLog_(VoidEvent evt) => LOG.Write("Bar");
 
       [OnTick]
-      public void PrintToLog(PassStringEvent evt) => LOG.Write("Bar(" + evt.Str + ")");
+      private void PrintToLog_(PassStringEvent evt) => LOG.Write("Bar(" + evt.Str + ")");
     }
 
     [TestInitialize]
@@ -61,10 +62,10 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestHierarchy() {
-      var root = new RootNode();
-      var son = new AppNode(root);
-      var daughter = new AppNode(root);
-      var grandkid = new AppNode(son);
+      var root = new RootAppNodeInternal();
+      var son = new AppNodeInternal(root);
+      var daughter = new AppNodeInternal(root);
+      var grandkid = new AppNodeInternal(son);
 
       Assert.AreEqual(root, son.Parent);
       Assert.AreEqual(root, daughter.Parent);
@@ -73,9 +74,9 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestManualConfigPropagateVoid() {
-      var root = new RootNode();
-      var foo = new AppNode(root);
-      var bar = new AppNode(foo);
+      var root = new RootAppNodeInternal();
+      var foo = new AppNodeInternal(root);
+      var bar = new AppNodeInternal(foo);
 
       foo.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Foo"));
       bar.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Bar"));
@@ -87,9 +88,9 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestManualConfigPropagateT() {
-      var root = new RootNode();
-      var foo = new AppNode(root);
-      var bar = new AppNode(foo);
+      var root = new RootAppNodeInternal();
+      var foo = new AppNodeInternal(root);
+      var bar = new AppNodeInternal(foo);
 
       foo.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Foo(" + evt.Str + ")"));
       bar.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Bar(" + evt.Str + ")"));
@@ -101,7 +102,7 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestAutomaticConfigPropagateVoid() {
-      var root = new RootNode();
+      var root = new RootAppNodeInternal();
       var foo = new Foo(root);
       _ = new Bar(foo);
 
@@ -112,7 +113,7 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestAutomaticConfigPropagateT() {
-      var root = new RootNode();
+      var root = new RootAppNodeInternal();
       var foo = new Foo(root);
       _ = new Bar(foo);
 

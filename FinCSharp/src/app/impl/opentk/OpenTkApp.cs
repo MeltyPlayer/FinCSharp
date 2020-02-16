@@ -1,45 +1,56 @@
-﻿using fin.app.phase;
+﻿using fin.app.node;
 using fin.function;
 using fin.graphics.common.impl.opentk;
 using fin.input;
-using fin.input.impl.opentk;
 using fin.settings;
 
 namespace fin.app.impl.opentk {
 
-  public partial class OpenTkApp : IApp {
+  public partial class OpenTkApp : BApp {
     private readonly RecurrentCaller ticker_;
 
-    private readonly StartTickPhase stp_ = new StartTickPhase();
-    private readonly DisposePhase dp_ = new DisposePhase();
     private readonly OpenTkGraphics g_ = new OpenTkGraphics();
-    private readonly EndTickPhase etp_ = new EndTickPhase();
 
     private readonly OpenTkWindow window_;
     private readonly KeyStateDictionary ksd_ = new KeyStateDictionary();
 
-    private readonly TickHandler tickHandler_ = new TickHandler();
-
     public OpenTkApp() {
       var settings = Settings.Load();
 
-      this.window_ = new OpenTkWindow(settings.Resolution.Width, settings.Resolution.Height, this.ksd_, this.Discard);
+      this.window_ = new OpenTkWindow(this, settings.Resolution.Width, settings.Resolution.Height, this.ksd_, this.CloseApp_);
       this.ticker_ = RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
-      this.OnDiscardEvent += this.ticker_.Stop;
-
-      this.tickHandler_.AddHandlers(this.window_);
     }
 
-    public override void Launch(Scene scene) {
+    private void CloseApp_() {
+      this.ticker_.Stop();
+      this.Discard();
+    }
+
+    public override void Launch(BScene scene) {
       this.ticker_.Start();
 
       //this.window_.Title = $"SimpleGame ({(int)this.ticker_.ActualFrequency})";
     }
 
-    private void Tick_() => this.tickHandler_.Tick(
-      this.stp_,
-      this.dp_,
-      this.g_,
-      this.etp_);
+    private void Tick_() {
+      // StartTickPhase
+      // DisposePhase
+      // EndTickPhase
+      /*SCENE_INITIALIZATION = 1,
+        ACTOR_MANAGEMENT = 2,
+        RESOURCE_LOADING = 3,
+        NET = 4,
+        CONTROL = 5,
+        // First apply velocity, then change in acceleration.
+        PHYSICS = 6,
+        COLLISION = 7,
+        ANIMATION = 8,
+        RENDER = 9,*/
+
+      // TODO: Extract this out into a separate class.
+      this.Emit(new StartTickEvent());
+      this.Emit(new SceneInitEvent());
+      this.Emit(new RenderEvent(this.g_));
+    }
   }
 }

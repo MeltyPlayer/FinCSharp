@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 
 using fin.app.phase;
@@ -6,7 +6,6 @@ using fin.data.collections.set;
 using fin.discard;
 
 namespace fin.app {
-
   public class DisposePhase {
   }
 
@@ -20,7 +19,6 @@ namespace fin.app {
   }
 
   public abstract class SceneNode<TMe> : IPhaseHandler, IReflectivePhaseHandler, IReflectivePhaseHandler<DisposePhase> where TMe : SceneNode<TMe> {
-
     protected delegate void OnDisposeEventHandler();
 
     protected event OnDisposeEventHandler OnDisposeEvent = delegate { };
@@ -74,4 +72,4 @@ namespace fin.app {
 
     public IEnumerable<Type> HandledPhaseTypes => this.tickHandlerImpl_.HandledPhaseTypes;
   }
-}
+}*/

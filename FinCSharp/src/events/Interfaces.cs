@@ -9,10 +9,10 @@ namespace fin.events {
     SafeType<IEvent> SafeType { get; }
   }
 
-  public abstract class EventImpl : IEvent {
+  public abstract class BEvent : IEvent {
     public SafeType<IEvent> SafeType { get; }
 
-    public EventImpl() {
+    public BEvent() {
       var type = this.GetType();
       this.SafeType = new SafeType<IEvent>(type);
     }

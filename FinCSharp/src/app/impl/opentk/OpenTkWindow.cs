@@ -1,6 +1,6 @@
 ﻿using System;
-
-using fin.app.phase;
+using fin.app.events;
+using fin.app.node;
 using fin.graphics.common;
 using fin.input;
 using fin.input.impl.opentk;
@@ -11,15 +11,16 @@ using OpenTK.Graphics.OpenGL;
 
 namespace fin.app.impl.opentk {
 
-  public partial class OpenTkApp : IApp {
+  public partial class OpenTkApp : BApp {
 
-    private class OpenTkWindow : ReflectivePhaseHandler, IWindow, IReflectivePhaseHandler<StartTickPhase>, IRenderHandler {
+    // TODO: I'm not happy with this inheritance. Use encapsulation instead.
+    private class OpenTkWindow : BChildAppNode, IWindow {
       private readonly IKeyStateDictionary ksd_;
 
       private readonly INativeWindow window_;
       private readonly IGraphicsContext glContext_;
 
-      public OpenTkWindow(int width, int height, IKeyStateDictionary ksd, Action onClose) {
+      public OpenTkWindow(BApp app, int width, int height, IKeyStateDictionary ksd, Action onClose) : base(app) {
         this.window_ = new NativeWindow(width,
           height,
           "SimpleGame",
@@ -45,12 +46,17 @@ namespace fin.app.impl.opentk {
         ((IGraphicsContextInternal)this.glContext_).LoadAll();
       }
 
-      public void OnPhase(StartTickPhase phase) {
+      // TODO: Come up with a naming convention for OnTick events.
+      [OnTick]
+      private void StartTick_(StartTickEvent phase) {
         this.window_.ProcessEvents();
         this.ksd_.HandleTransitions();
       }
 
-      public void OnPhase(IGraphics g) {
+      [OnTick]
+      private void Render_(RenderEvent evt) {
+        var g = evt.G;
+
         this.glContext_.MakeCurrent(this.window_.WindowInfo);
 
         GL.Enable(EnableCap.DepthTest);
