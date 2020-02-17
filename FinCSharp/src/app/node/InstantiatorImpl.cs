@@ -46,11 +46,7 @@ namespace fin.app.node {
       return component;
     }
 
-    /// <summary>
-    ///   Do NOT directly inherit from this.
-    /// </summary>
-    // TODO: Better way to enforce this???
-    public abstract class BAppNode : IAppNode {
+    private abstract class BAppNode : IAppNode {
       private readonly Node<BAppNode> node_;
 
       private readonly OrderedSet<IComponent> components_ = new OrderedSet<IComponent>();
@@ -87,14 +83,6 @@ namespace fin.app.node {
 
       public bool IsDiscarded => this.discardableImpl_.IsDiscarded;
 
-      public bool AddParent(IEventDiscardable parent) {
-        throw new NotImplementedException();
-      }
-
-      public bool RemoveParent(IEventDiscardable parent) {
-        throw new NotImplementedException();
-      }
-
       // TODO: Schedule for destruction, handle this at a later time.
       public void Discard_() {
         this.node_.RemoveAllIncoming();
@@ -122,6 +110,7 @@ namespace fin.app.node {
           if (oldParent != null) {
             oldParent.node_.RemoveOutgoing(this.node_);
             this.downwardRelay_.RemoveRelaySource(oldParent.downwardRelay_);
+            this.discardableImpl_.RemoveParent(oldParent);
           }
 
           var newParent = value;
@@ -129,6 +118,7 @@ namespace fin.app.node {
             Asserts.Different(this, newParent);
             newParent.node_.AddOutgoing(this.node_);
             this.downwardRelay_.AddRelaySource(newParent.downwardRelay_);
+            this.discardableImpl_.AddParent(newParent);
           }
         }
       }

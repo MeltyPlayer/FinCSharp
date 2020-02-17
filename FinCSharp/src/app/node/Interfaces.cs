@@ -37,7 +37,7 @@ namespace fin.app.node {
     IEventSubscription OnTick<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent;
   }
 
-  public interface IAppNode : IEventDiscardable, IDependentDiscardable {
+  public interface IAppNode : IEventDiscardable {
     // TODO: Should this be limited to IChildAppNode?
     bool AddComponent(IComponent component);
     bool RemoveComponent(IComponent component);

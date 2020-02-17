@@ -1,16 +1,13 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿/*using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.generic {
-
   [TestClass]
   public class DivergingSubclassHandlerMapTest {
-
     public abstract class Base { }
 
     public class AParam { }
 
     public abstract class A : Base {
-
       public void CallA(AParam param) {
       }
     }
@@ -18,7 +15,6 @@ namespace fin.generic {
     public class BParam { }
 
     public abstract class B : Base {
-
       public void CallB(BParam param) {
       }
     }
@@ -29,4 +25,4 @@ namespace fin.generic {
       Assert.Fail();
     }
   }
-}
+}*/

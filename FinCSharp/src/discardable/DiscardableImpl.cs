@@ -65,6 +65,9 @@ namespace fin.discardable {
     }
 
     public bool AddParent(IEventDiscardable parent) {
+      if (this.IsDiscarded) {
+        return false;
+      }
       if (this.parents_.Add(parent)) {
         parent.OnDiscard += this.VoidDiscard_;
         return true;
