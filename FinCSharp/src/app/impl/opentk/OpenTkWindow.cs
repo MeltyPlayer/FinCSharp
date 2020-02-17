@@ -11,16 +11,16 @@ using OpenTK.Graphics.OpenGL;
 
 namespace fin.app.impl.opentk {
 
-  public partial class OpenTkApp : BApp {
+  public partial class OpenTkApp : IApp {
 
     // TODO: I'm not happy with this inheritance. Use encapsulation instead.
-    private class OpenTkWindow : BChildAppNode, IWindow {
+    private class OpenTkWindow : BComponent, IWindow {
       private readonly IKeyStateDictionary ksd_;
 
       private readonly INativeWindow window_;
       private readonly IGraphicsContext glContext_;
 
-      public OpenTkWindow(BApp app, int width, int height, IKeyStateDictionary ksd, Action onClose) : base(app) {
+      public OpenTkWindow(int width, int height, IKeyStateDictionary ksd, Action onClose) {
         this.window_ = new NativeWindow(width,
           height,
           "SimpleGame",
@@ -44,6 +44,9 @@ namespace fin.app.impl.opentk {
           GraphicsContextFlags.Default);
         this.glContext_.MakeCurrent(windowInfo);
         ((IGraphicsContextInternal)this.glContext_).LoadAll();
+      }
+      protected override void Discard() {
+        // TODO: Should probably close here.
       }
 
       // TODO: Come up with a naming convention for OnTick events.

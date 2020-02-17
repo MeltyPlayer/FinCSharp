@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using fin.discard;
+using fin.discardable;
 
 namespace fin.data.collections.disposable {
 
   public class MapOfDisposables<TValue> {
-    private readonly IDictionary<Discardable, TValue> impl_ = new Dictionary<Discardable, TValue>();
-    private readonly IDictionary<Discardable, TValue> toAdd_ = new Dictionary<Discardable, TValue>();
-    private readonly IDictionary<Discardable, TValue> toRemove_ = new Dictionary<Discardable, TValue>();
+    private readonly IDictionary<DiscardableImpl, TValue> impl_ = new Dictionary<DiscardableImpl, TValue>();
+    private readonly IDictionary<DiscardableImpl, TValue> toAdd_ = new Dictionary<DiscardableImpl, TValue>();
+    private readonly IDictionary<DiscardableImpl, TValue> toRemove_ = new Dictionary<DiscardableImpl, TValue>();
 
     private int iterationCount_ = 0;
 
-    public void Add(Discardable disposable) {
+    public void Add(DiscardableImpl disposable) {
       if (!disposable.IsDiscarded) {
         /*if (this.iterationCount_ == 0) {
           this.impl_.Add(disposable);
@@ -22,7 +22,7 @@ namespace fin.data.collections.disposable {
       }
     }
 
-    public void Remove(Discardable disposable) {
+    public void Remove(DiscardableImpl disposable) {
       if (!disposable.IsDiscarded) {
         /*if (this.iterationCount_ == 0) {
           this.impl_.Remove(disposable);
@@ -32,7 +32,7 @@ namespace fin.data.collections.disposable {
       }
     }
 
-    public void ForEach(Action<Discardable> handler) {
+    public void ForEach(Action<DiscardableImpl> handler) {
       ++this.iterationCount_;
       foreach (var disposable in this.impl_) {
         /*if (disposable.IsDisposed) {

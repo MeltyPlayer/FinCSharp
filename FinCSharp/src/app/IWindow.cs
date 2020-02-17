@@ -1,6 +1,8 @@
-﻿namespace fin.app {
+﻿using fin.app.node;
 
-  public interface IWindow {
+namespace fin.app {
+
+  public interface IWindow : IComponent {
     string Title { get; set; }
 
     int Width { get; set; }

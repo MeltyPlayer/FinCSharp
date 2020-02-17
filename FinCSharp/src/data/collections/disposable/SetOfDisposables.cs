@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using fin.discard;
+using fin.discardable;
 
 namespace fin.data.collections.disposable {
 
-  public class SetOfDisposables<T> where T : notnull, Discardable {
+  public class SetOfDisposables<T> where T : notnull, DiscardableImpl {
     private readonly ISet<T> impl_ = new HashSet<T>();
     private readonly ISet<T> toAdd_ = new HashSet<T>();
     private readonly ISet<T> toRemove_ = new HashSet<T>();
@@ -32,7 +32,7 @@ namespace fin.data.collections.disposable {
       }
     }
 
-    public void ForEach(Action<Discardable> handler) {
+    public void ForEach(Action<DiscardableImpl> handler) {
       ++this.iterationCount_;
       foreach (var t in this.impl_) {
         if (t.IsDiscarded) {
@@ -64,5 +64,5 @@ namespace fin.data.collections.disposable {
     }
   }
 
-  public class SetOfDisposables : SetOfDisposables<Discardable> { }
+  public class SetOfDisposables : SetOfDisposables<DiscardableImpl> { }
 }

@@ -8,6 +8,8 @@ namespace fin.app.node {
 
   [TestClass]
   public class AppNodeTest {
+    private static readonly IInstantiator INSTANTIATOR = new InstantiatorImpl();
+
     private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
 
     private class PassStringEvent : BEvent {
@@ -35,8 +37,8 @@ namespace fin.app.node {
 
     private class StringEvent : BEvent { }
 
-    private class Foo : AppNodeInternal {
-      public Foo(BAppNodeInternal parent) : base(parent) {
+    private class FooComponent : BComponent {
+      protected override void Discard() {
       }
 
       [OnTick]
@@ -46,8 +48,8 @@ namespace fin.app.node {
       private void PrintToLog_(PassStringEvent evt) => LOG.Write("Foo(" + evt.Str + ")");
     }
 
-    private class Bar : AppNodeInternal {
-      public Bar(BAppNodeInternal parent) : base(parent) {
+    private class BarComponent : BComponent {
+      protected override void Discard() {
       }
 
       [OnTick]
@@ -62,10 +64,10 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestHierarchy() {
-      var root = new RootAppNodeInternal();
-      var son = new AppNodeInternal(root);
-      var daughter = new AppNodeInternal(root);
-      var grandkid = new AppNodeInternal(son);
+      var root = INSTANTIATOR.NewRoot();
+      var son = INSTANTIATOR.NewChild(root);
+      var daughter = INSTANTIATOR.NewChild(root);
+      var grandkid = INSTANTIATOR.NewChild(son);
 
       Assert.AreEqual(root, son.Parent);
       Assert.AreEqual(root, daughter.Parent);
@@ -74,9 +76,9 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestManualConfigPropagateVoid() {
-      var root = new RootAppNodeInternal();
-      var foo = new AppNodeInternal(root);
-      var bar = new AppNodeInternal(foo);
+      var root = INSTANTIATOR.NewRoot();
+      var foo = INSTANTIATOR.NewChild(root);
+      var bar = INSTANTIATOR.NewChild(foo);
 
       foo.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Foo"));
       bar.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Bar"));
@@ -88,9 +90,9 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestManualConfigPropagateT() {
-      var root = new RootAppNodeInternal();
-      var foo = new AppNodeInternal(root);
-      var bar = new AppNodeInternal(foo);
+      var root = INSTANTIATOR.NewRoot();
+      var foo = INSTANTIATOR.NewChild(root);
+      var bar = INSTANTIATOR.NewChild(foo);
 
       foo.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Foo(" + evt.Str + ")"));
       bar.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Bar(" + evt.Str + ")"));
@@ -102,9 +104,9 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestAutomaticConfigPropagateVoid() {
-      var root = new RootAppNodeInternal();
-      var foo = new Foo(root);
-      _ = new Bar(foo);
+      var root = INSTANTIATOR.NewRoot();
+      var foo = INSTANTIATOR.NewChild(root, new FooComponent());
+      _ = INSTANTIATOR.NewChild(foo, new BarComponent());
 
       root.Emit(new VoidEvent());
 
@@ -113,9 +115,9 @@ namespace fin.app.node {
 
     [TestMethod]
     public void TestAutomaticConfigPropagateT() {
-      var root = new RootAppNodeInternal();
-      var foo = new Foo(root);
-      _ = new Bar(foo);
+      var root = INSTANTIATOR.NewRoot();
+      var foo = INSTANTIATOR.NewChild(root, new FooComponent());
+      _ = INSTANTIATOR.NewChild(foo, new BarComponent());
 
       root.Emit(new PassStringEvent("_"));
 

@@ -1,5 +1,5 @@
 ﻿using fin.data.collections.grid;
-using fin.discard;
+using fin.discardable;
 using fin.graphics.common.color;
 
 using OpenTK.Graphics.OpenGL;
@@ -70,12 +70,12 @@ namespace fin.graphics.common.impl.opentk {
       return uintArray;
     }
 
-    private class TextureOpentk : Discardable, ITexture {
+    private class TextureOpentk : DiscardableImpl, ITexture {
       private readonly uint textureId_;
 
       public TextureOpentk(uint textureId) {
         this.textureId_ = textureId;
-        this.OnDiscardEvent += this.DestroyTexture_;
+        this.OnDiscard += _ => this.DestroyTexture_();
       }
 
       private void DestroyTexture_() {

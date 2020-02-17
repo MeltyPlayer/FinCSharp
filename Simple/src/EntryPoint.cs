@@ -8,18 +8,14 @@ namespace simple {
   public class EntryPoint {
     public static void Main() {
       var app = new OpenTkApp();
-      app.Launch(new TestScene(app));
+      app.Launch(new TestScene());
     }
 
     private sealed class TestScene : BScene {
-      public TestScene(BApp app) : base(app) {
+      protected override void Discard() {
       }
 
       protected override void Init(SceneInitEvent evt) {
-      }
-
-      [OnTick]
-      protected void Render(RenderEvent evt) {
       }
     }
   }
