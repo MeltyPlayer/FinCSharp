@@ -1,6 +1,8 @@
-﻿namespace fin.app {
+﻿using fin.math.geometry;
 
-  public struct Resolution {
+namespace fin.app {
+
+  public class Resolution : IDimensions<int> {
     public int Width { get; }
     public int Height { get; }
 

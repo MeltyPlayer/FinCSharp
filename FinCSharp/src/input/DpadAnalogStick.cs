@@ -9,11 +9,11 @@ namespace fin.input {
       this.Dpad = dpad;
     }
 
-    public IVector2 NormalizedAxes {
+    public IVector2<float> NormalizedAxes {
       get {
         var xVector = this.GetAxis_(this.Dpad.RightState, this.Dpad.LeftState);
         var yVector = this.GetAxis_(this.Dpad.UpState, this.Dpad.DownState);
-        return new ImmutableVector2(xVector, yVector);
+        return new ImmutableVector2<float>(xVector, yVector);
       }
     }
 

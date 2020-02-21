@@ -1,9 +1,10 @@
 ﻿using fin.graphics.common.color;
+using fin.math.geometry;
 
 namespace fin.graphics.common {
 
   public interface IScreen {
-    public IScreen Clear();
-    public IScreen Clear(IColor color);
+    IScreen Clear();
+    IScreen Clear(IColor color);
   }
 }

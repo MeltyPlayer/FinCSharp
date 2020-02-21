@@ -22,6 +22,7 @@ namespace fin.app.node {
     // TODO: Come up w/ naming scheme for abstract methods?
     protected abstract void Discard();
 
+    // TODO: Is it possible to remove these...????
     public bool AddParent(IEventDiscardable parent)
       => this.discardableImpl_.AddParent(parent);
     public bool RemoveParent(IEventDiscardable parent)
@@ -37,7 +38,7 @@ namespace fin.app.node {
     IEventSubscription OnTick<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent;
   }
 
-  public interface IAppNode : IEventDiscardable {
+  public interface IAppNode : IPubliclyDiscardable, IEventDiscardable {
     // TODO: Should this be limited to IChildAppNode?
     bool AddComponent(IComponent component);
     bool RemoveComponent(IComponent component);

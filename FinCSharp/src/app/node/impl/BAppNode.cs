@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using fin.app.events;
 using fin.assert;
@@ -9,42 +8,10 @@ using fin.discardable;
 using fin.events;
 using fin.type;
 
-namespace fin.app.node {
+namespace fin.app.node.impl {
 
   // TODO: Make this internal.
-  public class InstantiatorImpl : IInstantiator {
-    public IRootAppNode NewRoot() => new RootAppNode();
-
-    private sealed class RootAppNode : BAppNode, IRootAppNode {
-      public RootAppNode() : base(null) {
-      }
-
-      public bool Discard() => this.discardableImpl_.Discard();
-    }
-
-    public IChildAppNode NewChild(IAppNode parent, params IComponent[] components) {
-      var child = new ChildAppNode((parent as BAppNode)!);
-      foreach (var component in components) {
-        child.AddComponent(component);
-      }
-      return child;
-    }
-
-    private sealed class ChildAppNode : BAppNode, IChildAppNode {
-      public ChildAppNode(BAppNode parent) : base(parent) {
-      }
-
-      public IAppNode Parent {
-        get => this.ParentImpl!;
-        set => this.ParentImpl = (value as BAppNode)!;
-      }
-    }
-
-    public TComponent Wrap<TComponent>(IAppNode parent, TComponent component) where TComponent : IComponent {
-      var child = new ChildAppNode((parent as BAppNode)!);
-      child.AddComponent(component);
-      return component;
-    }
+  public sealed partial class InstantiatorImpl : IInstantiator {
 
     private abstract class BAppNode : IAppNode {
       private readonly Node<BAppNode> node_;
@@ -84,6 +51,8 @@ namespace fin.app.node {
       public bool IsDiscarded => this.discardableImpl_.IsDiscarded;
 
       // TODO: Schedule for destruction, handle this at a later time.
+      public bool Discard() => this.discardableImpl_.Discard();
+
       public void Discard_() {
         this.node_.RemoveAllIncoming();
 
@@ -120,17 +89,6 @@ namespace fin.app.node {
             this.downwardRelay_.AddRelaySource(newParent.downwardRelay_);
             this.discardableImpl_.AddParent(newParent);
           }
-        }
-      }
-
-      public void ForChildren(Action<IAppNode> handler) {
-        if (this.IsDiscarded) {
-          return;
-        }
-
-        foreach (var childNode in this.node_.OutgoingNodes) {
-          var child = childNode.Value;
-          handler(child);
         }
       }
 

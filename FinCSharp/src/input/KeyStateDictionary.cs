@@ -8,7 +8,7 @@ namespace fin.input {
     A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
     NO_1, NO_2, NO_3, NO_4, NO_5, NO_6, NO_7, NO_8, NO_9,
 
-    SPACEBAR, ENTER, SHIFT, CTRL, ALT
+    SPACEBAR, ENTER, SHIFT, CTRL, ALT, ESC
   }
 
   public interface IKeyStateDictionary {
@@ -30,7 +30,6 @@ namespace fin.input {
     public ButtonState this[KeyId keyId] => this.keyIdToState_.TryGetValue(keyId, out ButtonState state) ? state : ButtonState.UP;
 
     public void OnKeyDown(KeyId keyId) => this.keyIdToTransitionalState_.Add(keyId, ButtonState.DOWN);
-
     public void OnKeyUp(KeyId keyId) => this.keyIdToTransitionalState_.Add(keyId, ButtonState.UP);
 
     public void HandleTransitions() {
@@ -39,7 +38,7 @@ namespace fin.input {
         var instantaneousState = this[instanteousKeyId];
         var newState = instantaneousState == ButtonState.PRESSED ? ButtonState.DOWN : ButtonState.UP;
 
-        this.keyIdToState_.Add(instanteousKeyId, newState);
+        this.keyIdToState_[instanteousKeyId] = newState;
       }
       this.instantaneousKeyIds_.Clear();
 
@@ -60,7 +59,7 @@ namespace fin.input {
         }
 
         if (newState != ButtonState.UP) {
-          this.keyIdToState_.Add(keyId, newState);
+          this.keyIdToState_[keyId] = newState;
         } else {
           this.keyIdToState_.Remove(keyId);
         }

@@ -1,4 +1,7 @@
 ﻿using fin.app.node;
+using fin.app.node.impl;
+using fin.app.scene;
+using fin.app.window;
 using fin.function;
 using fin.graphics.common.impl.opentk;
 using fin.input;
@@ -6,24 +9,25 @@ using fin.settings;
 
 namespace fin.app.impl.opentk {
 
-  public partial class OpenTkApp : IApp {
+  public partial class AppOpenTk : IApp {
     private readonly RecurrentCaller ticker_;
 
+    private readonly IWindowManager windowManager_;
     private readonly IInstantiator instantiator_ = new InstantiatorImpl();
 
-    private readonly OpenTkGraphics g_ = new OpenTkGraphics();
+    private readonly ISceneManager sceneManager_ = new SceneManagerImpl();
 
-    private readonly OpenTkWindow window_;
+    private readonly GraphicsOpenTk g_ = new GraphicsOpenTk();
+
     private readonly KeyStateDictionary ksd_ = new KeyStateDictionary();
 
     private readonly IRootAppNode root_;
 
-    public OpenTkApp() {
+    public AppOpenTk() {
       var settings = Settings.Load();
 
+      this.windowManager_ = new WindowManagerOpenTk(this);
       this.root_ = this.instantiator_.NewRoot();
-
-      this.window_ = this.instantiator_.Wrap(this.root_, new OpenTkWindow(settings.Resolution.Width, settings.Resolution.Height, this.ksd_, this.CloseApp_));
 
       this.ticker_ = RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
     }
@@ -33,9 +37,9 @@ namespace fin.app.impl.opentk {
       this.root_.Discard();
     }
 
-    public void Launch(BScene scene) {
+    public void Launch(IScene scene) {
+      this.sceneManager_.ScheduleGoToScene(scene);
       this.ticker_.Start();
-
       //this.window_.Title = $"SimpleGame ({(int)this.ticker_.ActualFrequency})";
     }
 
@@ -56,8 +60,14 @@ namespace fin.app.impl.opentk {
 
       // TODO: Extract this out into a separate class.
       this.root_.Emit(new StartTickEvent());
-      this.root_.Emit(new SceneInitEvent());
-      this.root_.Emit(new RenderEvent(this.g_));
+
+      // TODO: Should these args be passed in?
+      // TODO: Event triggering should probably be limited to this class.
+      // TODO: Instantiator should probably be pre-scoped to the root already.
+      this.sceneManager_.ExitSceneIfScheduled(this.root_);
+      this.sceneManager_.EnterSceneIfScheduled(this.root_, this.windowManager_, this.instantiator_);
+
+      this.root_.Emit(new RenderTickEvent(this.g_));
     }
   }
 }

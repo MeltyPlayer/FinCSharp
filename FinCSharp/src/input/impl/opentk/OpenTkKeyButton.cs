@@ -9,7 +9,6 @@ namespace fin.input.impl.opentk {
   public class EndTickPhase { }
 
   public static class OpenTkKeyToKeyIdConverter {
-
     public static KeyId Convert(Key key) =>
       key switch
       {
@@ -20,6 +19,13 @@ namespace fin.input.impl.opentk {
         Key.E => KeyId.E,
         Key.F => KeyId.F,
         Key.G => KeyId.G,
+        Key.H => KeyId.H,
+        Key.I => KeyId.I,
+
+        Key.Space => KeyId.SPACEBAR,
+        Key.Enter => KeyId.ENTER,
+        Key.Escape => KeyId.ESC,
+
         // TODO: Add rest.
         _ => KeyId.UNKNOWN,
       };
@@ -30,7 +36,6 @@ namespace fin.input.impl.opentk {
   }
 
   public class OpenTkKeyButtonDictionary : IKeyButtonDictionary {
-
     public OpenTkKeyButtonDictionary(IKeyStateDictionary ksd) {
       this.GetButtonImpl_ = Memoization.Memoize((KeyId keyId) => new OpenTkKeyButton(keyId, ksd));
     }

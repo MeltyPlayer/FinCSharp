@@ -6,10 +6,10 @@ namespace fin.app {
   public class StartTickEvent : BEvent {
   }
 
-  public class RenderEvent : BEvent {
+  public class RenderTickEvent : BEvent {
     public IGraphics Graphics { get; }
 
-    public RenderEvent(IGraphics g) {
+    public RenderTickEvent(IGraphics g) {
       this.Graphics = g;
     }
   }

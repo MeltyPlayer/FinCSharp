@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>simple</RootNamespace>
     <AssemblyName>Simple</AssemblyName>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <LangVersion>8.0</LangVersion>

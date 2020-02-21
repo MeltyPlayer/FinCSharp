@@ -1,18 +1,32 @@
-﻿namespace fin.math {
+﻿using System;
 
-  public interface IVector2 {
-    public float X { get; }
-    public float Y { get; }
+namespace fin.math {
+
+  public interface IVector2<TNumber> where TNumber : IComparable {
+    TNumber X { get; }
+    TNumber Y { get; }
   }
 
-  public struct ImmutableVector2 : IVector2 {
+  public class MutableVector2<TNumber> : IVector2<TNumber> where TNumber : IComparable {
+    public TNumber X { get; set; } = default;
+    public TNumber Y { get; set; } = default;
 
-    public ImmutableVector2(float x, float y) {
+    public MutableVector2() {
+    }
+
+    public MutableVector2(TNumber x, TNumber y) {
       this.X = x;
       this.Y = y;
     }
+  }
 
-    public float X { get; }
-    public float Y { get; }
+  public class ImmutableVector2<TNumber> : IVector2<TNumber> where TNumber : IComparable {
+    public TNumber X { get; } = default;
+    public TNumber Y { get; } = default;
+
+    public ImmutableVector2(TNumber x, TNumber y) {
+      this.X = x;
+      this.Y = y;
+    }
   }
 }
