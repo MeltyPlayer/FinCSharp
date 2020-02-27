@@ -5,7 +5,6 @@ using fin.graphics.common.color;
 using OpenTK.Graphics.OpenGL;
 
 namespace fin.graphics.common.impl.opentk {
-
   public class TexturesOpentk : ITextures {
     public ITexture Create(ImageData imageData) {
       var textureFormat =
@@ -22,7 +21,8 @@ namespace fin.graphics.common.impl.opentk {
         width,
         height);
 
-      var pixelData = TexturesOpentk.ConvertRgbaGridToUintArray_(imageData.pixels);
+      var pixelData =
+        TexturesOpentk.ConvertRgbaGridToUintArray_(imageData.pixels);
 
       GL.BindTexture(TextureTarget.Texture2D, textureId);
       GL.TextureSubImage2D(textureId,
@@ -79,7 +79,7 @@ namespace fin.graphics.common.impl.opentk {
       }
 
       private void DestroyTexture_() {
-        var textureIdArray = new[] { this.textureId_ };
+        var textureIdArray = new[] {this.textureId_};
         GL.DeleteTextures(1, textureIdArray);
         this.Discard();
       }

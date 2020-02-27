@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 
 namespace fin.pointer.contract.impl {
-
   public sealed partial class ContractFactory : IContractFactory {
-
-    public ISuperContract NewSuperContract(IContract contract, params IContract[] additional) => new SuperContract(contract, additional);
+    public ISuperContract NewSuperContract(IContract contract,
+      params IContract[] additional) => new SuperContract(contract, additional);
 
     private class SuperContract : ISuperContract {
       private readonly ISet<IContract> contracts_ = new HashSet<IContract>();
@@ -46,6 +45,7 @@ namespace fin.pointer.contract.impl {
           if (this.contracts_.Count == 0) {
             this.Break();
           }
+
           return true;
         }
 
@@ -61,6 +61,7 @@ namespace fin.pointer.contract.impl {
         foreach (var contract in this.contracts_) {
           contract.Break();
         }
+
         this.OnBreak(this);
 
         return true;

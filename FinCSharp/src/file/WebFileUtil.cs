@@ -4,12 +4,11 @@ using System.Net;
 using RSG;
 
 namespace fin.file {
-
   internal static class WebFileUtil {
-
     static WebFileUtil() {
       FileUtil.readHandlers.DefineHandler<WebFile>(WebFileUtil.ReadText);
-      FileUtil.asyncReadHandlers.DefineHandler<WebFile>(WebFileUtil.ReadTextAsync);
+      FileUtil.asyncReadHandlers.DefineHandler<WebFile>(WebFileUtil
+        .ReadTextAsync);
     }
 
     public static string ReadText(WebFile file) {
@@ -24,7 +23,8 @@ namespace fin.file {
           (s, ev) => {
             if (ev.Error != null) {
               promise.Reject(ev.Error);
-            } else {
+            }
+            else {
               promise.Resolve(ev.Result);
             }
           };

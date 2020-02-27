@@ -1,5 +1,4 @@
 ﻿namespace fin.graphics.common {
-
   public class Render2d {
     private readonly IGraphics g_;
 

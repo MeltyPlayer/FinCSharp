@@ -1,7 +1,6 @@
 ﻿using fin.graphics.common.color;
 
 namespace fin.graphics.common {
-
   public enum PrimitiveType {
     POINTS,
 
@@ -27,6 +26,7 @@ namespace fin.graphics.common {
       foreach (var v in vs) {
         this.V(v);
       }
+
       return this;
     }
 

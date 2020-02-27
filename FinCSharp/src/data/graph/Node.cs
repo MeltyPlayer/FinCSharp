@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 
 namespace fin.data.graph {
-
   /// <summary>
   ///   A basic implementation of a graph node.
   /// </summary>
@@ -24,6 +23,7 @@ namespace fin.data.graph {
         other.AddOutgoing(this);
         return true;
       }
+
       return false;
     }
 
@@ -32,6 +32,7 @@ namespace fin.data.graph {
         other.AddIncoming(this);
         return true;
       }
+
       return false;
     }
 
@@ -40,6 +41,7 @@ namespace fin.data.graph {
         other.RemoveOutgoing(this);
         return true;
       }
+
       return false;
     }
 
@@ -48,6 +50,7 @@ namespace fin.data.graph {
         other.RemoveIncoming(this);
         return true;
       }
+
       return false;
     }
 
@@ -56,6 +59,7 @@ namespace fin.data.graph {
       foreach (var other in this.incomingNodes_) {
         didRemove |= this.RemoveIncoming(other);
       }
+
       return didRemove;
     }
 
@@ -64,6 +68,7 @@ namespace fin.data.graph {
       foreach (var other in this.outgoingNodes_) {
         didRemove |= this.RemoveOutgoing(other);
       }
+
       return didRemove;
     }
   }

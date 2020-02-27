@@ -1,18 +1,17 @@
 ﻿using System;
 
 namespace fin.math.geometry {
-
   public interface IDimensions<TNumber> where TNumber : IComparable {
     TNumber Width { get; }
     TNumber Height { get; }
   }
 
-  public class MutableDimensions<TNumber> : IDimensions<TNumber> where TNumber : IComparable {
+  public class MutableDimensions<TNumber> : IDimensions<TNumber>
+    where TNumber : IComparable {
     public TNumber Width { get; set; } = default;
     public TNumber Height { get; set; } = default;
 
-    public MutableDimensions() {
-    }
+    public MutableDimensions() { }
 
     public MutableDimensions(TNumber width, TNumber height) {
       this.Width = width;
@@ -25,7 +24,8 @@ namespace fin.math.geometry {
     IDimensions<TNumber> Dimensions { get; }
   }
 
-  public class MutableBoundingBox<TNumber> : IBoundingBox<TNumber> where TNumber : IComparable {
+  public class MutableBoundingBox<TNumber> : IBoundingBox<TNumber>
+    where TNumber : IComparable {
     IVector2<TNumber> IBoundingBox<TNumber>.TopLeft => this.TopLeft;
     public MutableVector2<TNumber> TopLeft { get; }
 
@@ -37,7 +37,10 @@ namespace fin.math.geometry {
       this.Dimensions = new MutableDimensions<TNumber>();
     }
 
-    public MutableBoundingBox(TNumber x, TNumber y, TNumber width, TNumber height) {
+    public MutableBoundingBox(TNumber x,
+      TNumber y,
+      TNumber width,
+      TNumber height) {
       this.TopLeft = new MutableVector2<TNumber>(x, y);
       this.Dimensions = new MutableDimensions<TNumber>(width, height);
     }

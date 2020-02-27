@@ -1,5 +1,4 @@
 ﻿namespace fin.input {
-
   public interface IAxis {
     float NormalizedValue { get; }
   }
@@ -10,8 +9,16 @@
 
     public float NormalizedValue {
       get {
-        float positiveValue = (this.Positive.State == ButtonState.DOWN || this.Positive.State == ButtonState.PRESSED) ? 1 : 0;
-        float negativeValue = (this.Negative.State == ButtonState.DOWN || this.Negative.State == ButtonState.PRESSED) ? 1 : 0;
+        float positiveValue =
+          (this.Positive.State == ButtonState.DOWN ||
+           this.Positive.State == ButtonState.PRESSED)
+            ? 1
+            : 0;
+        float negativeValue =
+          (this.Negative.State == ButtonState.DOWN ||
+           this.Negative.State == ButtonState.PRESSED)
+            ? 1
+            : 0;
         return positiveValue - negativeValue;
       }
     }

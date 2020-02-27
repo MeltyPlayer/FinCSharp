@@ -1,5 +1,4 @@
 ﻿namespace fin.graphics.common.impl.opentk {
-
   public class GraphicsOpenTk : IGraphics {
     public GraphicsOpenTk() {
       this.Render2d = new Render2d(this);

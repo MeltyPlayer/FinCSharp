@@ -1,10 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.pointer.contract {
-
   [TestClass]
   public class WeakContractSetTest {
-    private static readonly IContractFactory FACTORY = IContractFactory.Instance;
+    private static readonly IContractFactory
+      FACTORY = IContractFactory.Instance;
 
     [TestMethod]
     public void TestSetInitiallyEmpty() {

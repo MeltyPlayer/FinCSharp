@@ -5,12 +5,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
 namespace fin.events {
-
   [TestClass]
   public partial class EventTest {
     private static readonly IEventFactory FACTORY = IEventFactory.Instance;
 
-    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
+    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE =
+      new SafeType<PassStringEvent>();
 
     private class PassStringEvent : BEvent {
       public string Str { get; }
@@ -20,7 +20,8 @@ namespace fin.events {
       }
     }
 
-    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
+    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE =
+      new SafeType<VoidEvent>();
 
     private class VoidEvent : BEvent { }
 
@@ -40,7 +41,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      emitter.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      emitter.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
@@ -52,7 +55,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      listener.SubscribeTo(emitter, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      listener.SubscribeTo(emitter,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
@@ -66,8 +71,10 @@ namespace fin.events {
       string output = "";
       Action<PassStringEvent> handler = evt => output += evt.Str;
 
-      var addListenerContract = emitter.AddListener(listener, PASS_STRING_EVENT_TYPE, handler);
-      var subscribeToContract = listener.SubscribeTo(emitter, PASS_STRING_EVENT_TYPE, handler);
+      var addListenerContract =
+        emitter.AddListener(listener, PASS_STRING_EVENT_TYPE, handler);
+      var subscribeToContract =
+        listener.SubscribeTo(emitter, PASS_STRING_EVENT_TYPE, handler);
       emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(addListenerContract, subscribeToContract);
@@ -94,7 +101,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      var subscription = emitter.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      var subscription = emitter.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       subscription.Unsubscribe();
       emitter.Emit(new PassStringEvent("foobar"));
 
@@ -107,7 +116,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      emitter.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      emitter.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       emitter.RemoveAllListeners();
       emitter.Emit(new PassStringEvent("foobar"));
 

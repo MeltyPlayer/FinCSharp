@@ -4,7 +4,6 @@ using fin.events.impl;
 using fin.type;
 
 namespace fin.events {
-
   public interface IEvent {
     SafeType<IEvent> SafeType { get; }
   }
@@ -30,13 +29,17 @@ namespace fin.events {
   }
 
   public interface IEventListener {
-    IEventSubscription SubscribeTo<TEvent>(IEventSource source, SafeType<TEvent> eventType, Action<TEvent> action) where TEvent : IEvent;
+    IEventSubscription SubscribeTo<TEvent>(IEventSource source,
+      SafeType<TEvent> eventType,
+      Action<TEvent> action) where TEvent : IEvent;
 
     void UnsubscribeAll();
   }
 
   public interface IEventSource {
-    IEventSubscription AddListener<TEvent>(IEventListener listener, SafeType<TEvent> eventType, Action<TEvent> action) where TEvent : IEvent;
+    IEventSubscription AddListener<TEvent>(IEventListener listener,
+      SafeType<TEvent> eventType,
+      Action<TEvent> action) where TEvent : IEvent;
 
     void RemoveAllListeners();
   }

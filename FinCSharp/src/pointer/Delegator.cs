@@ -3,7 +3,6 @@
 using fin.data.collections.set;
 
 namespace fin.pointer {
-
   // TODO: Rename this at some point.
   // TODO: Add tests.
   public interface IDelegator<T> {

@@ -6,12 +6,12 @@ using fin.type;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.app.node {
-
   [TestClass]
   public class AppNodeTest {
     private static readonly IInstantiator INSTANTIATOR = new InstantiatorImpl();
 
-    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
+    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE =
+      new SafeType<PassStringEvent>();
 
     private class PassStringEvent : BEvent {
       public string Str { get; }
@@ -21,7 +21,8 @@ namespace fin.app.node {
       }
     }
 
-    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
+    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE =
+      new SafeType<VoidEvent>();
 
     private class VoidEvent : BEvent { }
 
@@ -33,31 +34,32 @@ namespace fin.app.node {
       public void Reset() => this.actualText_ = "";
       public void Write(string text) => this.actualText_ += text;
 
-      public void AssertText(string expectedText) => Assert.AreEqual(expectedText, this.actualText_);
+      public void AssertText(string expectedText) =>
+        Assert.AreEqual(expectedText, this.actualText_);
     }
 
     private class StringEvent : BEvent { }
 
     private class FooComponent : BComponent {
-      protected override void Discard() {
-      }
+      protected override void Discard() { }
 
       [OnTick]
       private void PrintToLog_(VoidEvent evt) => LOG.Write("Foo");
 
       [OnTick]
-      private void PrintToLog_(PassStringEvent evt) => LOG.Write("Foo(" + evt.Str + ")");
+      private void PrintToLog_(PassStringEvent evt) =>
+        LOG.Write("Foo(" + evt.Str + ")");
     }
 
     private class BarComponent : BComponent {
-      protected override void Discard() {
-      }
+      protected override void Discard() { }
 
       [OnTick]
       private void PrintToLog_(VoidEvent evt) => LOG.Write("Bar");
 
       [OnTick]
-      private void PrintToLog_(PassStringEvent evt) => LOG.Write("Bar(" + evt.Str + ")");
+      private void PrintToLog_(PassStringEvent evt) =>
+        LOG.Write("Bar(" + evt.Str + ")");
     }
 
     [TestInitialize]
@@ -95,8 +97,10 @@ namespace fin.app.node {
       var foo = INSTANTIATOR.NewChild(root);
       var bar = INSTANTIATOR.NewChild(foo);
 
-      foo.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Foo(" + evt.Str + ")"));
-      bar.OnTick(PASS_STRING_EVENT_TYPE, evt => LOG.Write("Bar(" + evt.Str + ")"));
+      foo.OnTick(PASS_STRING_EVENT_TYPE,
+        evt => LOG.Write("Foo(" + evt.Str + ")"));
+      bar.OnTick(PASS_STRING_EVENT_TYPE,
+        evt => LOG.Write("Bar(" + evt.Str + ")"));
 
       root.Emit(new PassStringEvent("_"));
 

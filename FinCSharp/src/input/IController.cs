@@ -3,7 +3,6 @@
 using fin.input.impl.opentk;
 
 namespace fin.input {
-
   public enum AnalogStickType {
     PRIMARY,
     SECONDARY,
@@ -20,8 +19,11 @@ namespace fin.input {
   }
 
   public class KeyboardController : IController {
-    private readonly IDictionary<AnalogStickType, IAnalogStick> analogSticks_ = new Dictionary<AnalogStickType, IAnalogStick>();
-    private readonly IDictionary<FaceButtonType, IButton> faceButtons_ = new Dictionary<FaceButtonType, IButton>();
+    private readonly IDictionary<AnalogStickType, IAnalogStick> analogSticks_ =
+      new Dictionary<AnalogStickType, IAnalogStick>();
+
+    private readonly IDictionary<FaceButtonType, IButton> faceButtons_ =
+      new Dictionary<FaceButtonType, IButton>();
 
     public KeyboardController(IKeyButtonDictionary kbd) {
       this.analogSticks_[AnalogStickType.PRIMARY] = new DpadAnalogStick(
@@ -43,7 +45,10 @@ namespace fin.input {
       this.faceButtons_[FaceButtonType.SECONDARY] = kbd[KeyId.X];
     }
 
-    public IAnalogStick this[AnalogStickType analogStickType] => this.analogSticks_[analogStickType];
-    public IButton this[FaceButtonType faceButtonType] => this.faceButtons_[faceButtonType];
+    public IAnalogStick this[AnalogStickType analogStickType] =>
+      this.analogSticks_[analogStickType];
+
+    public IButton this[FaceButtonType faceButtonType] =>
+      this.faceButtons_[faceButtonType];
   }
 }

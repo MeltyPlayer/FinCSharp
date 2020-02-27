@@ -1,2 +1,1 @@
-﻿namespace fin.graphics.component {
-}
+﻿namespace fin.graphics.component {}

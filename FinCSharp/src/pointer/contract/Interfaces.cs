@@ -5,7 +5,6 @@ using fin.data.collections.set;
 using fin.pointer.contract.impl;
 
 namespace fin.pointer.contract {
-
   /// <summary>
   ///   Do not inherit this type directly.
   /// </summary>
@@ -14,7 +13,7 @@ namespace fin.pointer.contract {
 
     delegate void OnBreakHandler(IContract contract);
 
-    event OnBreakHandler OnBreak;
+    public event OnBreakHandler OnBreak;
 
     bool Break();
   }
@@ -30,15 +29,13 @@ namespace fin.pointer.contract {
   ///   Interface for a closed contract pointer. Once instantiated, no new
   ///   owners can join this contract. Preferred over open contracts.
   /// </summary>
-  public interface IClosedContractPointer<T> : IContractPointer<T> {
-  }
+  public interface IClosedContractPointer<T> : IContractPointer<T> { }
 
   /// <summary>
   ///   Interface for an open contract pointer. Even after instantiation, new
   ///   owners can join this contract. Prefer a closed contract if possible.
   /// </summary>
   public interface IOpenContractPointer<T> : IContractPointer<T> {
-
     bool Join(IContractPointerOwner<T> owner);
   }
 
@@ -48,7 +45,6 @@ namespace fin.pointer.contract {
   ///   contained within are broken, this will also break.
   /// </summary>
   public interface ISuperContract : IContract {
-
     bool Add(IContract contract);
 
     bool Remove(IContract contract);
@@ -62,9 +58,13 @@ namespace fin.pointer.contract {
 
     IOpenContractPointer<T> FormOpen(T value);
 
-    IOpenContractPointer<T> FormOpenWith(T value, IContractPointerOwner<T> other, params IContractPointerOwner<T>[] additional);
+    IOpenContractPointer<T> FormOpenWith(T value,
+      IContractPointerOwner<T> other,
+      params IContractPointerOwner<T>[] additional);
 
-    IClosedContractPointer<T> FormClosedWith(T value, IContractPointerOwner<T> other, params IContractPointerOwner<T>[] additional);
+    IClosedContractPointer<T> FormClosedWith(T value,
+      IContractPointerOwner<T> other,
+      params IContractPointerOwner<T>[] additional);
 
     bool Join(IOpenContractPointer<T> contract);
 
@@ -73,11 +73,9 @@ namespace fin.pointer.contract {
     void BreakAll();
   }
 
-  public interface IStrongContractPointerOwner<T> : IContractPointerOwner<T> {
-  }
+  public interface IStrongContractPointerOwner<T> : IContractPointerOwner<T> { }
 
-  public interface IWeakContractPointerOwner<T> : IContractPointerOwner<T> {
-  }
+  public interface IWeakContractPointerOwner<T> : IContractPointerOwner<T> { }
 
   /// <summary>
   ///   Interface for the underlying storage of an IContractPointerOwner. This
@@ -95,9 +93,9 @@ namespace fin.pointer.contract {
   }
 
   public class DefaultContractPointerSet<T> : IContractPointerSet<T> {
-
     // TODO: Higher overhead than should be necessary.
-    private OrderedSet<IContractPointer<T>> impl_ = new OrderedSet<IContractPointer<T>>();
+    private OrderedSet<IContractPointer<T>> impl_ =
+      new OrderedSet<IContractPointer<T>>();
 
     public IEnumerable<IContractPointer<T>> Contracts => this.impl_;
 
@@ -105,7 +103,8 @@ namespace fin.pointer.contract {
 
     public bool Add(IContractPointer<T> contract) => this.impl_.Add(contract);
 
-    public bool Remove(IContractPointer<T> contract) => this.impl_.Remove(contract);
+    public bool Remove(IContractPointer<T> contract) =>
+      this.impl_.Remove(contract);
 
     public void ClearAndBreak(Action<IContractPointer<T>> breakHandler) {
       while (this.impl_.Count > 0) {
@@ -120,15 +119,18 @@ namespace fin.pointer.contract {
   ///   guaranteed with instances from other factories.
   /// </summary>
   public interface IContractFactory {
-    protected readonly static IDelegator<IContractFactory> DELEGATED_INSTANCE = new Delegator<IContractFactory>();
+    protected readonly static IDelegator<IContractFactory> DELEGATED_INSTANCE =
+      new Delegator<IContractFactory>();
 
     public static IContractFactory Instance { get; } = new ContractFactory();
 
-    ISuperContract NewSuperContract(IContract first, params IContract[] additional);
+    ISuperContract NewSuperContract(IContract first,
+      params IContract[] additional);
 
     IStrongContractPointerOwner<T> NewStrongOwner<T>();
 
-    IStrongContractPointerOwner<T> NewStrongOwner<T>(IContractPointerSet<T> set);
+    IStrongContractPointerOwner<T>
+      NewStrongOwner<T>(IContractPointerSet<T> set);
 
     IWeakContractPointerOwner<T> NewWeakOwner<T>();
 

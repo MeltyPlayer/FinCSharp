@@ -2,7 +2,6 @@
 using fin.graphics.common.color;
 
 namespace fin.graphics.common {
-
   public interface ITexture {
     IColor GetPixel(int x, int y);
 

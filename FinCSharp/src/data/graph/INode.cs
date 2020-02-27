@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 
 namespace fin.data.graph {
-
   /// <summary>
   ///   An interface for a graph node.
   /// </summary>

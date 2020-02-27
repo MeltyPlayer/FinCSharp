@@ -1,4 +1,3 @@
 ﻿namespace fin.resource {
-  public class ResourceUri {
-  }
+  public class ResourceUri { }
 }

@@ -1,5 +1,4 @@
 ﻿namespace fin.graphics.common {
-
   internal enum MatrixType {
     PROJECTION,
     MODELVIEW,

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+
 using RSG;
 
 namespace fin.file {
   internal static class LocalFileUtil {
     static LocalFileUtil() {
       FileUtil.readHandlers.DefineHandler<LocalFile>(LocalFileUtil.ReadText);
-      FileUtil.asyncReadHandlers.DefineHandler<LocalFile>(LocalFileUtil.ReadTextAsync);
+      FileUtil.asyncReadHandlers.DefineHandler<LocalFile>(LocalFileUtil
+        .ReadTextAsync);
       //FileUtil.writeHandlers.DefineHandler<LocalFile>(WriteText);
     }
 
@@ -26,7 +28,8 @@ namespace fin.file {
             var text = await reader.ReadToEndAsync();
             promise.Resolve(text);
           }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           promise.Reject(e);
         }
       });
@@ -43,7 +46,8 @@ namespace fin.file {
             await writer.WriteAsync(text);
             promise.Resolve();
           }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           promise.Reject(e);
         }
       });

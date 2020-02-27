@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using fin.log;
 
 namespace fin.math.geometry {
-
-  public interface INestedBoundingBoxes<TNumber> : IBoundingBox<TNumber> where TNumber : IComparable {
+  public interface INestedBoundingBoxes<TNumber> : IBoundingBox<TNumber>
+    where TNumber : IComparable {
     int Depth { get; }
 
     void Push(IBoundingBox<TNumber> box);
@@ -13,14 +13,21 @@ namespace fin.math.geometry {
     IBoundingBox<TNumber>? DetermineIntersection();
   }
 
-  public class NestedBoundingBoxes<TNumber> : INestedBoundingBoxes<TNumber> where TNumber : IComparable {
-    private readonly Stack<IBoundingBox<TNumber>> impl_ = new Stack<IBoundingBox<TNumber>>();
+  public class NestedBoundingBoxes<TNumber> : INestedBoundingBoxes<TNumber>
+    where TNumber : IComparable {
+    private readonly Stack<IBoundingBox<TNumber>> impl_ =
+      new Stack<IBoundingBox<TNumber>>();
 
     public IVector2<TNumber> TopLeft => this.DetermineIntersection()!.TopLeft;
-    public IDimensions<TNumber> Dimensions => this.DetermineIntersection()!.Dimensions;
+
+    public IDimensions<TNumber> Dimensions =>
+      this.DetermineIntersection()!.Dimensions;
 
     public int Depth => this.impl_.Count;
-    public void Push(IBoundingBox<TNumber> boundingBox) => this.impl_.Push(boundingBox);
+
+    public void Push(IBoundingBox<TNumber> boundingBox) =>
+      this.impl_.Push(boundingBox);
+
     public void Pop() => this.impl_.Pop();
 
     public IBoundingBox<TNumber>? DetermineIntersection() {
@@ -39,11 +46,15 @@ namespace fin.math.geometry {
         var currentHeight = currentDimensions.Height;
 
         if (intersection == null) {
-          intersection = new MutableBoundingBox<TNumber>(currentLeftX, currentTopY, currentWidth, currentHeight);
-        } else {
+          intersection = new MutableBoundingBox<TNumber>(currentLeftX,
+            currentTopY,
+            currentWidth,
+            currentHeight);
+        }
+        else {
           // TODO: Figure out how to fix this...
-          var currentRightX = currentLeftX + (dynamic)currentDimensions.Width;
-          var currentBottomY = currentTopY + (dynamic)currentDimensions.Height;
+          var currentRightX = currentLeftX + (dynamic) currentDimensions.Width;
+          var currentBottomY = currentTopY + (dynamic) currentDimensions.Height;
 
           var boxTopLeft = intersection.TopLeft;
           var boxDimensions = intersection.Dimensions;
@@ -51,8 +62,8 @@ namespace fin.math.geometry {
           var boxTopY = boxTopLeft.Y;
           var boxWidth = boxDimensions.Width;
           var boxHeight = boxDimensions.Height;
-          var boxRightX = boxLeftX + (dynamic)boxWidth;
-          var boxBottomY = boxTopY + (dynamic)boxHeight;
+          var boxRightX = boxLeftX + (dynamic) boxWidth;
+          var boxBottomY = boxTopY + (dynamic) boxHeight;
 
           var adjustedLeftX = Max_(currentLeftX, boxLeftX);
           var adjustedRightX = Min_(currentRightX, boxRightX);
@@ -67,12 +78,16 @@ namespace fin.math.geometry {
           intersection.Dimensions.Height = adjustedHeight;
         }
       }
+
       return intersection;
     }
 
-    private static TComparable Max_<TComparable>(TComparable left, TComparable right) where TComparable : IComparable
+    private static TComparable Max_<TComparable>(TComparable left,
+      TComparable right) where TComparable : IComparable
       => left.CompareTo(right) > 0 ? left : right;
-    private static TComparable Min_<TComparable>(TComparable left, TComparable right) where TComparable : IComparable
+
+    private static TComparable Min_<TComparable>(TComparable left,
+      TComparable right) where TComparable : IComparable
       => left.CompareTo(right) < 0 ? left : right;
   }
 }

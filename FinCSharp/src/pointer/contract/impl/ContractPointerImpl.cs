@@ -1,14 +1,15 @@
 ﻿using fin.data.collections.set;
 
 namespace fin.pointer.contract.impl {
-
   public sealed partial class ContractFactory : IContractFactory {
-
-    private abstract partial class ContractPointerOwnerImpl<T> : IContractPointerOwner<T> {
-
+    private abstract partial class
+      ContractPointerOwnerImpl<T> : IContractPointerOwner<T> {
       private abstract class ContractPointerImpl : IContractPointer<T> {
-        private readonly OrderedSet<IStrongContractPointerOwner<T>> strongOwners_ = new OrderedSet<IStrongContractPointerOwner<T>>();
-        private readonly OrderedSet<IWeakContractPointerOwner<T>> weakOwners_ = new OrderedSet<IWeakContractPointerOwner<T>>();
+        private readonly OrderedSet<IStrongContractPointerOwner<T>>
+          strongOwners_ = new OrderedSet<IStrongContractPointerOwner<T>>();
+
+        private readonly OrderedSet<IWeakContractPointerOwner<T>> weakOwners_ =
+          new OrderedSet<IWeakContractPointerOwner<T>>();
 
         public T Value { get; private set; }
 
@@ -34,7 +35,8 @@ namespace fin.pointer.contract.impl {
               strongOwner.JoinBackdoor_(this);
               return true;
             }
-          } else {
+          }
+          else {
             var weakOwner = (owner as WeakContractPointerOwner<T>)!;
             if (this.weakOwners_.Add(weakOwner)) {
               weakOwner.JoinBackdoor_(this);
@@ -59,11 +61,13 @@ namespace fin.pointer.contract.impl {
           while (this.strongOwners_.Count > 0) {
             this.strongOwners_.Last.Break(this);
           }
+
           this.strongOwners_.Clear();
 
           while (this.weakOwners_.Count > 0) {
             this.weakOwners_.Last.Break(this);
           }
+
           this.weakOwners_.Clear();
 
           this.OnBreak(this);
@@ -79,7 +83,8 @@ namespace fin.pointer.contract.impl {
 
           if (owner is IStrongContractPointerOwner<T> strongOwner) {
             removed = this.strongOwners_.Remove(strongOwner);
-          } else {
+          }
+          else {
             var weakOwner = (owner as IWeakContractPointerOwner<T>)!;
             removed = this.weakOwners_.Remove(weakOwner);
           }

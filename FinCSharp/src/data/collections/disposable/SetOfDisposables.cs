@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using fin.discardable;
 
 namespace fin.data.collections.disposable {
-
   public class SetOfDisposables<T> where T : notnull, DiscardableImpl {
     private readonly ISet<T> impl_ = new HashSet<T>();
     private readonly ISet<T> toAdd_ = new HashSet<T>();
@@ -16,7 +15,8 @@ namespace fin.data.collections.disposable {
       if (!t.IsDiscarded) {
         if (this.iterationCount_ == 0) {
           this.impl_.Add(t);
-        } else {
+        }
+        else {
           this.toAdd_.Add(t);
         }
       }
@@ -26,7 +26,8 @@ namespace fin.data.collections.disposable {
       if (!t.IsDiscarded) {
         if (this.iterationCount_ == 0) {
           this.impl_.Remove(t);
-        } else {
+        }
+        else {
           this.toRemove_.Add(t);
         }
       }
@@ -37,10 +38,12 @@ namespace fin.data.collections.disposable {
       foreach (var t in this.impl_) {
         if (t.IsDiscarded) {
           this.toRemove_.Add(t);
-        } else {
+        }
+        else {
           handler(t);
         }
       }
+
       --this.iterationCount_;
       this.AddAndRemove_();
     }
@@ -53,6 +56,7 @@ namespace fin.data.collections.disposable {
       foreach (var t in this.toRemove_) {
         this.impl_.Remove(t);
       }
+
       this.toRemove_.Clear();
 
       foreach (var t in this.toAdd_) {
@@ -60,6 +64,7 @@ namespace fin.data.collections.disposable {
           this.impl_.Add(t);
         }
       }
+
       this.toAdd_.Clear();
     }
   }

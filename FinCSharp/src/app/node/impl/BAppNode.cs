@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+
 using fin.app.events;
 using fin.assert;
 using fin.data.collections.set;
@@ -9,28 +10,34 @@ using fin.events;
 using fin.type;
 
 namespace fin.app.node.impl {
-
   // TODO: Make this internal.
   public sealed partial class InstantiatorImpl : IInstantiator {
-
     private abstract class BAppNode : IAppNode {
       private readonly Node<BAppNode> node_;
 
-      private readonly OrderedSet<IComponent> components_ = new OrderedSet<IComponent>();
+      private readonly OrderedSet<IComponent> components_ =
+        new OrderedSet<IComponent>();
 
-      private readonly IEventListener listener_ = IEventFactory.Instance.NewListener();
-      private readonly IEventRelay downwardRelay_ = IEventFactory.Instance.NewRelay();
+      private readonly IEventListener listener_ =
+        IEventFactory.Instance.NewListener();
 
-      protected readonly DiscardableImpl discardableImpl_ = new DiscardableImpl();
+      private readonly IEventRelay downwardRelay_ =
+        IEventFactory.Instance.NewRelay();
+
+      protected readonly DiscardableImpl discardableImpl_ =
+        new DiscardableImpl();
 
       private readonly ForOnTickMethodImpl forOnTickMethod_;
 
       private class ForOnTickMethodImpl : IForOnTickMethod {
         private readonly BAppNode parent_;
+
         public ForOnTickMethodImpl(BAppNode parent) {
           this.parent_ = parent;
         }
-        public void ForOnTickMethod<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent
+
+        public void ForOnTickMethod<TEvent>(SafeType<TEvent> eventType,
+          Action<TEvent> handler) where TEvent : IEvent
           => this.parent_.OnTick(eventType, handler);
       }
 
@@ -68,6 +75,7 @@ namespace fin.app.node.impl {
           if (incoming.Count() > 0) {
             return incoming.Single().Value;
           }
+
           return null;
         }
         set {
@@ -99,11 +107,13 @@ namespace fin.app.node.impl {
         if (component.IsDiscarded) {
           return false;
         }
+
         if (this.components_.Add(component)) {
           // TODO: Remove these in the Remove counterpart.
           OnTickAttribute.SniffAndAddMethods(component, this.forOnTickMethod_);
           return true;
         }
+
         return false;
       }
 
@@ -112,6 +122,7 @@ namespace fin.app.node.impl {
           // TODO: Remove methods.
           return true;
         }
+
         return false;
       }
 
@@ -122,16 +133,22 @@ namespace fin.app.node.impl {
         if (this.IsDiscarded) {
           return;
         }
+
         this.downwardRelay_.Emit(evt);
       }
 
-      public IEventSubscription? OnTick<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent {
+      public IEventSubscription? OnTick<TEvent>(SafeType<TEvent> eventType,
+        Action<TEvent> handler) where TEvent : IEvent {
         if (this.IsDiscarded) {
           return null;
         }
+
         if (this.ParentImpl != null) {
-          return this.ParentImpl.downwardRelay_.AddListener(this.listener_, eventType, handler);
+          return this.ParentImpl.downwardRelay_.AddListener(this.listener_,
+            eventType,
+            handler);
         }
+
         return null;
       }
     }

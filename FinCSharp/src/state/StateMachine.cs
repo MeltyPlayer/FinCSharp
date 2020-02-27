@@ -1,16 +1,15 @@
 ﻿using System.Linq;
 
 namespace fin.state {
-
   public class StateMachine<TState> where TState : notnull {
-
     public StateMachine(TState startingState) {
       this.CurrentState = startingState;
     }
 
     public TState CurrentState { private set; get; }
 
-    public bool Check(params TState[] checkStates) => checkStates.Contains(this.CurrentState);
+    public bool Check(params TState[] checkStates) =>
+      checkStates.Contains(this.CurrentState);
 
     public void GoTo(TState newState) {
       var oldState = this.CurrentState;
@@ -29,7 +28,8 @@ namespace fin.state {
 
     private event OnExitEventHandler OnExitEvent = delegate { };
 
-    public delegate void OnTransitionEventHandler(TState oldState, TState newState);
+    public delegate void OnTransitionEventHandler(TState oldState,
+      TState newState);
 
     private event OnTransitionEventHandler OnTransitionEvent = delegate { };
   }

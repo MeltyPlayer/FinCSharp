@@ -2,7 +2,6 @@
 using fin.events;
 
 namespace fin.graphics.common {
-
   public class CameraRenderEvent : BEvent {
     public IGraphics Graphics { get; }
     public ICamera Camera { get; }

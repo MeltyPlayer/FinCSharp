@@ -1,5 +1,3 @@
 ﻿namespace fin.app.actor {
-
-  public abstract class BActor {
-  }
+  public abstract class BActor { }
 }

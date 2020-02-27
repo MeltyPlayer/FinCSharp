@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.discardable {
-
   [TestClass]
   public class DiscardableImplTest {
     [TestMethod]

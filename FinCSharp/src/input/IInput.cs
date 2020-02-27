@@ -1,7 +1,6 @@
 ﻿using fin.input.impl.opentk;
 
 namespace fin.input {
-
   public interface IInput {
     IController Controller { get; }
   }

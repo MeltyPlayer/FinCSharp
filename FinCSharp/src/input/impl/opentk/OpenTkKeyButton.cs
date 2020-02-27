@@ -5,13 +5,11 @@ using fin.function;
 using OpenTK.Input;
 
 namespace fin.input.impl.opentk {
-
   public class EndTickPhase { }
 
   public static class OpenTkKeyToKeyIdConverter {
     public static KeyId Convert(Key key) =>
-      key switch
-      {
+      key switch {
         Key.A => KeyId.A,
         Key.B => KeyId.B,
         Key.C => KeyId.C,
@@ -37,7 +35,8 @@ namespace fin.input.impl.opentk {
 
   public class OpenTkKeyButtonDictionary : IKeyButtonDictionary {
     public OpenTkKeyButtonDictionary(IKeyStateDictionary ksd) {
-      this.GetButtonImpl_ = Memoization.Memoize((KeyId keyId) => new OpenTkKeyButton(keyId, ksd));
+      this.GetButtonImpl_ =
+        Memoization.Memoize((KeyId keyId) => new OpenTkKeyButton(keyId, ksd));
     }
 
     public IButton this[KeyId keyId] => this.GetButtonImpl_(keyId);

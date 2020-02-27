@@ -5,7 +5,6 @@ using System.Collections;
 using System.Linq;
 
 namespace fin.data.graph {
-
   [TestClass]
   public class NodeTest {
     private readonly ICollection emptyArray_ = Array.Empty<INode<int>>();
@@ -23,8 +22,8 @@ namespace fin.data.graph {
       var root = new Node<int>(0);
 
       Assert.IsTrue(root.AddIncoming(root));
-      CollectionAssert.AreEqual(new[] { root }, root.IncomingNodes.ToArray());
-      CollectionAssert.AreEqual(new[] { root }, root.OutgoingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {root}, root.IncomingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {root}, root.OutgoingNodes.ToArray());
 
       Assert.IsFalse(root.AddIncoming(root));
     }
@@ -34,8 +33,8 @@ namespace fin.data.graph {
       var root = new Node<int>(0);
 
       Assert.IsTrue(root.AddOutgoing(root));
-      CollectionAssert.AreEqual(new[] { root }, root.IncomingNodes.ToArray());
-      CollectionAssert.AreEqual(new[] { root }, root.OutgoingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {root}, root.IncomingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {root}, root.OutgoingNodes.ToArray());
 
       Assert.IsFalse(root.AddOutgoing(root));
     }
@@ -72,10 +71,10 @@ namespace fin.data.graph {
       var b = new Node<int>(1);
 
       Assert.IsTrue(a.AddIncoming(b));
-      CollectionAssert.AreEqual(new[] { b }, a.IncomingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {b}, a.IncomingNodes.ToArray());
       CollectionAssert.AreEqual(this.emptyArray_, a.OutgoingNodes.ToArray());
       CollectionAssert.AreEqual(this.emptyArray_, b.IncomingNodes.ToArray());
-      CollectionAssert.AreEqual(new[] { a }, b.OutgoingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {a}, b.OutgoingNodes.ToArray());
 
       Assert.IsFalse(a.AddIncoming(b));
     }
@@ -87,8 +86,8 @@ namespace fin.data.graph {
 
       Assert.IsTrue(a.AddOutgoing(b));
       CollectionAssert.AreEqual(this.emptyArray_, a.IncomingNodes.ToArray());
-      CollectionAssert.AreEqual(new[] { b }, a.OutgoingNodes.ToArray());
-      CollectionAssert.AreEqual(new[] { a }, b.IncomingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {b}, a.OutgoingNodes.ToArray());
+      CollectionAssert.AreEqual(new[] {a}, b.IncomingNodes.ToArray());
       CollectionAssert.AreEqual(this.emptyArray_, b.OutgoingNodes.ToArray());
 
       Assert.IsFalse(a.AddOutgoing(b));

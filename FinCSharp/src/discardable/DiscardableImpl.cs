@@ -1,10 +1,12 @@
 ﻿using System;
+
 using fin.data.collections.set;
 
 namespace fin.discardable {
-
-  public class DiscardableImpl : IPubliclyDiscardable, IEventDiscardable, IDependentDiscardable {
-    private readonly OrderedSet<IEventDiscardable> parents_ = new OrderedSet<IEventDiscardable>();
+  public class DiscardableImpl : IPubliclyDiscardable, IEventDiscardable,
+    IDependentDiscardable {
+    private readonly OrderedSet<IEventDiscardable> parents_ =
+      new OrderedSet<IEventDiscardable>();
 
     public event IEventDiscardable.OnDiscardHandler? OnDiscard;
 
@@ -30,6 +32,7 @@ namespace fin.discardable {
       if (this.IsDiscarded) {
         return;
       }
+
       this.IsDiscarded = true;
 
       if (!discarding) {
@@ -47,10 +50,12 @@ namespace fin.discardable {
       if (this.IsDiscarded) {
         return false;
       }
+
       if (this.parents_.Add(parent)) {
         parent.OnDiscard += this.VoidDiscard_;
         return true;
       }
+
       return false;
     }
 
@@ -59,6 +64,7 @@ namespace fin.discardable {
         parent.OnDiscard -= this.VoidDiscard_;
         return true;
       }
+
       return false;
     }
   }

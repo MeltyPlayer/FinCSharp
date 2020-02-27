@@ -1,4 +1,5 @@
 ﻿using fin.generic;
+
 using RSG;
 
 namespace fin.file {

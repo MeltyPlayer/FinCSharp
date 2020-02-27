@@ -1,9 +1,7 @@
 ﻿using RSG;
 
 namespace fin.resource {
-
   public abstract class Resource {
-
     public delegate Promise<T> LoaderFunction<T>(ResourceUri uri);
 
     /*private static Dictionary<Type, LoaderFunction<Resource>>

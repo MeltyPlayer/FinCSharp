@@ -1,5 +1,3 @@
 ﻿namespace fin.app.ui {
-
-  public class Panel {
-  }
+  public class Panel { }
 }

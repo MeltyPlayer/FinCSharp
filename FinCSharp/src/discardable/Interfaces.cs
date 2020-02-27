@@ -1,5 +1,4 @@
 ﻿namespace fin.discardable {
-
   public interface IDiscardable {
     bool IsDiscarded { get; }
   }
@@ -9,7 +8,6 @@
   }
 
   public interface IEventDiscardable : IDiscardable {
-
     public delegate void OnDiscardHandler(IEventDiscardable discardable);
 
     event OnDiscardHandler OnDiscard;

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+
 using fin.app;
 using fin.file;
+
 using Newtonsoft.Json;
 
 namespace fin.settings {
@@ -18,7 +20,8 @@ namespace fin.settings {
         if (file.Exists()) {
           return JsonUtil.DeserializeFrom<Settings>(file);
         }
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         // TODO: Handle this exception.
       }
 

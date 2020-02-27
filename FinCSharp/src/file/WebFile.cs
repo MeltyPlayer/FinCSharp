@@ -1,5 +1,4 @@
 ﻿namespace fin.file {
-
   public class WebFile : IFile {
     public string uri { get; }
 

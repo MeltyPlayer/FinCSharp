@@ -1,15 +1,16 @@
 ﻿using fin.type;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System;
 
 namespace fin.events {
-
   [TestClass]
   public class EventRelayerTest {
     private static readonly IEventFactory FACTORY = IEventFactory.Instance;
 
-    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE = new SafeType<PassStringEvent>();
+    private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE =
+      new SafeType<PassStringEvent>();
 
     private class PassStringEvent : BEvent {
       public string Str { get; }
@@ -19,7 +20,8 @@ namespace fin.events {
       }
     }
 
-    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE = new SafeType<VoidEvent>();
+    private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE =
+      new SafeType<VoidEvent>();
 
     private class VoidEvent : BEvent { }
 
@@ -43,7 +45,9 @@ namespace fin.events {
 
       relay.AddRelaySource(emitter);
       string output = "";
-      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      relay.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       emitter.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
@@ -56,7 +60,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      relay.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       relay.AddRelaySource(emitter);
       emitter.Emit(new PassStringEvent("foobar"));
 
@@ -71,7 +77,9 @@ namespace fin.events {
 
       Assert.IsTrue(relay.AddRelaySource(emitter));
       string output = "";
-      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      relay.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       Assert.IsFalse(relay.AddRelaySource(emitter));
       emitter.Emit(new PassStringEvent("foobar"));
 
@@ -86,8 +94,10 @@ namespace fin.events {
 
       string output = "";
       Action<PassStringEvent> addToOutput = evt => output += evt.Str;
-      var firstSubscription = relay.AddListener(listener, PASS_STRING_EVENT_TYPE, addToOutput);
-      var secondSubscription = relay.AddListener(listener, PASS_STRING_EVENT_TYPE, addToOutput);
+      var firstSubscription =
+        relay.AddListener(listener, PASS_STRING_EVENT_TYPE, addToOutput);
+      var secondSubscription =
+        relay.AddListener(listener, PASS_STRING_EVENT_TYPE, addToOutput);
       relay.AddRelaySource(emitter);
       emitter.Emit(new PassStringEvent("foobar"));
 
@@ -102,7 +112,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      relay.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       relay.AddRelaySource(emitter);
       relay.RemoveRelaySource(emitter);
       relay.AddRelaySource(emitter);
@@ -133,7 +145,9 @@ namespace fin.events {
       var listener = FACTORY.NewListener();
 
       string output = "";
-      relay.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      relay.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       relay.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
@@ -147,7 +161,9 @@ namespace fin.events {
 
       string output = "";
       relay.AddRelaySource(parent);
-      parent.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      parent.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       parent.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");
@@ -163,7 +179,9 @@ namespace fin.events {
       string output = "";
       middle.AddRelaySource(top);
       bottom.AddRelaySource(middle);
-      bottom.AddListener(listener, PASS_STRING_EVENT_TYPE, evt => output += evt.Str);
+      bottom.AddListener(listener,
+        PASS_STRING_EVENT_TYPE,
+        evt => output += evt.Str);
       top.Emit(new PassStringEvent("foobar"));
 
       Assert.AreEqual(output, "foobar");

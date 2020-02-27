@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+
 using fin.discardable;
 
 namespace fin.data.collections.disposable {
-
   public class MapOfDisposables<TValue> {
-    private readonly IDictionary<DiscardableImpl, TValue> impl_ = new Dictionary<DiscardableImpl, TValue>();
-    private readonly IDictionary<DiscardableImpl, TValue> toAdd_ = new Dictionary<DiscardableImpl, TValue>();
-    private readonly IDictionary<DiscardableImpl, TValue> toRemove_ = new Dictionary<DiscardableImpl, TValue>();
+    private readonly IDictionary<DiscardableImpl, TValue> impl_ =
+      new Dictionary<DiscardableImpl, TValue>();
+
+    private readonly IDictionary<DiscardableImpl, TValue> toAdd_ =
+      new Dictionary<DiscardableImpl, TValue>();
+
+    private readonly IDictionary<DiscardableImpl, TValue> toRemove_ =
+      new Dictionary<DiscardableImpl, TValue>();
 
     private int iterationCount_ = 0;
 
@@ -41,6 +46,7 @@ namespace fin.data.collections.disposable {
           handler(disposable);
         }*/
       }
+
       --this.iterationCount_;
       this.AddAndRemove_();
     }
@@ -53,6 +59,7 @@ namespace fin.data.collections.disposable {
       foreach (var disposable in this.toRemove_) {
         this.impl_.Remove(disposable);
       }
+
       this.toRemove_.Clear();
 
       foreach (var disposable in this.toAdd_) {
@@ -60,12 +67,14 @@ namespace fin.data.collections.disposable {
           this.impl_.Add(disposable);
         }*/
       }
+
       this.toAdd_.Clear();
     }
   }
 
   public class EventForDisposables {
-    private readonly MapOfDisposables<Action> handlers_ = new MapOfDisposables<Action>();
+    private readonly MapOfDisposables<Action> handlers_ =
+      new MapOfDisposables<Action>();
 
     public void Invoke() {
       /*this.handlers_.ForEach((IDiscardable disposable, Action handler) => {

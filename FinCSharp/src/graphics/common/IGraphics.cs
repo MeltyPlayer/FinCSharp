@@ -1,5 +1,4 @@
 ﻿namespace fin.graphics.common {
-
   public interface IGraphics {
     IScreen Screen { get; }
     IPrimitives Primitives { get; }

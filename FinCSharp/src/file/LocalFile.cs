@@ -1,7 +1,6 @@
 ﻿using System.IO;
 
 namespace fin.file {
-
   public class LocalFile : IFile {
     public string uri { get; }
 

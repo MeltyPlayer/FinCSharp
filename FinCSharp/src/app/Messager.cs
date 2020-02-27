@@ -1,5 +1,3 @@
 ﻿namespace fin.app {
-
-  public class Messager {
-  }
+  public class Messager { }
 }

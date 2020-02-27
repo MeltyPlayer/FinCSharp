@@ -7,7 +7,6 @@ namespace fin.function {
    * Calls a given handler recurrently over time. Assumes the handler will take
    * less time than the prescribed delay between calls.
    */
-
   public class RecurrentCaller {
     public double TargetedFrequency { get; }
 
@@ -16,7 +15,8 @@ namespace fin.function {
     private readonly Action handler_;
     private bool isRunning_;
 
-    public static RecurrentCaller FromFrequency(double frequency, Action handler)
+    public static RecurrentCaller FromFrequency(double frequency,
+      Action handler)
       => new RecurrentCaller(frequency, handler);
 
     public static RecurrentCaller FromPeriod(double period, Action handler) =>
@@ -31,6 +31,7 @@ namespace fin.function {
       if (this.isRunning_) {
         return;
       }
+
       this.isRunning_ = true;
 
       var millisPerIteration = 1000 / this.TargetedFrequency;
@@ -45,7 +46,7 @@ namespace fin.function {
 
         // Calculate the remaining time in the iteration, sleep for that # of millis.
         var remainingMillis = millisPerIteration - frameMillis;
-        var truncatedRemainingMillis = (int)remainingMillis;
+        var truncatedRemainingMillis = (int) remainingMillis;
 
         if (truncatedRemainingMillis > 0) {
           Logger.Log(LogType.PERFORMANCE,
@@ -55,7 +56,8 @@ namespace fin.function {
 
           // TODO: Find a way to sleep without breaking vsync.
           //Thread.Sleep(truncatedRemainingMillis);
-        } else {
+        }
+        else {
           Logger.Log(LogType.PERFORMANCE,
             LogSeverity.WARNING,
             ". Time: " + frameMillis + "ms, Rem.: " + remainingMillis + "ms" +

@@ -3,14 +3,12 @@ using System.Collections.Generic;
 
 // TODO: Add tests.
 namespace fin.data.collections.set {
-
   // Based on https://stackoverflow.com/questions/1552225/hashset-that-preserves-ordering/17853085#17853085.
   public class OrderedSet<T> : ICollection<T> {
     private readonly IDictionary<T, LinkedListNode<T>> dictionary_;
     private readonly LinkedList<T> linkedList_;
 
-    public OrderedSet() : this(EqualityComparer<T>.Default) {
-    }
+    public OrderedSet() : this(EqualityComparer<T>.Default) { }
 
     public OrderedSet(IEqualityComparer<T> comparer) {
       this.dictionary_ = new Dictionary<T, LinkedListNode<T>>(comparer);
@@ -32,6 +30,7 @@ namespace fin.data.collections.set {
       if (this.dictionary_.ContainsKey(item)) {
         return false;
       }
+
       LinkedListNode<T> node = this.linkedList_.AddLast(item);
       this.dictionary_.Add(item, node);
       return true;
@@ -46,6 +45,7 @@ namespace fin.data.collections.set {
       if (!this.dictionary_.ContainsKey(item)) {
         return false;
       }
+
       var node = this.dictionary_[item];
       this.dictionary_.Remove(item);
       this.linkedList_.Remove(node);
@@ -58,6 +58,7 @@ namespace fin.data.collections.set {
 
     public bool Contains(T item) => this.dictionary_.ContainsKey(item);
 
-    public void CopyTo(T[] array, int arrayIndex) => this.linkedList_.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) =>
+      this.linkedList_.CopyTo(array, arrayIndex);
   }
 }

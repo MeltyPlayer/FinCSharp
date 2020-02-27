@@ -1,4 +1,3 @@
 ﻿namespace fin.graphics.common {
-  public class Model {
-  }
+  public class Model { }
 }
