@@ -2,6 +2,7 @@
 
 namespace fin.graphics.common {
 
+  // TODO: This should probably be discardable.
   public interface IView {
     void Render(IGraphics graphics);
   }

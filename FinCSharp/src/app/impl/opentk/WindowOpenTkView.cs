@@ -30,10 +30,10 @@ namespace fin.app.impl.opentk {
         private void TryToUpdateViewport_() {
           var current = this.viewport_.DetermineIntersection()!;
 
-          var width = (int)current.Dimensions.Width;
-          var height = (int)current.Dimensions.Height;
-          var leftX = (int)current.TopLeft.X;
-          var bottomY = this.Height - height - (int)current.TopLeft.Y;
+          var width = current.Dimensions.Width;
+          var height = current.Dimensions.Height;
+          var leftX = current.TopLeft.X;
+          var bottomY = this.Height - height - current.TopLeft.Y;
 
           GL.Viewport(leftX, bottomY, width, height);
           GL.Scissor(leftX, bottomY, width, height);

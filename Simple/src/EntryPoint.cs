@@ -18,15 +18,17 @@ namespace simple {
 
       protected override void Init(SceneInitTickEvent evt) {
         var settings = Settings.Load();
+        var appWidth = settings.Resolution.Width;
+        var appHeight = settings.Resolution.Height;
 
         var windows = evt.WindowManager.InitWindowsForScene(new WindowArgs().SetDimensions(settings.Resolution));
 
         var window = windows[0];
-        window.Width = settings.Resolution.Width;
-        window.Height = settings.Resolution.Height;
+        window.Width = appWidth;
+        window.Height = appHeight;
         window.Visible = true;
 
-        var view = window.NewView(new MutableBoundingBox<int>(100, 100, 300, 300));
+        var view = window.NewView(new MutableBoundingBox<int>(0, 0, appWidth, appHeight));
       }
     }
   }
