@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using fin.data.collections.set;
 using fin.discardable;
 using fin.events;
 using fin.type;
 
 namespace fin.app.node {
-
-  public interface IComponent : IDependentDiscardable {
-  }
+  public interface IComponent : IDependentDiscardable {}
 
   public abstract class BComponent : IComponent {
     private readonly DiscardableImpl discardableImpl_ = new DiscardableImpl();
@@ -25,17 +24,19 @@ namespace fin.app.node {
     // TODO: Is it possible to remove these...????
     public bool AddParent(IEventDiscardable parent)
       => this.discardableImpl_.AddParent(parent);
+
     public bool RemoveParent(IEventDiscardable parent)
       => this.discardableImpl_.RemoveParent(parent);
   }
 
-  public interface IRootAppNode : IPubliclyDiscardable, IAppNode {
-  }
+  public interface IRootAppNode : IPubliclyDiscardable, IAppNode {}
 
   public interface IChildAppNode : IAppNode {
     IAppNode Parent { get; set; }
 
-    IEventSubscription OnTick<TEvent>(SafeType<TEvent> eventType, Action<TEvent> handler) where TEvent : IEvent;
+    IEventSubscription OnTick<TEvent>(SafeType<TEvent> eventType,
+                                      Action<TEvent> handler)
+      where TEvent : IEvent;
   }
 
   public interface IAppNode : IPubliclyDiscardable, IEventDiscardable {
@@ -48,7 +49,10 @@ namespace fin.app.node {
 
   public interface IInstantiator {
     IRootAppNode NewRoot();
+    IChildAppNode NewTopLevelChild(params IComponent[] components);
     IChildAppNode NewChild(IAppNode parent, params IComponent[] components);
-    TComponent Wrap<TComponent>(IAppNode parent, TComponent component) where TComponent : IComponent;
+
+    TComponent Wrap<TComponent>(IAppNode parent, TComponent component)
+      where TComponent : IComponent;
   }
 }

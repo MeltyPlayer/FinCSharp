@@ -24,24 +24,25 @@ namespace fin.app.node {
     private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE =
       new SafeType<VoidEvent>();
 
-    private class VoidEvent : BEvent { }
+    private class VoidEvent : BEvent {}
 
     private static readonly Log LOG = new Log();
 
     private class Log {
-      private string actualText_ = "";
+      private string actualText_ = string.Empty;
 
-      public void Reset() => this.actualText_ = "";
+      public void Reset() => this.actualText_ = string.Empty;
+
       public void Write(string text) => this.actualText_ += text;
 
       public void AssertText(string expectedText) =>
         Assert.AreEqual(expectedText, this.actualText_);
     }
 
-    private class StringEvent : BEvent { }
+    private class StringEvent : BEvent {}
 
     private class FooComponent : BComponent {
-      protected override void Discard() { }
+      protected override void Discard() {}
 
       [OnTick]
       private void PrintToLog_(VoidEvent evt) => LOG.Write("Foo");
@@ -52,7 +53,7 @@ namespace fin.app.node {
     }
 
     private class BarComponent : BComponent {
-      protected override void Discard() { }
+      protected override void Discard() {}
 
       [OnTick]
       private void PrintToLog_(VoidEvent evt) => LOG.Write("Bar");
@@ -97,9 +98,11 @@ namespace fin.app.node {
       var foo = INSTANTIATOR.NewChild(root);
       var bar = INSTANTIATOR.NewChild(foo);
 
-      foo.OnTick(PASS_STRING_EVENT_TYPE,
+      foo.OnTick(
+        PASS_STRING_EVENT_TYPE,
         evt => LOG.Write("Foo(" + evt.Str + ")"));
-      bar.OnTick(PASS_STRING_EVENT_TYPE,
+      bar.OnTick(
+        PASS_STRING_EVENT_TYPE,
         evt => LOG.Write("Bar(" + evt.Str + ")"));
 
       root.Emit(new PassStringEvent("_"));

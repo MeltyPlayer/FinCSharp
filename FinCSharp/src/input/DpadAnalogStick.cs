@@ -1,7 +1,6 @@
 ﻿using fin.math;
 
 namespace fin.input {
-
   public class DpadAnalogStick : IAnalogStick {
     public IDpad Dpad { get; set; }
 
@@ -9,17 +8,23 @@ namespace fin.input {
       this.Dpad = dpad;
     }
 
-    public IVector2<float> NormalizedAxes {
+    public fin.math.geometry.IVector2<float> NormalizedAxes {
       get {
         var xVector = this.GetAxis_(this.Dpad.RightState, this.Dpad.LeftState);
         var yVector = this.GetAxis_(this.Dpad.UpState, this.Dpad.DownState);
-        return new ImmutableVector2<float>(xVector, yVector);
+        return new fin.math.geometry.ImmutableVector2<float>(xVector, yVector);
       }
     }
 
     private float GetAxis_(ButtonState positive, ButtonState negative) {
-      float positiveValue = (positive == ButtonState.DOWN || positive == ButtonState.PRESSED) ? 1 : 0;
-      float negativeValue = (negative == ButtonState.DOWN || negative == ButtonState.PRESSED) ? 1 : 0;
+      float positiveValue =
+        (positive == ButtonState.DOWN || positive == ButtonState.PRESSED)
+          ? 1
+          : 0;
+      float negativeValue =
+        (negative == ButtonState.DOWN || negative == ButtonState.PRESSED)
+          ? 1
+          : 0;
       return positiveValue - negativeValue;
     }
   }

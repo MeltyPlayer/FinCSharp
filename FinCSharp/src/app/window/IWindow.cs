@@ -1,9 +1,8 @@
 ﻿using fin.app.node;
-using fin.graphics.common;
+using fin.graphics;
 using fin.math.geometry;
 
 namespace fin.app.window {
-
   public interface IWindow : IComponent {
     string Title { get; set; }
 

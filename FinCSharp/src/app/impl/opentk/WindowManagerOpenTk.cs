@@ -1,9 +1,7 @@
 ﻿using fin.app.window;
 
 namespace fin.app.impl.opentk {
-
-  public sealed partial class AppOpenTk : IApp {
-
+  public sealed partial class AppOpenTk {
     private sealed partial class WindowManagerOpenTk : IWindowManager {
       private readonly AppOpenTk parent_;
 
@@ -20,6 +18,7 @@ namespace fin.app.impl.opentk {
         for (var i = 0; i < count; ++i) {
           windows[i] = this.NewWindow(args[i]);
         }
+
         return windows;
       }
     }

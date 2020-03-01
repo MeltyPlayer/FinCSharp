@@ -12,16 +12,22 @@ using fin.type;
 namespace fin.app.node.impl {
   // TODO: Make this internal.
   public sealed partial class InstantiatorImpl : IInstantiator {
-    public IRootAppNode NewRoot() => new RootAppNode();
+    private IRootAppNode? rootAppNode_;
+
+    // TODO: This is messy.
+    public IRootAppNode NewRoot() => this.rootAppNode_ = new RootAppNode();
 
     private sealed class RootAppNode : BAppNode, IRootAppNode {
-      public RootAppNode() : base(null) { }
+      public RootAppNode() : base(null) {}
 
       public bool Discard() => this.discardableImpl_.Discard();
     }
 
+    public IChildAppNode NewTopLevelChild(params IComponent[] components) =>
+      this.NewChild(this.rootAppNode_!, components);
+
     public IChildAppNode NewChild(IAppNode parent,
-      params IComponent[] components) {
+                                  params IComponent[] components) {
       var child = new ChildAppNode((parent as BAppNode)!);
       foreach (var component in components) {
         child.AddComponent(component);
@@ -31,7 +37,7 @@ namespace fin.app.node.impl {
     }
 
     private sealed class ChildAppNode : BAppNode, IChildAppNode {
-      public ChildAppNode(BAppNode parent) : base(parent) { }
+      public ChildAppNode(BAppNode parent) : base(parent) {}
 
       public IAppNode Parent {
         get => this.ParentImpl!;

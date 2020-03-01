@@ -1,7 +1,6 @@
 ﻿using fin.math.geometry;
 
 namespace fin.app {
-
   public class Resolution : IDimensions<int> {
     public int Width { get; }
     public int Height { get; }

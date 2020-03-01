@@ -7,11 +7,11 @@ namespace fin.math.geometry {
   }
 
   public class MutableDimensions<TNumber> : IDimensions<TNumber>
-    where TNumber : IComparable {
+      where TNumber : IComparable {
     public TNumber Width { get; set; } = default;
     public TNumber Height { get; set; } = default;
 
-    public MutableDimensions() { }
+    public MutableDimensions() {}
 
     public MutableDimensions(TNumber width, TNumber height) {
       this.Width = width;
@@ -24,8 +24,20 @@ namespace fin.math.geometry {
     IDimensions<TNumber> Dimensions { get; }
   }
 
+  public class AggregationBoundingBox<TNumber> : IBoundingBox<TNumber>
+      where TNumber : IComparable {
+    public IVector2<TNumber> TopLeft { get; }
+    public IDimensions<TNumber> Dimensions { get; }
+
+    public AggregationBoundingBox(IVector2<TNumber> topLeft,
+                                  IDimensions<TNumber> dimensions) {
+      this.TopLeft = topLeft;
+      this.Dimensions = dimensions;
+    }
+  }
+
   public class MutableBoundingBox<TNumber> : IBoundingBox<TNumber>
-    where TNumber : IComparable {
+      where TNumber : IComparable {
     IVector2<TNumber> IBoundingBox<TNumber>.TopLeft => this.TopLeft;
     public MutableVector2<TNumber> TopLeft { get; }
 
@@ -38,9 +50,9 @@ namespace fin.math.geometry {
     }
 
     public MutableBoundingBox(TNumber x,
-      TNumber y,
-      TNumber width,
-      TNumber height) {
+                              TNumber y,
+                              TNumber width,
+                              TNumber height) {
       this.TopLeft = new MutableVector2<TNumber>(x, y);
       this.Dimensions = new MutableDimensions<TNumber>(width, height);
     }

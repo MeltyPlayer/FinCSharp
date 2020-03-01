@@ -9,19 +9,19 @@ using fin.type;
 namespace fin.app.events {
   public interface IForOnTickMethod {
     void ForOnTickMethod<TEvent>(SafeType<TEvent> eventType,
-      Action<TEvent> handler) where TEvent : IEvent;
+                                 Action<TEvent> handler) where TEvent : IEvent;
   }
 
   [AttributeUsage(AttributeTargets.Method)]
   public class OnTickAttribute : Attribute {
-    public OnTickAttribute() { }
+    public OnTickAttribute() {}
 
     public delegate dynamic ForOnTickMethod();
 
     public static void SniffAndAddMethods(object onTickHandlerOwner,
-      IForOnTickMethod target) {
+                                          IForOnTickMethod target) {
       var forOnTickMethod = target.GetType().GetMethods()
-        .Where(m => m.Name == "ForOnTickMethod").Single();
+                                  .Single(m => m.Name == "ForOnTickMethod");
 
       var type = onTickHandlerOwner.GetType();
       var methods = type.GetMethods(BindingFlags.Instance |
@@ -29,9 +29,11 @@ namespace fin.app.events {
                                     BindingFlags.NonPublic);
 
       var onTickHandlers = methods
-        .Where(m =>
-          m.GetCustomAttributes(typeof(OnTickAttribute), true).Length > 0)
-        .ToArray();
+                           .Where(m =>
+                                    m.GetCustomAttributes(
+                                      typeof(OnTickAttribute),
+                                      true).Length > 0)
+                           .ToArray();
       foreach (var onTickHandler in onTickHandlers) {
         var parameters = onTickHandler.GetParameters();
         var eventParameter = parameters[0];
@@ -55,7 +57,11 @@ namespace fin.app.events {
         //var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
         //Action<dynamic> handler = evt => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt });
         forOnTickMethod.MakeGenericMethod(eventParameterType).Invoke(target,
-          new object[] {safeEventParameterType, genericHandler});
+                                                                     new object
+                                                                       [] {
+                                                                         safeEventParameterType,
+                                                                         genericHandler
+                                                                       });
 
         //onTick.MakeGenericMethod(eventParameterType).Invoke(this, new object[] { safeEventParameterType, handler });
       }

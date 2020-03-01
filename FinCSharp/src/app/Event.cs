@@ -1,15 +1,13 @@
 ﻿using fin.events;
-using fin.graphics.common;
+using fin.graphics;
 
 namespace fin.app {
+  public class StartTickEvent : BEvent { }
 
-  public class StartTickEvent : BEvent {
-  }
-
-  public class RenderTickEvent : BEvent {
+  public class TriggerRenderViewsTickEvent : BEvent {
     public IGraphics Graphics { get; }
 
-    public RenderTickEvent(IGraphics g) {
+    public TriggerRenderViewsTickEvent(IGraphics g) {
       this.Graphics = g;
     }
   }

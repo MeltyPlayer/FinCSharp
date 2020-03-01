@@ -3,12 +3,11 @@ using fin.app.node.impl;
 using fin.app.scene;
 using fin.app.window;
 using fin.function;
-using fin.graphics.common.impl.opentk;
+using fin.graphics.impl.opentk;
 using fin.input;
 using fin.settings;
 
 namespace fin.app.impl.opentk {
-
   public partial class AppOpenTk : IApp {
     private readonly RecurrentCaller ticker_;
 
@@ -29,7 +28,8 @@ namespace fin.app.impl.opentk {
       this.windowManager_ = new WindowManagerOpenTk(this);
       this.root_ = this.instantiator_.NewRoot();
 
-      this.ticker_ = RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
+      this.ticker_ =
+        RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
     }
 
     private void CloseApp_() {
@@ -65,9 +65,11 @@ namespace fin.app.impl.opentk {
       // TODO: Event triggering should probably be limited to this class.
       // TODO: Instantiator should probably be pre-scoped to the root already.
       this.sceneManager_.ExitSceneIfScheduled(this.root_);
-      this.sceneManager_.EnterSceneIfScheduled(this.root_, this.windowManager_, this.instantiator_);
+      this.sceneManager_.EnterSceneIfScheduled(this.root_,
+                                               this.instantiator_,
+                                               this.windowManager_);
 
-      this.root_.Emit(new RenderTickEvent(this.g_));
+      this.root_.Emit(new TriggerRenderViewsTickEvent(this.g_));
     }
   }
 }

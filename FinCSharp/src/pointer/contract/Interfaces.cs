@@ -11,7 +11,7 @@ namespace fin.pointer.contract {
   public interface IContract {
     bool IsActive { get; }
 
-    delegate void OnBreakHandler(IContract contract);
+    public delegate void OnBreakHandler(IContract contract);
 
     public event OnBreakHandler OnBreak;
 
