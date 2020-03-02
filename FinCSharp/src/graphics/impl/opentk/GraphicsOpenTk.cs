@@ -2,6 +2,7 @@
   public class GraphicsOpenTk : IGraphics {
     public GraphicsOpenTk() {
       this.Render2d = new Render2d(this);
+      this.Text = new Text(this);
     }
 
     public IScreen Screen { get; } = new ScreenOpenTk();
@@ -9,5 +10,6 @@
     public ITransform Transform { get; } = new TransformOpenTk();
     public ITextures Textures { get; } = new TexturesOpenTk();
     public Render2d Render2d { get; }
+    public Text Text { get; }
   }
 }

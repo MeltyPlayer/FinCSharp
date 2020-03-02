@@ -44,5 +44,10 @@ namespace fin.graphics.impl.opentk {
       GL.Color4(r, g, b, a);
       return this;
     }
+
+    public override IPrimitives VertexUv(double u, double v) {
+      GL.TexCoord2(u, v);
+      return this;
+    }
   }
 }

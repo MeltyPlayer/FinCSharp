@@ -35,13 +35,13 @@
 
     public static Color FromRgbaF(float r, float g, float b, float a) {
       return Color.FromRgbaB((byte) (r * 255),
-        (byte) (g * 255),
-        (byte) (b * 255),
-        (byte) (a * 255));
+                             (byte) (g * 255),
+                             (byte) (b * 255),
+                             (byte) (a * 255));
     }
 
     public static Color FromRgbF(float r, float g, float b) =>
-      Color.FromRgbaF(r, g, b, 1);
+        Color.FromRgbaF(r, g, b, 1);
 
     public byte Rb => (byte) (this.I >> 24 & 0xff);
     public byte Gb => (byte) (this.I >> 16 & 0xff);

@@ -1,31 +1,45 @@
-﻿using fin.data.collections.grid;
-using fin.discardable;
-using fin.graphics.color;
+﻿namespace fin.graphics.impl.opentk {
+  using System.Diagnostics;
 
-using OpenTK.Graphics.OpenGL;
+  using data.collections.grid;
 
-namespace fin.graphics.impl.opentk {
+  using discardable;
+
+  using color;
+
+  using OpenTK.Graphics.OpenGL;
+
   public class TexturesOpenTk : ITextures {
     public ITexture Create(ImageData imageData) {
       var textureFormat =
-        TexturesOpenTk.ConvertImageTypeToTextureFormat_(imageData.imageType);
+          TexturesOpenTk.ConvertImageTypeToTextureFormat_(imageData.imageType);
 
       var (width, height) =
-        (imageData.pixels.Width, imageData.pixels.Height);
+          (imageData.pixels.Width, imageData.pixels.Height);
 
       uint textureId;
-      GL.CreateTextures(TextureTarget.Texture2D, 1, out textureId);
-      GL.TextureStorage2D(textureId,
+      GL.GenTextures(1, out textureId);
+      //GL.CreateTextures(TextureTarget.Texture2D, 1, out textureId);
+      /*GL.TextureStorage2D(textureId,
                           1,
                           textureFormat,
                           width,
-                          height);
+                          height);*/
 
       var pixelData =
-        TexturesOpenTk.ConvertRgbaGridToUintArray_(imageData.pixels);
+          TexturesOpenTk.ConvertRgbaGridToUintArray_(imageData.pixels);
 
       GL.BindTexture(TextureTarget.Texture2D, textureId);
-      GL.TextureSubImage2D(textureId,
+      GL.TexImage2D(TextureTarget.Texture2D,
+                    0,
+                    PixelInternalFormat.Rgba,
+                    width,
+                    height,
+                    0,
+                    PixelFormat.AbgrExt,
+                    PixelType.UnsignedByte,
+                    pixelData);
+      /*GL.TextureSubImage2D(textureId,
                            0,
                            0,
                            0,
@@ -33,14 +47,20 @@ namespace fin.graphics.impl.opentk {
                            height,
                            PixelFormat.Rgba,
                            PixelType.Int,
-                           pixelData);
+                           pixelData);*/
+
+      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
+      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+
       GL.BindTexture(TextureTarget.Texture2D, 0);
 
       return new TextureOpentk(textureId);
     }
 
     private static SizedInternalFormat ConvertImageTypeToTextureFormat_(
-      ImageType imageType) {
+        ImageType imageType) {
       switch (imageType) {
         case ImageType.GRAYSCALE:
           return SizedInternalFormat.R8i;
@@ -83,13 +103,18 @@ namespace fin.graphics.impl.opentk {
         this.Discard();
       }
 
-      public IColor GetPixel(int x, int y) {
-        return Color.FromRgba(0);
-      }
+      public IColor GetPixel(int x, int y) => Color.FromRgba(0);
 
       public IGrid<IColor> GetAllPixels() {
         throw new System.Exception();
       }
+
+      // TODO: This is an internal detail that doesn't apply to all libraries, rethink this!
+      public void Bind() =>
+          GL.BindTexture(TextureTarget.Texture2D, this.textureId_);
+
+      public void Unbind() =>
+          GL.BindTexture(TextureTarget.Texture2D, 0);
     }
   }
 }

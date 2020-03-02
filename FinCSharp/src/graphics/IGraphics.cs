@@ -5,5 +5,6 @@
     ITransform Transform { get; }
     ITextures Textures { get; }
     Render2d Render2d { get; }
+    Text Text { get; }
   }
 }

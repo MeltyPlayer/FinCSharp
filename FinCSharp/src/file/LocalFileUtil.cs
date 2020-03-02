@@ -9,9 +9,12 @@ namespace fin.file {
     static LocalFileUtil() {
       FileUtil.readHandlers.DefineHandler<LocalFile>(LocalFileUtil.ReadText);
       FileUtil.asyncReadHandlers.DefineHandler<LocalFile>(LocalFileUtil
-        .ReadTextAsync);
+                                                              .ReadTextAsync);
       //FileUtil.writeHandlers.DefineHandler<LocalFile>(WriteText);
     }
+
+    public static byte[] ReadBytes(LocalFile file) =>
+        File.ReadAllBytes(file.uri);
 
     public static string ReadText(LocalFile file) {
       using (var reader = new StreamReader(file.uri)) {

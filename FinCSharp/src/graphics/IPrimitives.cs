@@ -32,8 +32,14 @@ namespace fin.graphics {
     }
 
     public virtual IPrimitives VertexColor(Color color) =>
-      this.VertexColorB(color.Rb, color.Gb, color.Bb, color.Ab);
+        this.VertexColorB(color.Rb, color.Gb, color.Bb, color.Ab);
 
     public abstract IPrimitives VertexColorB(byte r, byte g, byte b, byte a);
+
+    // TODO: Doubles or float?
+    public virtual IPrimitives VertexUv((double, double) uv) =>
+        this.VertexUv(uv.Item1, uv.Item2);
+
+    public abstract IPrimitives VertexUv(double u, double v);
   }
 }

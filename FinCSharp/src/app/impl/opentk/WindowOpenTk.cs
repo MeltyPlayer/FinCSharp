@@ -105,8 +105,15 @@ namespace fin.app.impl.opentk {
         private void TriggerRenderViews_(TriggerRenderViewsTickEvent evt) {
           this.glContext_.MakeCurrent(this.nativeWindow_.WindowInfo);
 
+          GL.Enable(EnableCap.Blend);
+          GL.BlendFunc(BlendingFactor.SrcAlpha,
+                       BlendingFactor.OneMinusSrcAlpha);
+
+          GL.Enable(EnableCap.AlphaTest);
           GL.Enable(EnableCap.DepthTest);
           GL.DepthFunc(DepthFunction.Lequal);
+
+          GL.Enable(EnableCap.Texture2D);
 
           foreach (var view in this.views_) {
             view.Render(evt.Graphics);

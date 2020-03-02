@@ -1,8 +1,8 @@
-﻿using System;
+﻿namespace fin.graphics {
+  using System;
 
-namespace fin.graphics {
-  using OpenTK.Graphics.OpenGL;
-
+  // TODO: Fix this.
+  [Obsolete("Render2d is slow, VBOs should be used instead.", false)]
   public class Render2d {
     private readonly IGraphics graphics_;
 

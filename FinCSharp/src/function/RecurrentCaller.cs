@@ -49,7 +49,7 @@ namespace fin.function {
         var truncatedRemainingMillis = (int) remainingMillis;
 
         if (truncatedRemainingMillis > 0) {
-          Logger.Log(LogType.PERFORMANCE,
+          /*Logger.Log(LogType.PERFORMANCE,
             LogSeverity.WARNING,
             "! Time: " + frameMillis + "ms, Rem.: " + remainingMillis + "ms" +
             ", Trun.: " + truncatedRemainingMillis + "ms");
@@ -58,7 +58,7 @@ namespace fin.function {
           //Thread.Sleep(truncatedRemainingMillis);
         }
         else {
-          Logger.Log(LogType.PERFORMANCE,
+          /*Logger.Log(LogType.PERFORMANCE,
             LogSeverity.WARNING,
             ". Time: " + frameMillis + "ms, Rem.: " + remainingMillis + "ms" +
             ", Trun.: " + truncatedRemainingMillis + "ms");

@@ -8,7 +8,7 @@ namespace fin.graphics {
     RGBA,
   }
 
-  public struct ImageData {
+  public class ImageData {
     public ImageType imageType { get; }
     public IGrid<Color> pixels { get; }
 

@@ -10,5 +10,7 @@
 
     public static readonly Color WHITE = Color.FromRgbF(1, 1, 1);
     public static readonly Color BLACK = Color.FromRgbF(0, 0, 0);
+
+    public static readonly Color TRANSPARENT_BLACK = Color.FromRgbaF(0, 0, 0, 0);
   }
 }
