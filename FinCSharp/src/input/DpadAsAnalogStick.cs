@@ -1,18 +1,20 @@
-﻿using fin.math;
+﻿namespace fin.input {
+  using button;
 
-namespace fin.input {
-  public class DpadAnalogStick : IAnalogStick {
+  using math.geometry;
+
+  public class DpadAsAnalogStick : IAnalogStick {
     public IDpad Dpad { get; set; }
 
-    public DpadAnalogStick(IDpad dpad) {
+    public DpadAsAnalogStick(IDpad dpad) {
       this.Dpad = dpad;
     }
 
-    public fin.math.geometry.IVector2<float> NormalizedAxes {
+    public IVector2<float> NormalizedAxes {
       get {
         var xVector = this.GetAxis_(this.Dpad.RightState, this.Dpad.LeftState);
         var yVector = this.GetAxis_(this.Dpad.UpState, this.Dpad.DownState);
-        return new fin.math.geometry.ImmutableVector2<float>(xVector, yVector);
+        return new ImmutableVector2<float>(xVector, yVector);
       }
     }
 

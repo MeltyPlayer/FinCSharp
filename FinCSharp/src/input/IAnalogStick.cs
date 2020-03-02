@@ -1,7 +1,7 @@
-﻿using fin.math;
+﻿namespace fin.input {
+  using math.geometry;
 
-namespace fin.input {
   public interface IAnalogStick {
-    fin.math.geometry.IVector2<float> NormalizedAxes { get; }
+    IVector2<float> NormalizedAxes { get; }
   }
 }

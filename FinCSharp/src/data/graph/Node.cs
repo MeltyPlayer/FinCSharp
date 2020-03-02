@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 
 namespace fin.data.graph {
+  using collections.set;
+
   /// <summary>
   ///   A basic implementation of a graph node.
   /// </summary>
   public class Node<T> : INode<T> {
-    private readonly ISet<INode<T>> incomingNodes_ = new HashSet<INode<T>>();
-    private readonly ISet<INode<T>> outgoingNodes_ = new HashSet<INode<T>>();
+    private readonly OrderedSet<INode<T>> incomingNodes_ = new OrderedSet<INode<T>>();
+    private readonly OrderedSet<INode<T>> outgoingNodes_ = new OrderedSet<INode<T>>();
 
     public Node(T value) {
       this.Value = value;
@@ -56,8 +58,8 @@ namespace fin.data.graph {
 
     public bool RemoveAllIncoming() {
       var didRemove = false;
-      foreach (var other in this.incomingNodes_) {
-        didRemove |= this.RemoveIncoming(other);
+      while (this.incomingNodes_.Count > 0) {
+        didRemove |= this.RemoveIncoming(this.incomingNodes_.First);
       }
 
       return didRemove;
@@ -65,8 +67,8 @@ namespace fin.data.graph {
 
     public bool RemoveAllOutgoing() {
       var didRemove = false;
-      foreach (var other in this.outgoingNodes_) {
-        didRemove |= this.RemoveOutgoing(other);
+      while (this.outgoingNodes_.Count > 0) {
+        didRemove |= this.RemoveOutgoing(this.outgoingNodes_.First);
       }
 
       return didRemove;

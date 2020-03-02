@@ -1,4 +1,4 @@
-﻿namespace fin.input {
+﻿namespace fin.input.button {
   public enum ButtonState {
     PRESSED,
     DOWN,

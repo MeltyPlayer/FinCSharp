@@ -1,4 +1,4 @@
-﻿namespace fin.input {
+﻿namespace fin.input.button {
   public class NullButton : IButton {
     public static IButton Instance { get; } = new NullButton();
 

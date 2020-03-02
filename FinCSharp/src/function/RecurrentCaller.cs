@@ -1,43 +1,56 @@
 ﻿using System;
 
-using fin.log;
+using RSG;
 
 namespace fin.function {
+  public interface IRecurrentCaller {
+    double TargetedFrequency { get; }
+    double ActualFrequency { get; }
+
+    bool IsRunning { get; }
+    void Start();
+    IPromise Pause();
+  }
+
   /**
    * Calls a given handler recurrently over time. Assumes the handler will take
    * less time than the prescribed delay between calls.
    */
-  public class RecurrentCaller {
-    public double TargetedFrequency { get; }
-
-    public double ActualFrequency { get; private set; }
-
+  public class RecurrentCaller : IRecurrentCaller {
     private readonly Action handler_;
-    private bool isRunning_;
+    private IPromise nextPausePromise_ = Promise.Resolved();
 
     public static RecurrentCaller FromFrequency(double frequency,
-      Action handler)
+                                                Action handler)
       => new RecurrentCaller(frequency, handler);
 
     public static RecurrentCaller FromPeriod(double period, Action handler) =>
-      new RecurrentCaller(1 / period, handler);
+        new RecurrentCaller(1 / period, handler);
 
     private RecurrentCaller(double targetedFrequency, Action handler) {
       this.TargetedFrequency = targetedFrequency;
       this.handler_ = handler;
     }
 
+    public double TargetedFrequency { get; }
+    public double ActualFrequency { get; private set; }
+
+    public bool IsRunning { get; private set; }
+ 
     public void Start() {
-      if (this.isRunning_) {
+      if (this.IsRunning) {
         return;
       }
 
-      this.isRunning_ = true;
+      this.IsRunning = true;
+
+      var currentPromise = new Promise();
+      this.nextPausePromise_ = currentPromise;
 
       var millisPerIteration = 1000 / this.TargetedFrequency;
 
       var previousTime = DateTime.UtcNow;
-      while (this.isRunning_) {
+      while (this.IsRunning) {
         var currentTime = DateTime.UtcNow;
         var frameSpan = currentTime - previousTime;
         var frameMillis = frameSpan.TotalMilliseconds;
@@ -75,10 +88,16 @@ namespace fin.function {
         previousTime = currentTime;
         this.ActualFrequency = 1 / (frameMillis / 1000);
       }
+
+      // Only reaches here once stopped.
+      currentPromise.Resolve();
     }
 
-    public void Stop() {
-      this.isRunning_ = false;
+    public IPromise Pause() {
+      if (this.IsRunning) {
+        this.IsRunning = false;
+      }
+      return this.nextPausePromise_;
     }
   }
 }

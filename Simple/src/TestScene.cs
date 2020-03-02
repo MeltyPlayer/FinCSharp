@@ -1,6 +1,8 @@
 ﻿namespace simple {
+  using System;
   using System.Drawing;
 
+  using fin.app;
   using fin.app.events;
   using fin.app.node;
   using fin.app.scene;
@@ -8,6 +10,7 @@
   using fin.graphics.camera;
   using fin.graphics.color;
   using fin.input;
+  using fin.input.button;
   using fin.settings;
   using fin.math.geometry;
 
@@ -42,6 +45,7 @@
 
     private class TestComponent : BComponent {
       private ICursor cursor_;
+      private double i_ = 0;
 
       public TestComponent(ICursor cursor) {
         this.cursor_ = cursor;
@@ -50,10 +54,20 @@
       protected override void Discard() {}
 
       [OnTick]
+      private void StartTick_(StartTickEvent _) {
+        this.i_ += .02;
+      }
+
+      [OnTick]
       private void RenderForOrthographicCamera_(
           RenderForOrthographicCameraTickEvent evt) {
         evt.Graphics.Primitives.VertexColor(ColorConstants.GREEN);
-        evt.Graphics.Render2d.Rectangle(0, 0, 30, 30, true);
+        evt.Graphics.Render2d.Rectangle(0,
+                                        480 - 20,
+                                        640 * (float) (.5 + .5 *
+                                                       Math.Cos(this.i_)),
+                                        20,
+                                        true);
 
         evt.Graphics.Primitives.VertexColor(ColorConstants.WHITE);
         evt.Graphics.Text.Draw(0,
@@ -64,10 +78,17 @@
 
         var position = this.cursor_.Position;
         if (position != null) {
+          float radius = this.cursor_.LeftButton.State switch {
+              ButtonState.PRESSED  => 8,
+              ButtonState.DOWN     => 15,
+              ButtonState.RELEASED => 50,
+              ButtonState.UP       => 30,
+          };
+
           evt.Graphics.Primitives.VertexColor(ColorConstants.RED);
           evt.Graphics.Render2d.Circle(position.X,
                                        position.Y,
-                                       10,
+                                       radius,
                                        20,
                                        true);
         }

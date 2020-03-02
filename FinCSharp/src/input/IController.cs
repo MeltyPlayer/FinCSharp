@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿namespace fin.input {
+  using System.Collections.Generic;
 
-using fin.input.impl.opentk;
+  using button;
 
-namespace fin.input {
   public enum AnalogStickType {
     PRIMARY,
     SECONDARY,
@@ -20,35 +20,35 @@ namespace fin.input {
 
   public class KeyboardController : IController {
     private readonly IDictionary<AnalogStickType, IAnalogStick> analogSticks_ =
-      new Dictionary<AnalogStickType, IAnalogStick>();
+        new Dictionary<AnalogStickType, IAnalogStick>();
 
     private readonly IDictionary<FaceButtonType, IButton> faceButtons_ =
-      new Dictionary<FaceButtonType, IButton>();
+        new Dictionary<FaceButtonType, IButton>();
 
-    public KeyboardController(IKeyButtonDictionary kbd) {
-      this.analogSticks_[AnalogStickType.PRIMARY] = new DpadAnalogStick(
-        new ButtonDpad() {
-          Up = kbd[KeyId.W],
-          Down = kbd[KeyId.S],
-          Left = kbd[KeyId.A],
-          Right = kbd[KeyId.D]
-        });
-      this.analogSticks_[AnalogStickType.SECONDARY] = new DpadAnalogStick(
-        new ButtonDpad() {
-          Up = kbd[KeyId.I],
-          Down = kbd[KeyId.K],
-          Left = kbd[KeyId.J],
-          Right = kbd[KeyId.L]
-        });
+    public KeyboardController(IKeyboard keyboard) {
+      this.analogSticks_[AnalogStickType.PRIMARY] = new DpadAsAnalogStick(
+          new ButtonDpad() {
+              Up = keyboard[KeyId.W],
+              Down = keyboard[KeyId.S],
+              Left = keyboard[KeyId.A],
+              Right = keyboard[KeyId.D]
+          });
+      this.analogSticks_[AnalogStickType.SECONDARY] = new DpadAsAnalogStick(
+          new ButtonDpad() {
+              Up = keyboard[KeyId.I],
+              Down = keyboard[KeyId.K],
+              Left = keyboard[KeyId.J],
+              Right = keyboard[KeyId.L]
+          });
 
-      this.faceButtons_[FaceButtonType.PRIMARY] = kbd[KeyId.Z];
-      this.faceButtons_[FaceButtonType.SECONDARY] = kbd[KeyId.X];
+      this.faceButtons_[FaceButtonType.PRIMARY] = keyboard[KeyId.Z];
+      this.faceButtons_[FaceButtonType.SECONDARY] = keyboard[KeyId.X];
     }
 
     public IAnalogStick this[AnalogStickType analogStickType] =>
-      this.analogSticks_[analogStickType];
+        this.analogSticks_[analogStickType];
 
     public IButton this[FaceButtonType faceButtonType] =>
-      this.faceButtons_[faceButtonType];
+        this.faceButtons_[faceButtonType];
   }
 }

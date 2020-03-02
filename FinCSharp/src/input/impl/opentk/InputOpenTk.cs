@@ -2,20 +2,22 @@
   using fin.input;
 
   public class InputOpenTk : IInput {
-    private readonly IKeyStateDictionary ksd_;
-    private readonly IKeyButtonDictionary kbd_;
-
     public InputOpenTk() {
-      this.ksd_ = new KeyStateDictionary();
-      this.kbd_ = new OpenTkKeyButtonDictionary(this.ksd_);
+      this.Cursor = new CursorOpenTk(this.ButtonManager);
+      this.Keyboard = new KeyboardOpenTk(this.ButtonManager);
 
-      this.Controller = new KeyboardController(this.kbd_);
-      this.Cursor = new CursorOpenTk();
+      this.Controller = new KeyboardController(this.Keyboard);
     }
+
+    public ButtonManagerOpenTk ButtonManager { get; } =
+      new ButtonManagerOpenTk();
 
     public IController Controller { get; }
 
     ICursor IInput.Cursor => this.Cursor;
-    public CursorOpenTk Cursor { get; } = new CursorOpenTk();
+    public CursorOpenTk Cursor { get; }
+
+    IKeyboard IInput.Keyboard => this.Keyboard; 
+    public KeyboardOpenTk Keyboard { get; }
   }
 }

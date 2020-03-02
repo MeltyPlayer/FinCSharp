@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using fin.app.events;
 using fin.app.node;
 using fin.app.window;
-using fin.input;
 using fin.input.impl.opentk;
 using fin.math.geometry;
 
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 
 namespace fin.app.impl.opentk {
   public sealed partial class AppOpenTk {
@@ -23,15 +23,12 @@ namespace fin.app.impl.opentk {
                                           new WindowOpenTk(
                                               args,
                                               this.parent_.input_,
-                                              this.parent_.ksd_,
-                                              this.parent_.CloseApp_));
+                                              this.parent_.ScheduleCloseApp_));
 
       private sealed partial class WindowOpenTk : BComponent, IWindow {
         private readonly INativeWindow nativeWindow_;
 
         private readonly IGraphicsContext glContext_;
-
-        private readonly IKeyStateDictionary ksd_;
 
         private readonly MutableBoundingBox<int> windowBoundingBox_;
 
@@ -43,7 +40,6 @@ namespace fin.app.impl.opentk {
 
         public WindowOpenTk(IWindowArgs args,
                             InputOpenTk input,
-                            IKeyStateDictionary ksd,
                             Action onClose) {
           var initialWidth = args.Dimensions.Width;
           var initialHeight = args.Dimensions.Height;
@@ -55,21 +51,7 @@ namespace fin.app.impl.opentk {
                                                 GraphicsMode.Default,
                                                 DisplayDevice.Default);
 
-          this.ksd_ = ksd;
-          this.nativeWindow_.KeyDown += (_, args) =>
-              ksd.OnKeyDown(OpenTkKeyToKeyIdConverter.Convert(args.Key));
-          this.nativeWindow_.KeyUp += (_, args) =>
-              ksd.OnKeyUp(OpenTkKeyToKeyIdConverter.Convert(args.Key));
-
-          var cursor = input.Cursor;
-          this.nativeWindow_.MouseMove += (_, args) =>
-              (cursor.Position.X, cursor.Position.Y) = (args.X, args.Y);
-          this.nativeWindow_.MouseEnter += (_, _2) => cursor.Window = this;
-          this.nativeWindow_.MouseLeave += (_, _2) => {
-            if (cursor.Window == this) {
-              cursor.Window = null;
-            }
-          };
+          this.AttachToNativeInputEvents_(input);
 
           this.nativeWindow_.Closed += (_, _2) => onClose();
 
@@ -99,22 +81,59 @@ namespace fin.app.impl.opentk {
                                   this.windowBoundingBox_.Dimensions));
         }
 
-        protected override void Discard() {
-          this.nativeWindow_.Dispose();
-          this.glContext_.Dispose();
+        private void AttachToNativeInputEvents_(InputOpenTk input) {
+          var keyboard = input.Keyboard;
+          this.nativeWindow_.KeyDown += (_, args) =>
+              keyboard[KeyToKeyIdConverterOpenTk.Convert(args.Key)].Down();
+          this.nativeWindow_.KeyUp += (_, args) =>
+              keyboard[KeyToKeyIdConverterOpenTk.Convert(args.Key)].Up();
 
-          // TODO: Should probably close here.
+          var cursor = input.Cursor;
+          this.nativeWindow_.MouseMove += (_, args) =>
+              (cursor.Position.X, cursor.Position.Y) = (args.X, args.Y);
+          this.nativeWindow_.MouseEnter += (_, _2) => cursor.Window = this;
+          this.nativeWindow_.MouseLeave += (_, _2) => {
+            if (cursor.Window == this) {
+              cursor.Window = null;
+            }
+          };
+          this.nativeWindow_.MouseDown += (_, args) => {
+            if (args.Button == MouseButton.Left) {
+              cursor.LeftButton.Down();
+            }
+            else if (args.Button == MouseButton.Right) {
+              cursor.RightButton.Down();
+            }
+          };
+          this.nativeWindow_.MouseUp += (_, args) => {
+            if (args.Button == MouseButton.Left) {
+              cursor.LeftButton.Up();
+            }
+            else if (args.Button == MouseButton.Right) {
+              cursor.RightButton.Up();
+            }
+          };
         }
 
-        // TODO: Come up with a naming convention for OnTick events.
-        [OnTick]
-        private void StartTick_(StartTickEvent _) {
+        protected override void Discard() {
+          this.nativeWindow_.Close();
+
+          this.nativeWindow_.Dispose();
+          this.glContext_.Dispose();
+        }
+
+        public void ProcessEvents() {
+          if (!this.nativeWindow_.Exists) {
+            return;
+          }
           this.nativeWindow_.ProcessEvents();
-          this.ksd_.HandleTransitions();
         }
 
         [OnTick]
         private void TriggerRenderViews_(TriggerRenderViewsTickEvent evt) {
+          if (!this.nativeWindow_.Exists) {
+            return;
+          }
           this.glContext_.MakeCurrent(this.nativeWindow_.WindowInfo);
 
           GL.Enable(EnableCap.Blend);

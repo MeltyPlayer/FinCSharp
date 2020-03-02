@@ -6,41 +6,39 @@ using fin.function;
 using fin.graphics.impl.opentk;
 using fin.input;
 using fin.settings;
+using fin.input.impl.opentk;
 
 namespace fin.app.impl.opentk {
-  using input.impl.opentk;
-
   public partial class AppOpenTk : IApp {
-    private readonly RecurrentCaller ticker_;
+    private readonly IRecurrentCaller ticker_;
 
+    private readonly IRootAppNode root_;
     private readonly ISceneManager sceneManager_ = new SceneManagerImpl();
 
     private readonly GraphicsOpenTk g_ = new GraphicsOpenTk();
-
-    private readonly KeyStateDictionary ksd_ = new KeyStateDictionary();
-
-    private readonly IRootAppNode root_;
 
     public IInput Input => this.input_;
     private readonly InputOpenTk input_ = new InputOpenTk();
 
     public IInstantiator Instantiator { get; } = new InstantiatorImpl();
 
-    public IWindowManager WindowManager { get; }
+    public IWindowManager WindowManager => this.windowManager_;
+    private readonly WindowManagerOpenTk windowManager_;
 
     public AppOpenTk() {
       var settings = Settings.Load();
 
-      this.WindowManager = new WindowManagerOpenTk(this);
+      this.windowManager_ = new WindowManagerOpenTk(this);
       this.root_ = this.Instantiator.NewRoot();
 
       this.ticker_ =
           RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
     }
 
-    private void CloseApp_() {
-      this.ticker_.Stop();
-      this.root_.Discard();
+    private void ScheduleCloseApp_() {
+      if (this.ticker_.IsRunning) {
+        this.ticker_.Pause().Then(() => this.root_.Discard());
+      }
     }
 
     public void Launch(IScene scene) {
@@ -67,12 +65,17 @@ namespace fin.app.impl.opentk {
       // TODO: Extract this out into a separate class.
       this.root_.Emit(new StartTickEvent());
 
+      this.windowManager_.ProcessEvents();
+      this.input_.ButtonManager.HandleTransitions();
+      if (this.input_.Keyboard[KeyId.ESC].IsPressed) {
+        this.ScheduleCloseApp_();
+      }
+
       // TODO: Should these args be passed in?
       // TODO: Event triggering should probably be limited to this class.
       // TODO: Instantiator should probably be pre-scoped to the root already.
       this.sceneManager_.ExitSceneIfScheduled(this.root_);
-      this.sceneManager_.EnterSceneIfScheduled(this.root_,
-                                               this);
+      this.sceneManager_.EnterSceneIfScheduled(this.root_, this);
 
       this.root_.Emit(new TriggerRenderViewsTickEvent(this.g_));
     }

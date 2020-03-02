@@ -1,4 +1,6 @@
 ﻿namespace fin.input {
+  using button;
+
   public interface IAxis {
     float NormalizedValue { get; }
   }
