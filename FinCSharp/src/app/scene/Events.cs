@@ -1,18 +1,11 @@
 ﻿namespace fin.app.scene {
   using fin.events;
 
-  using node;
-
-  using window;
-
   public class SceneInitTickEvent : BEvent {
-    public IInstantiator Instantiator { get; }
-    public IWindowManager WindowManager { get; }
+    public IApp App { get; }
 
-    public SceneInitTickEvent(IInstantiator instantiator,
-                              IWindowManager windowManager) {
-      this.Instantiator = instantiator;
-      this.WindowManager = windowManager;
+    public SceneInitTickEvent(IApp app) {
+      this.App = app;
     }
   }
 

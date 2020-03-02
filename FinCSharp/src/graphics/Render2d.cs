@@ -34,7 +34,7 @@
 
       if (filled) {
         primitives.Begin(PrimitiveType.TRIANGLE_FAN);
-        primitives.Vertex(new Vertex2d());
+        primitives.Vertex(centerX, centerY);
         for (var i = 0; i < vertexCount + 1; ++i) {
           var deg = MathF.PI * 2 * i / vertexCount;
           var (x, y) = (centerX + radius * MathF.Cos(deg),

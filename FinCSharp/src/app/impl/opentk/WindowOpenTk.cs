@@ -19,11 +19,12 @@ namespace fin.app.impl.opentk {
       // TODO: App should only be closed when the final window is closed.
       // TODO: What if a window never opens??? Need a safety measure to auto-close.
       public IWindow NewWindow(IWindowArgs args)
-        => this.parent_.instantiator_.Wrap(this.parent_.root_,
-                                           new WindowOpenTk(
-                                               args,
-                                               this.parent_.ksd_,
-                                               this.parent_.CloseApp_));
+        => this.parent_.Instantiator.Wrap(this.parent_.root_,
+                                          new WindowOpenTk(
+                                              args,
+                                              this.parent_.input_,
+                                              this.parent_.ksd_,
+                                              this.parent_.CloseApp_));
 
       private sealed partial class WindowOpenTk : BComponent, IWindow {
         private readonly INativeWindow nativeWindow_;
@@ -41,10 +42,11 @@ namespace fin.app.impl.opentk {
             new List<WindowOpenTkView>();
 
         public WindowOpenTk(IWindowArgs args,
+                            InputOpenTk input,
                             IKeyStateDictionary ksd,
                             Action onClose) {
-          var initialWidth = (int) args.Dimensions.Width;
-          var initialHeight = (int) args.Dimensions.Height;
+          var initialWidth = args.Dimensions.Width;
+          var initialHeight = args.Dimensions.Height;
 
           this.nativeWindow_ = new NativeWindow(initialWidth,
                                                 initialHeight,
@@ -54,12 +56,22 @@ namespace fin.app.impl.opentk {
                                                 DisplayDevice.Default);
 
           this.ksd_ = ksd;
-          this.nativeWindow_.KeyDown += (sender, args) =>
+          this.nativeWindow_.KeyDown += (_, args) =>
               ksd.OnKeyDown(OpenTkKeyToKeyIdConverter.Convert(args.Key));
-          this.nativeWindow_.KeyUp += (sender, args) =>
+          this.nativeWindow_.KeyUp += (_, args) =>
               ksd.OnKeyUp(OpenTkKeyToKeyIdConverter.Convert(args.Key));
 
-          this.nativeWindow_.Closed += (s, e) => onClose();
+          var cursor = input.Cursor;
+          this.nativeWindow_.MouseMove += (_, args) =>
+              (cursor.Position.X, cursor.Position.Y) = (args.X, args.Y);
+          this.nativeWindow_.MouseEnter += (_, _2) => cursor.Window = this;
+          this.nativeWindow_.MouseLeave += (_, _2) => {
+            if (cursor.Window == this) {
+              cursor.Window = null;
+            }
+          };
+
+          this.nativeWindow_.Closed += (_, _2) => onClose();
 
           var windowInfo = this.nativeWindow_.WindowInfo;
           this.glContext_ = new GraphicsContext(GraphicsMode.Default,
@@ -72,15 +84,15 @@ namespace fin.app.impl.opentk {
 
           this.windowBoundingBox_ =
               new MutableBoundingBox<int>(0, 0, initialWidth, initialHeight);
-          this.nativeWindow_.Move += (_, _2) => {
-            this.windowBoundingBox_.TopLeft.X = this.nativeWindow_.X;
-            this.windowBoundingBox_.TopLeft.Y = this.nativeWindow_.Y;
-          };
-          this.nativeWindow_.Resize += (_, _2) => {
-            this.windowBoundingBox_.Dimensions.Width = this.nativeWindow_.Width;
-            this.windowBoundingBox_.Dimensions.Height =
-                this.nativeWindow_.Height;
-          };
+          var windowTopLeft = this.windowBoundingBox_.TopLeft;
+          var windowDimensions = this.windowBoundingBox_.Dimensions;
+          this.nativeWindow_.Move += (_, _2) =>
+              (windowTopLeft.X,
+               windowTopLeft.Y) =
+              (this.nativeWindow_.X, this.nativeWindow_.Y);
+          this.nativeWindow_.Resize += (_, _2) =>
+              (windowDimensions.Width, windowDimensions.Height) =
+              (this.nativeWindow_.Width, this.nativeWindow_.Height);
 
           this.viewport_.Push(new AggregationBoundingBox<int>(
                                   new ImmutableVector2<int>(0, 0),

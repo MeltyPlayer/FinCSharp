@@ -14,9 +14,8 @@
     // TODO: I'm not liking these params...?
     void ExitSceneIfScheduled(IRootAppNode root);
 
-    void EnterSceneIfScheduled(IRootAppNode root,
-                               IInstantiator instantiator,
-                               IWindowManager windowManager);
+    // TODO: Does it make sense to have this much power???
+    void EnterSceneIfScheduled(IRootAppNode root, IApp app);
   }
 
   public class SceneManagerImpl : ISceneManager {
@@ -37,15 +36,13 @@
       this.currentNode_ = null;
     }
 
-    public void EnterSceneIfScheduled(IRootAppNode root,
-                                      IInstantiator instantiator,
-                                      IWindowManager windowManager) {
+    public void EnterSceneIfScheduled(IRootAppNode root, IApp app) {
       if (this.pendingScene_ == null) {
         return;
       }
 
-      instantiator.NewChild(root, this.pendingScene_);
-      root.Emit(new SceneInitTickEvent(instantiator, windowManager));
+      app.Instantiator.NewChild(root, this.pendingScene_);
+      root.Emit(new SceneInitTickEvent(app));
       this.pendingScene_ = null;
     }
   }

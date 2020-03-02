@@ -8,11 +8,10 @@ using fin.input;
 using fin.settings;
 
 namespace fin.app.impl.opentk {
+  using input.impl.opentk;
+
   public partial class AppOpenTk : IApp {
     private readonly RecurrentCaller ticker_;
-
-    private readonly IWindowManager windowManager_;
-    private readonly IInstantiator instantiator_ = new InstantiatorImpl();
 
     private readonly ISceneManager sceneManager_ = new SceneManagerImpl();
 
@@ -22,14 +21,21 @@ namespace fin.app.impl.opentk {
 
     private readonly IRootAppNode root_;
 
+    public IInput Input => this.input_;
+    private readonly InputOpenTk input_ = new InputOpenTk();
+
+    public IInstantiator Instantiator { get; } = new InstantiatorImpl();
+
+    public IWindowManager WindowManager { get; }
+
     public AppOpenTk() {
       var settings = Settings.Load();
 
-      this.windowManager_ = new WindowManagerOpenTk(this);
-      this.root_ = this.instantiator_.NewRoot();
+      this.WindowManager = new WindowManagerOpenTk(this);
+      this.root_ = this.Instantiator.NewRoot();
 
       this.ticker_ =
-        RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
+          RecurrentCaller.FromFrequency(settings.Framerate, this.Tick_);
     }
 
     private void CloseApp_() {
@@ -66,8 +72,7 @@ namespace fin.app.impl.opentk {
       // TODO: Instantiator should probably be pre-scoped to the root already.
       this.sceneManager_.ExitSceneIfScheduled(this.root_);
       this.sceneManager_.EnterSceneIfScheduled(this.root_,
-                                               this.instantiator_,
-                                               this.windowManager_);
+                                               this);
 
       this.root_.Emit(new TriggerRenderViewsTickEvent(this.g_));
     }
