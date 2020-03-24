@@ -1,31 +1,16 @@
-﻿namespace fin.input {
-  using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-  using button;
+using fin.input.button;
 
-  public enum AnalogStickType {
-    PRIMARY,
-    SECONDARY,
-  }
-
-  public enum FaceButtonType {
-    PRIMARY,
-    SECONDARY,
-  }
-
-  public interface IController {
-    IAnalogStick this[AnalogStickType analogStickType] { get; }
-    IButton this[FaceButtonType faceButtonType] { get; }
-  }
-
-  public class KeyboardController : IController {
+namespace fin.input.keyboard {
+  public class KeyboardGamepad : IGamepad {
     private readonly IDictionary<AnalogStickType, IAnalogStick> analogSticks_ =
         new Dictionary<AnalogStickType, IAnalogStick>();
 
     private readonly IDictionary<FaceButtonType, IButton> faceButtons_ =
         new Dictionary<FaceButtonType, IButton>();
 
-    public KeyboardController(IKeyboard keyboard) {
+    public KeyboardGamepad(IKeyboard keyboard) {
       this.analogSticks_[AnalogStickType.PRIMARY] = new DpadAsAnalogStick(
           new ButtonDpad() {
               Up = keyboard[KeyId.W],

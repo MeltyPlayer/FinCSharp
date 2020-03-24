@@ -1,8 +1,8 @@
-﻿namespace fin.input.impl.opentk {
-  using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-  using button;
+using fin.input.button;
 
+namespace fin.input.impl.opentk {
   /// <summary>
   ///   The internal controller of a button. Can transition to "down" or "up",
   ///   will automatically track "pressed" and "released".

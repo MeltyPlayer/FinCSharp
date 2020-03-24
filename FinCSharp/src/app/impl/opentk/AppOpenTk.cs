@@ -5,10 +5,12 @@ using fin.app.window;
 using fin.function;
 using fin.graphics.impl.opentk;
 using fin.input;
-using fin.settings;
 using fin.input.impl.opentk;
+using fin.input.keyboard;
+using fin.settings;
 
 namespace fin.app.impl.opentk {
+
   public partial class AppOpenTk : IApp {
     private readonly IRecurrentCaller ticker_;
 

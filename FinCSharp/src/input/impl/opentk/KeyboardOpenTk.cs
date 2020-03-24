@@ -1,15 +1,11 @@
-﻿namespace fin.input.impl.opentk {
-  using System;
-  using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-  using function;
+using fin.input.button;
+using fin.input.keyboard;
 
-  using OpenTK.Input;
+using OpenTK.Input;
 
-  using button;
-
-  using ButtonState = button.ButtonState;
-
+namespace fin.input.impl.opentk {
   public static class KeyToKeyIdConverterOpenTk {
     public static KeyId Convert(Key key) =>
         key switch {
@@ -49,6 +45,7 @@
     }
 
     IButton IKeyboard.this[KeyId keyId] => this[keyId];
+
     public IButtonImplementation this[KeyId keyId] {
       get {
         if (!this.keys_.TryGetValue(keyId, out var key)) {

@@ -1,8 +1,8 @@
-﻿namespace fin.input {
-  using impl.opentk;
+﻿using fin.input.keyboard;
 
+namespace fin.input {
   public interface IInput {
-    IController Controller { get; }
+    IGamepad Controller { get; }
     ICursor Cursor { get; }
     IKeyboard Keyboard { get; }
   }

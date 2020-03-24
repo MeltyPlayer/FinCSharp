@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace fin.input {
-  using button;
-
+﻿namespace fin.input.keyboard {
   public enum KeyId {
     UNKNOWN,
 
@@ -48,9 +44,5 @@ namespace fin.input {
     CTRL,
     ALT,
     ESC
-  }
-
-  public interface IKeyboard {
-    IButton this[KeyId keyId] { get; }
   }
 }
