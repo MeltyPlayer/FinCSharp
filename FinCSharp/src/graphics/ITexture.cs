@@ -6,7 +6,7 @@ namespace fin.graphics {
   public interface ITexture {
     // TODO: Rethink these, not necessarily possible for all libraries.
     IColor GetPixel(int x, int y);
-    IGrid<IColor> GetAllPixels();
+    IFinGrid<IColor> GetAllPixels();
 
     // TODO: Rethink these, bad design!!
     void Bind();

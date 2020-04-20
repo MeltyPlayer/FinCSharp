@@ -49,10 +49,18 @@
                            PixelType.Int,
                            pixelData);*/
 
-      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
-      GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
+      GL.TexParameter(TextureTarget.Texture2D,
+                      TextureParameterName.TextureMinFilter,
+                      (int) TextureMinFilter.Linear);
+      GL.TexParameter(TextureTarget.Texture2D,
+                      TextureParameterName.TextureMagFilter,
+                      (int) TextureMagFilter.Linear);
+      GL.TexParameter(TextureTarget.Texture2D,
+                      TextureParameterName.TextureWrapS,
+                      (int) TextureWrapMode.Clamp);
+      GL.TexParameter(TextureTarget.Texture2D,
+                      TextureParameterName.TextureWrapT,
+                      (int) TextureWrapMode.Clamp);
 
       GL.BindTexture(TextureTarget.Texture2D, 0);
 
@@ -74,7 +82,8 @@
       }
     }
 
-    private static uint[] ConvertRgbaGridToUintArray_(IGrid<Color> rgbaGrid) {
+    private static uint[]
+        ConvertRgbaGridToUintArray_(IFinGrid<Color> rgbaGrid) {
       var (width, height) = (rgbaGrid.Width, rgbaGrid.Height);
       var uintArray = new uint[width * height];
 
@@ -105,7 +114,7 @@
 
       public IColor GetPixel(int x, int y) => Color.FromRgba(0);
 
-      public IGrid<IColor> GetAllPixels() {
+      public IFinGrid<IColor> GetAllPixels() {
         throw new System.Exception();
       }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using fin.data.collections.set;
 using fin.pointer.contract.impl;
@@ -94,8 +95,8 @@ namespace fin.pointer.contract {
 
   public class DefaultContractPointerSet<T> : IContractPointerSet<T> {
     // TODO: Higher overhead than should be necessary.
-    private OrderedSet<IContractPointer<T>> impl_ =
-      new OrderedSet<IContractPointer<T>>();
+    private IFinSet<IContractPointer<T>> impl_ =
+      new FinHashSet<IContractPointer<T>>();
 
     public IEnumerable<IContractPointer<T>> Contracts => this.impl_;
 
@@ -108,7 +109,7 @@ namespace fin.pointer.contract {
 
     public void ClearAndBreak(Action<IContractPointer<T>> breakHandler) {
       while (this.impl_.Count > 0) {
-        breakHandler(this.impl_.First);
+        breakHandler(this.impl_.First());
       }
     }
   }
@@ -121,8 +122,7 @@ namespace fin.pointer.contract {
   public interface IContractFactory {
     protected readonly static IDelegator<IContractFactory> DELEGATED_INSTANCE =
       new Delegator<IContractFactory>();
-
-    public static IContractFactory Instance { get; } = new ContractFactory();
+    public readonly static IContractFactory INSTANCE = new ContractFactory();
 
     ISuperContract NewSuperContract(IContract first,
       params IContract[] additional);

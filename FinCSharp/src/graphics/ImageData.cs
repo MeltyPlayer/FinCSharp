@@ -10,9 +10,9 @@ namespace fin.graphics {
 
   public class ImageData {
     public ImageType imageType { get; }
-    public IGrid<Color> pixels { get; }
+    public IFinGrid<Color> pixels { get; }
 
-    public ImageData(ImageType imageType, IGrid<Color> pixels) {
+    public ImageData(ImageType imageType, IFinGrid<Color> pixels) {
       this.imageType = imageType;
       this.pixels = pixels;
     }

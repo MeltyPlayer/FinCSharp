@@ -1,30 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+using fin.data.collections.list;
+
 // TODO: Add tests.
 namespace fin.data.collections.set {
   // Based on https://stackoverflow.com/questions/1552225/hashset-that-preserves-ordering/17853085#17853085.
-  public class OrderedSet2<T> : ICollection<T> {
+  public class FinOrderedSet<T> : IFinSet<T> {
     private readonly IDictionary<T, LinkedListNode<T>> dictionary_;
     private readonly LinkedList<T> linkedList_;
 
-    public OrderedSet2() : this(EqualityComparer<T>.Default) { }
+    public FinOrderedSet() : this(EqualityComparer<T>.Default) {}
 
-    public OrderedSet2(IEqualityComparer<T> comparer) {
+    public FinOrderedSet(IEqualityComparer<T> comparer) {
       this.dictionary_ = new Dictionary<T, LinkedListNode<T>>(comparer);
       this.linkedList_ = new LinkedList<T>();
     }
 
     public int Count => this.dictionary_.Count;
+    public IEnumerator<T> GetEnumerator() => this.linkedList_.GetEnumerator();
+    public bool Contains(T item) => this.dictionary_.ContainsKey(item);
 
-    public virtual bool IsReadOnly => this.dictionary_.IsReadOnly;
+    public bool Clear() {
+      if (this.Count == 0) {
+        return false;
+      }
 
-    // TODO: May be null.
-    public T First => this.linkedList_.First!.Value;
-
-    public T Last => this.linkedList_.Last!.Value;
-
-    void ICollection<T>.Add(T item) => this.Add(item);
+      this.dictionary_.Clear();
+      this.linkedList_.Clear();
+      return true;
+    }
 
     public bool Add(T item) {
       if (this.dictionary_.ContainsKey(item)) {
@@ -34,11 +39,6 @@ namespace fin.data.collections.set {
       var node = this.linkedList_.AddLast(item);
       this.dictionary_.Add(item, node);
       return true;
-    }
-
-    public void Clear() {
-      this.dictionary_.Clear();
-      this.linkedList_.Clear();
     }
 
     public bool Remove(T item) {
@@ -51,14 +51,5 @@ namespace fin.data.collections.set {
       this.linkedList_.Remove(node);
       return true;
     }
-
-    public IEnumerator<T> GetEnumerator() => this.linkedList_.GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-    public bool Contains(T item) => this.dictionary_.ContainsKey(item);
-
-    public void CopyTo(T[] array, int arrayIndex) =>
-      this.linkedList_.CopyTo(array, arrayIndex);
   }
 }

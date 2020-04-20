@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Linq;
 
 using fin.data.collections.set;
 
 namespace fin.discardable {
   public class DiscardableImpl : IPubliclyDiscardable, IEventDiscardable,
     IDependentDiscardable {
-    private readonly OrderedSet<IEventDiscardable> parents_ =
-      new OrderedSet<IEventDiscardable>();
+    private readonly IFinSet<IEventDiscardable> parents_ =
+      new FinHashSet<IEventDiscardable>();
 
     public event IEventDiscardable.OnDiscardHandler? OnDiscard;
 
@@ -42,30 +43,26 @@ namespace fin.discardable {
 
       this.OnDiscard?.Invoke(this);
       while (this.parents_.Count > 0) {
-        this.RemoveParent(this.parents_.First);
+        this.RemoveParent(this.parents_.First());
       }
     }
 
     public bool AddParent(IEventDiscardable parent) {
-      if (this.IsDiscarded) {
+      if (this.IsDiscarded || !this.parents_.Add(parent)) {
         return false;
       }
 
-      if (this.parents_.Add(parent)) {
-        parent.OnDiscard += this.VoidDiscard_;
-        return true;
-      }
-
-      return false;
+      parent.OnDiscard += this.VoidDiscard_;
+      return true;
     }
 
     public bool RemoveParent(IEventDiscardable parent) {
-      if (this.parents_.Remove(parent)) {
-        parent.OnDiscard -= this.VoidDiscard_;
-        return true;
+      if (!this.parents_.Remove(parent)) {
+        return false;
       }
 
-      return false;
+      parent.OnDiscard -= this.VoidDiscard_;
+      return true;
     }
   }
 }

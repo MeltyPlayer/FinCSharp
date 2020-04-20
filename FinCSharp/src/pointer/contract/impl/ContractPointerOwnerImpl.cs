@@ -2,7 +2,7 @@
 using System.Linq;
 
 namespace fin.pointer.contract.impl {
-  public sealed partial class ContractFactory : IContractFactory {
+  public sealed partial class ContractFactory {
     private abstract partial class
       ContractPointerOwnerImpl<T> : IContractPointerOwner<T> {
       private readonly IContractPointerSet<T> set_;

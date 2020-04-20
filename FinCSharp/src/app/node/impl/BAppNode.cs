@@ -15,17 +15,17 @@ namespace fin.app.node.impl {
     private abstract class BAppNode : IAppNode {
       private readonly Node<BAppNode> node_;
 
-      private readonly OrderedSet<IComponent> components_ =
-        new OrderedSet<IComponent>();
+      private readonly IFinSet<IComponent> components_ =
+          new FinHashSet<IComponent>();
 
       private readonly IEventListener listener_ =
-        IEventFactory.Instance.NewListener();
+          IEventFactory.Instance.NewListener();
 
       private readonly IEventRelay downwardRelay_ =
-        IEventFactory.Instance.NewRelay();
+          IEventFactory.Instance.NewRelay();
 
       protected readonly DiscardableImpl discardableImpl_ =
-        new DiscardableImpl();
+          new DiscardableImpl();
 
       private readonly ForOnTickMethodImpl forOnTickMethod_;
 
@@ -36,8 +36,9 @@ namespace fin.app.node.impl {
           this.parent_ = parent;
         }
 
-        public void ForOnTickMethod<TEvent>(SafeType<TEvent> eventType,
-          Action<TEvent> handler) where TEvent : IEvent
+        public void ForOnTickMethod<TEvent>(
+            SafeType<TEvent> eventType,
+            Action<TEvent> handler) where TEvent : IEvent
           => this.parent_.OnTick(eventType, handler);
       }
 
@@ -137,16 +138,17 @@ namespace fin.app.node.impl {
         this.downwardRelay_.Emit(evt);
       }
 
-      public IEventSubscription? OnTick<TEvent>(SafeType<TEvent> eventType,
-        Action<TEvent> handler) where TEvent : IEvent {
+      public IEventSubscription? OnTick<TEvent>(
+          SafeType<TEvent> eventType,
+          Action<TEvent> handler) where TEvent : IEvent {
         if (this.IsDiscarded) {
           return null;
         }
 
         if (this.ParentImpl != null) {
           return this.ParentImpl.downwardRelay_.AddListener(this.listener_,
-            eventType,
-            handler);
+                                                            eventType,
+                                                            handler);
         }
 
         return null;

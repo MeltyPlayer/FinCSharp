@@ -1,11 +1,13 @@
-﻿namespace fin.retro {
+﻿using fin.data.collections.grid;
+
+namespace fin.retro {
   class TileLayer<TTileKey> {
     private readonly TileMap<TTileKey> tileMap_;
-    private readonly fin.data.collections.grid.IGrid<TTileKey> tileKeyGrid_;
+    private readonly IFinGrid<TTileKey> tileKeyGrid_;
 
     public TileLayer(TileMap<TTileKey> tileMap, int width, int height) {
       this.tileMap_ = tileMap;
-      this.tileKeyGrid_ = new fin.data.collections.grid.ArrayGrid<TTileKey>(width, height);
+      this.tileKeyGrid_ = new FinArrayGrid<TTileKey>(width, height);
     }
 
     public void Render(Canvas canvas) {

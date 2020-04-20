@@ -91,7 +91,7 @@
 
       var fontGlyphs = new Dictionary<char, FontGlyph>();
       var atlasPixelGrid =
-          new SparseGrid<Color>(atlasWidth,
+          new FinSparseGrid<Color>(atlasWidth,
                                 atlasHeight,
                                 ColorConstants.TRANSPARENT_BLACK);
       var atlasImageData = new ImageData(ImageType.RGBA, atlasPixelGrid);

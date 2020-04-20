@@ -2,8 +2,10 @@
 
 namespace fin.pointer.contract.impl {
   public sealed partial class ContractFactory : IContractFactory {
-    public ISuperContract NewSuperContract(IContract contract,
-      params IContract[] additional) => new SuperContract(contract, additional);
+    public ISuperContract NewSuperContract(
+        IContract contract,
+        params IContract[] additional) =>
+        new SuperContract(contract, additional);
 
     private class SuperContract : ISuperContract {
       private readonly ISet<IContract> contracts_ = new HashSet<IContract>();
@@ -21,7 +23,7 @@ namespace fin.pointer.contract.impl {
 
       public bool IsActive { get; private set; } = true;
 
-      public event IContract.OnBreakHandler OnBreak = delegate { };
+      public event IContract.OnBreakHandler OnBreak = delegate {};
 
       public bool Add(IContract contract) {
         if (!this.IsActive) {

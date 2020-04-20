@@ -4,7 +4,7 @@ namespace fin.pointer.contract {
   [TestClass]
   public class StrongAndWeakContractSetsTest {
     private static readonly IContractFactory
-      FACTORY = IContractFactory.Instance;
+      FACTORY = IContractFactory.INSTANCE;
 
     [TestMethod]
     public void TestJoinFromContract() {

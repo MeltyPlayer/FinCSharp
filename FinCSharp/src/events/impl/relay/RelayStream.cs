@@ -62,7 +62,7 @@ namespace fin.events.impl {
           if (this.sourcesSuperContract_ == null ||
               !this.sourcesSuperContract_.IsActive) {
             this.sourcesSuperContract_ =
-              IContractFactory.Instance.NewSuperContract(contract);
+              IContractFactory.INSTANCE.NewSuperContract(contract);
           }
           else {
             this.sourcesSuperContract_.Add(contract);
@@ -108,7 +108,7 @@ namespace fin.events.impl {
           var contract = subscription.Contract!;
           if (this.listenersSuperContract_ == null) {
             this.listenersSuperContract_ =
-              IContractFactory.Instance.NewSuperContract(contract);
+              IContractFactory.INSTANCE.NewSuperContract(contract);
             this.listenersSuperContract_.OnBreak += _ => {
               if (this.sourcesSuperContract_ != null) {
                 this.sourcesSuperContract_.Break();

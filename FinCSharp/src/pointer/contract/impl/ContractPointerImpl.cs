@@ -1,17 +1,18 @@
-﻿using fin.data.collections.set;
+﻿using System.Linq;
+
+using fin.data.collections.set;
 
 namespace fin.pointer.contract.impl {
-  public sealed partial class ContractFactory : IContractFactory {
-    private abstract partial class
-      ContractPointerOwnerImpl<T> : IContractPointerOwner<T> {
+  public sealed partial class ContractFactory {
+    private abstract partial class ContractPointerOwnerImpl<T> {
       private abstract class ContractPointerImpl : IContractPointer<T> {
-        private readonly OrderedSet<IStrongContractPointerOwner<T>>
-          strongOwners_ = new OrderedSet<IStrongContractPointerOwner<T>>();
+        private readonly IFinSet<IStrongContractPointerOwner<T>>
+            strongOwners_ = new FinOrderedSet<IStrongContractPointerOwner<T>>();
 
-        private readonly OrderedSet<IWeakContractPointerOwner<T>> weakOwners_ =
-          new OrderedSet<IWeakContractPointerOwner<T>>();
+        private readonly IFinSet<IWeakContractPointerOwner<T>> weakOwners_ =
+            new FinOrderedSet<IWeakContractPointerOwner<T>>();
 
-        public T Value { get; private set; }
+        public T Value { get; }
 
         public ContractPointerImpl(T value, IContractPointerOwner<T>[] owners) {
           this.Value = value;
@@ -49,7 +50,7 @@ namespace fin.pointer.contract.impl {
 
         public bool IsActive { get; private set; }
 
-        public event IContract.OnBreakHandler OnBreak = delegate { };
+        public event IContract.OnBreakHandler OnBreak = delegate {};
 
         public bool Break() {
           if (!this.IsActive) {
@@ -59,13 +60,13 @@ namespace fin.pointer.contract.impl {
           this.IsActive = false;
 
           while (this.strongOwners_.Count > 0) {
-            this.strongOwners_.Last.Break(this);
+            this.strongOwners_.Last().Break(this);
           }
 
           this.strongOwners_.Clear();
 
           while (this.weakOwners_.Count > 0) {
-            this.weakOwners_.Last.Break(this);
+            this.weakOwners_.Last().Break(this);
           }
 
           this.weakOwners_.Clear();

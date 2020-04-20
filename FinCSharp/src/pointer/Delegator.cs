@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 using fin.data.collections.set;
 
@@ -18,7 +19,7 @@ namespace fin.pointer {
   }
 
   public class Delegator<T> : IDelegator<T> {
-    private readonly OrderedSet<T> impl_ = new OrderedSet<T>();
+    private readonly IFinSet<T> impl_ = new FinOrderedSet<T>();
 
     public void Clear() => this.impl_.Clear();
 
@@ -27,7 +28,7 @@ namespace fin.pointer {
     public bool Remove(T value) => this.impl_.Remove(value);
 
     public IEnumerable<T> All => this.impl_;
-    public T First => this.impl_.First;
-    public T Last => this.impl_.Last;
+    public T First => this.impl_.First();
+    public T Last => this.impl_.Last();
   }
 }
