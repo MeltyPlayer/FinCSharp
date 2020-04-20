@@ -42,6 +42,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\audio\" />
-    <Folder Include="src\graphics\primitives\" />
   </ItemGroup>
 </Project>
