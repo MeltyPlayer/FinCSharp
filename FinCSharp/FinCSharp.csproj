@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.Win32.SystemEvents" Version="4.6.0-preview.19073.11" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="NVorbis" Version="0.10.1" />
     <PackageReference Include="OpenTK" Version="3.1.0" />
     <PackageReference Include="RSG.Promise" Version="3.0.1" />
     <PackageReference Include="SharpFont.Dependencies" Version="2.6.0" />
@@ -39,8 +40,5 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     <PackageReference Include="System.Drawing.Common" Version="4.6.0-preview.19073.11" />
     <PackageReference Include="System.Reactive" Version="4.3.2" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\audio\" />
   </ItemGroup>
 </Project>

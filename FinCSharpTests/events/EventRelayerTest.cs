@@ -7,7 +7,7 @@ using System;
 namespace fin.events {
   [TestClass]
   public class EventRelayerTest {
-    private static readonly IEventFactory FACTORY = IEventFactory.Instance;
+    private static readonly IEventFactory FACTORY = IEventFactory.INSTANCE;
 
     private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE =
       new SafeType<PassStringEvent>();

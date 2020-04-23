@@ -8,8 +8,9 @@ using fin.type;
 
 namespace fin.app.events {
   public interface IForOnTickMethod {
-    void ForOnTickMethod<TEvent>(SafeType<TEvent> eventType,
-                                 Action<TEvent> handler) where TEvent : IEvent;
+    void ForOnTickMethod<TEvent>(
+        SafeType<TEvent> eventType,
+        Action<TEvent> handler) where TEvent : IEvent;
   }
 
   [AttributeUsage(AttributeTargets.Method)]
@@ -18,8 +19,9 @@ namespace fin.app.events {
 
     public delegate dynamic ForOnTickMethod();
 
-    public static void SniffAndAddMethods(object onTickHandlerOwner,
-                                          IForOnTickMethod target) {
+    public static void SniffAndAddMethods(
+        object onTickHandlerOwner,
+        IForOnTickMethod target) {
       var forOnTickMethod = target.GetType().GetMethods()
                                   .Single(m => m.Name == "ForOnTickMethod");
 
@@ -30,9 +32,9 @@ namespace fin.app.events {
 
       var onTickHandlers = methods
                            .Where(m =>
-                                    m.GetCustomAttributes(
-                                      typeof(OnTickAttribute),
-                                      true).Length > 0)
+                                      m.GetCustomAttributes(
+                                          typeof(OnTickAttribute),
+                                          true).Length > 0)
                            .ToArray();
       foreach (var onTickHandler in onTickHandlers) {
         var parameters = onTickHandler.GetParameters();
@@ -41,27 +43,27 @@ namespace fin.app.events {
         var eventParameterType = eventParameter.ParameterType;
 
         var safeTypeType =
-          typeof(SafeType<>).MakeGenericType(eventParameterType!);
+            typeof(SafeType<>).MakeGenericType(eventParameterType!);
         var safeTypeConstructor =
-          safeTypeType.GetConstructor(Array.Empty<Type>());
+            safeTypeType.GetConstructor(Array.Empty<Type>());
         var safeEventParameterType =
-          safeTypeConstructor!.Invoke(Array.Empty<object>());
+            safeTypeConstructor!.Invoke(Array.Empty<object>());
 
         var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
         var specificHandler =
-          onTickHandler.CreateDelegate(actionType, onTickHandlerOwner);
+            onTickHandler.CreateDelegate(actionType, onTickHandlerOwner);
         // TODO: Possible to remove this?
         Action<dynamic> genericHandler =
-          evt => specificHandler.DynamicInvoke(evt);
+            evt => specificHandler.DynamicInvoke(evt);
 
         //var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
         //Action<dynamic> handler = evt => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt });
         forOnTickMethod.MakeGenericMethod(eventParameterType).Invoke(target,
                                                                      new object
-                                                                       [] {
-                                                                         safeEventParameterType,
-                                                                         genericHandler
-                                                                       });
+                                                                         [] {
+                                                                             safeEventParameterType,
+                                                                             genericHandler
+                                                                         });
 
         //onTick.MakeGenericMethod(eventParameterType).Invoke(this, new object[] { safeEventParameterType, handler });
       }

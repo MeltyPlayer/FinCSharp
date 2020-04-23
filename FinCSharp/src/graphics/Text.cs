@@ -1,11 +1,8 @@
-﻿namespace fin.graphics {
-  using System;
-  using System.Diagnostics;
+﻿using System;
 
-  using log;
+using fin.graphics.text;
 
-  using text;
-
+namespace fin.graphics {
   // TODO: Fix this.
   [Obsolete("Text is slow, VBOs/caching should be used instead.", false)]
   public class Text {
@@ -25,11 +22,12 @@
 
     // TODO: Doubles or floats?
     // TODO: Rewrite this with models instead of on-the-fly primitives.
-    public virtual Text Draw(float leftX,
-                             float topY,
-                             float fontWidth,
-                             float fontHeight,
-                             string text) {
+    public virtual Text Draw(
+        float leftX,
+        float topY,
+        float fontWidth,
+        float fontHeight,
+        string text) {
       // TODO: Move this to a better place.
       if (this.font_ == null) {
         this.font_ = this.fontManager_.LoadFont("tahoma.ttf");
@@ -57,7 +55,8 @@
         var uvCoords = glyph.UvCoords;
         var currentLeftX = currentX;
         var currentRightX = (float) (currentLeftX + glyph.Width * fontWidth);
-        var currentTopY = (float) (currentY + lineHeight - glyph.BearingY * fontHeight);
+        var currentTopY =
+            (float) (currentY + lineHeight - glyph.BearingY * fontHeight);
         var currentBottomY = (float) (currentTopY + glyph.Height * fontHeight);
 
         primitives.VertexUv(uvCoords[0]).Vertex(currentLeftX, currentTopY);
@@ -67,13 +66,6 @@
 
         currentX += (float) (fontWidth * glyph.AdvanceX);
       }
-
-      /*var y = 80;
-
-      primitives.VertexUv((0, 0)).Vertex(0, y);
-      primitives.VertexUv((1, 0)).Vertex(4096, y);
-      primitives.VertexUv((1, 1)).Vertex(4096, y + 32);
-      primitives.VertexUv((0, 1)).Vertex(0, y + 32);*/
 
       primitives.End();
       texture.Unbind();

@@ -2,12 +2,16 @@
 using fin.app.node.impl;
 using fin.app.scene;
 using fin.app.window;
+using fin.audio;
+using fin.audio.impl.opentk;
 using fin.function;
 using fin.graphics.impl.opentk;
 using fin.input;
 using fin.input.impl.opentk;
 using fin.input.keyboard;
 using fin.settings;
+
+using OpenTK.Audio.OpenAL;
 
 namespace fin.app.impl.opentk {
 
@@ -18,6 +22,8 @@ namespace fin.app.impl.opentk {
     private readonly ISceneManager sceneManager_ = new SceneManagerImpl();
 
     private readonly GraphicsOpenTk g_ = new GraphicsOpenTk();
+
+    public IAudio Audio { get; } = new AudioOpenTk();
 
     public IInput Input => this.input_;
     private readonly InputOpenTk input_ = new InputOpenTk();

@@ -4,7 +4,7 @@ using fin.pointer.contract;
 using fin.type;
 
 namespace fin.events.impl {
-  public sealed partial class EventFactory : IEventFactory {
+  public sealed partial class EventFactory {
     private class EventSubscription<TEvent> : IEventSubscription {
       public IClosedContractPointer<IEventSubscription>? Contract { get; set; }
 
@@ -13,10 +13,11 @@ namespace fin.events.impl {
       public SafeType<IEvent> EventType { get; }
       public Action<TEvent> Handler { get; }
 
-      public EventSubscription(IEventSource source,
-        IEventListener listener,
-        SafeType<TEvent> eventType,
-        Action<TEvent> handler) {
+      public EventSubscription(
+          IEventSource source,
+          IEventListener listener,
+          SafeType<TEvent> eventType,
+          Action<TEvent> handler) {
         this.Source = source;
         this.Listener = listener;
         this.EventType = new SafeType<IEvent>(eventType.Value);

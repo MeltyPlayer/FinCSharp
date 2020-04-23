@@ -4,10 +4,10 @@ namespace fin.data.collections.set {
   /// <summary>
   ///   An immutable view into a Fin set that cannot be cast as writable.
   /// </summary>
-  public class ImmutableViewFinSet<T> : IReadableFinSet<T> {
+  public class ImmutablyWrappedFinSet<T> : IReadableFinSet<T> {
     private readonly IReadableFinSet<T> impl_;
 
-    public ImmutableViewFinSet(IReadableFinSet<T> impl) {
+    public ImmutablyWrappedFinSet(IReadableFinSet<T> impl) {
       this.impl_ = impl;
     }
 

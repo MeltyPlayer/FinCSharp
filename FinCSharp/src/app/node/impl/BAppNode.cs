@@ -19,10 +19,10 @@ namespace fin.app.node.impl {
           new FinHashSet<IComponent>();
 
       private readonly IEventListener listener_ =
-          IEventFactory.Instance.NewListener();
+          IEventFactory.INSTANCE.NewListener();
 
       private readonly IEventRelay downwardRelay_ =
-          IEventFactory.Instance.NewRelay();
+          IEventFactory.INSTANCE.NewRelay();
 
       protected readonly DiscardableImpl discardableImpl_ =
           new DiscardableImpl();

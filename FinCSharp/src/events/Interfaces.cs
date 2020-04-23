@@ -57,7 +57,7 @@ namespace fin.events {
   }
 
   public interface IEventFactory {
-    public static IEventFactory Instance { get; } = new EventFactory();
+    public static readonly IEventFactory INSTANCE = new EventFactory();
 
     IEventListener NewListener();
 

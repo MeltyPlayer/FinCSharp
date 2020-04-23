@@ -16,10 +16,10 @@ namespace fin.events.impl {
         = new Dictionary<SafeType<IEvent>, IRelayStream>();
 
       private readonly IEventListener listener_ =
-        IEventFactory.Instance.NewListener();
+        IEventFactory.INSTANCE.NewListener();
 
       private readonly IEventEmitter emitter_ =
-        IEventFactory.Instance.NewEmitter();
+        IEventFactory.INSTANCE.NewEmitter();
 
       public EventRelay() { }
 

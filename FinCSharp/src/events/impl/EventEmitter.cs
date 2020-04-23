@@ -1,7 +1,5 @@
-﻿using fin.type;
-
-namespace fin.events.impl {
-  public sealed partial class EventFactory : IEventFactory {
+﻿namespace fin.events.impl {
+  public sealed partial class EventFactory {
     public IEventEmitter NewEmitter() => new EventEmitter();
 
     private class EventEmitter : EventSource, IEventEmitter {

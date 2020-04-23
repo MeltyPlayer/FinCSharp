@@ -15,7 +15,10 @@ namespace fin.file {
 
     // TODO: Use resources/ as base?
     public static LocalFile WithinResources(string relativePath) {
-      throw new System.Exception();
+      return LocalFile.At(
+          "R:/Documents/CSharpWorkspace/FinCSharp/FinCSharp/resources/" +
+          relativePath);
+      //throw new System.Exception();
     }
 
     public bool Exists() {
