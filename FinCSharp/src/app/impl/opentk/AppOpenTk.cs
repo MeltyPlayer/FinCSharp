@@ -14,7 +14,6 @@ using fin.settings;
 using OpenTK.Audio.OpenAL;
 
 namespace fin.app.impl.opentk {
-
   public partial class AppOpenTk : IApp {
     private readonly IRecurrentCaller ticker_;
 
@@ -84,6 +83,10 @@ namespace fin.app.impl.opentk {
       // TODO: Instantiator should probably be pre-scoped to the root already.
       this.sceneManager_.ExitSceneIfScheduled(this.root_);
       this.sceneManager_.EnterSceneIfScheduled(this.root_, this);
+
+      this.root_.Emit(new ControlEvent());
+      this.root_.Emit(new PhysicsEvent());
+      this.root_.Emit(new CollisionEvent());
 
       this.root_.Emit(new TriggerRenderViewsTickEvent(this.g_));
     }

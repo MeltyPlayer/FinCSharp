@@ -16,19 +16,40 @@ namespace fin.math {
     /**
      * Operations
      */
-    public static TNumber Mod<TNumber>(TNumber a, TNumber b)
-        where TNumber : IComparable => (dynamic) a % (dynamic) b;
+    public static TNumber Mod<TNumber>(TNumber lhs, TNumber rhs)
+        where TNumber : IComparable => (dynamic) lhs % (dynamic) rhs;
+
+    /**
+     * Working w/ signs
+     */
+    public static TNumber Abs<TNumber>(TNumber value)
+        where TNumber : IComparable
+      => Math.IsPositive(value)
+             ? value
+             : -(dynamic) value;
+
+    public static int Sign<TNumber>(TNumber value)
+        where TNumber : IComparable
+      => Math.IsPositive(value) ? 1 : Math.IsNegative(value) ? -1 : 0;
+
+    public static bool IsPositive<TNumber>(TNumber value)
+        where TNumber : IComparable
+      => value.CompareTo((dynamic) value * 0) > 0;
+
+    public static bool IsNegative<TNumber>(TNumber value)
+        where TNumber : IComparable
+      => value.CompareTo((dynamic) value * 0) < 0;
 
     /**
      * Checking number ranges
      */
-    public static bool IsGreaterThan<TNumber>(TNumber a, TNumber b)
+    public static bool IsGreaterThan<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable
-      => a.CompareTo(b) > 0;
+      => lhs.CompareTo(rhs) > 0;
 
-    public static bool IsGreaterThanOrEqualTo<TNumber>(TNumber a, TNumber b)
+    public static bool IsGreaterThanOrEqualTo<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable
-      => a.CompareTo(b) >= 0;
+      => lhs.CompareTo(rhs) >= 0;
 
     public static bool IsLessThan<TNumber>(TNumber a, TNumber b)
         where TNumber : IComparable
@@ -85,6 +106,26 @@ namespace fin.math {
       var secondPass = dMin + Math.Mod(firstPass - dMin, range);
 
       return secondPass;
+    }
+
+    public static TNumber AddTowards<TNumber>(
+        TNumber start,
+        TNumber end,
+        TNumber inc) where TNumber : IComparable {
+      Asserts.True(Math.IsPositive(inc), "Expected increment to be positive.");
+
+      dynamic dStart = start;
+      dynamic dEnd = end;
+      dynamic dInc = inc;
+
+      var range = dEnd - dStart;
+
+      if (Math.Abs(range) < dInc) {
+        return end;
+      }
+
+      var sign = Math.Sign(range);
+      return dStart + sign * inc;
     }
   }
 }

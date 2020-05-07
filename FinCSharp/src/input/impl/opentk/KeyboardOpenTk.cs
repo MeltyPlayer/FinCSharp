@@ -24,6 +24,9 @@ namespace fin.input.impl.opentk {
             Key.M => KeyId.M,
             Key.N => KeyId.N,
             Key.O => KeyId.O,
+            Key.S => KeyId.S,
+            Key.U => KeyId.U,
+            Key.W => KeyId.W,
 
             Key.Space  => KeyId.SPACEBAR,
             Key.Enter  => KeyId.ENTER,

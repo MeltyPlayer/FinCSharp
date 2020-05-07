@@ -5,6 +5,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace fin.math {
   [TestClass]
   public class MathTest {
+    /**
+     * Operations
+     */
     [TestMethod]
     public void TestMod() {
       Assert.AreEqual(0, Math.Mod(10, 2));
@@ -16,7 +19,33 @@ namespace fin.math {
 
       Assert.AreEqual(0x01, Math.Mod(0x10, 0x03));
     }
-    
+
+    /**
+     * Working w/ signs
+     */
+    [TestMethod]
+    public void TestAbs() {
+      Assert.AreEqual(5, Math.Abs(5));
+      Assert.AreEqual(5, Math.Abs(-5));
+
+      Assert.AreEqual(5d, Math.Abs(5d));
+      Assert.AreEqual(5d, Math.Abs(-5d));
+    }
+
+    [TestMethod]
+    public void TestSign() {
+      Assert.AreEqual(-1, Math.Sign(-1));
+      Assert.AreEqual(1, Math.Sign(1));
+      Assert.AreEqual(0, Math.Sign(0));
+
+      Assert.AreEqual(-1, Math.Sign(-1d));
+      Assert.AreEqual(1, Math.Sign(1d));
+      Assert.AreEqual(0, Math.Sign(0d));
+    }
+
+    /**
+     * Applying value ranges
+     */
     [TestMethod]
     public void TestMin() {
       Assert.AreEqual(0, Math.Min(0, 1));
@@ -69,6 +98,13 @@ namespace fin.math {
       Assert.AreEqual(.124, Math.Wrap(.123, .235, .234), .0001);
 
       Assert.AreEqual(0x01, Math.Wrap(-0x02, -0x03, 0x02));
+    }
+
+    [TestMethod]
+    public void TestAddTowards() {
+      Assert.AreEqual(.1, Math.AddTowards(0, 1, .1));
+      Assert.AreEqual(.9, Math.AddTowards(1, 0, .1));
+      Assert.AreEqual(1, Math.AddTowards(0, 1, 1.1));
     }
   }
 }

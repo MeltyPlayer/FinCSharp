@@ -25,22 +25,19 @@ namespace fin.math.number {
     public double X { get; private set; }
     public double Y { get; private set; }
 
-    private Direction(double value) {
+    private Direction() {
       this.impl_ = new CircularFraction(0);
-      this.Set_(value);
     }
 
-    public static Direction FromDegrees(double degrees) {
-      var direction = new Direction(degrees);
-      direction.Degrees = degrees;
-      return direction;
-    }
+    public static Direction FromDegrees(double degrees) =>
+        new Direction() {
+            Degrees = degrees
+        };
 
-    public static Direction FromRadians(double radians) {
-      var direction = new Direction(radians);
-      direction.Radians = radians;
-      return direction;
-    }
+    public static Direction FromRadians(double radians) =>
+        new Direction() {
+            Radians = radians
+        };
 
     private void Set_(double value) {
       this.impl_.Value = value;

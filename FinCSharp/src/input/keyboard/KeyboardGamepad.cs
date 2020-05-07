@@ -26,8 +26,8 @@ namespace fin.input.keyboard {
               Right = keyboard[KeyId.L]
           });
 
-      this.faceButtons_[FaceButtonType.PRIMARY] = keyboard[KeyId.Z];
-      this.faceButtons_[FaceButtonType.SECONDARY] = keyboard[KeyId.X];
+      this.faceButtons_[FaceButtonType.PRIMARY] = keyboard[KeyId.U];
+      this.faceButtons_[FaceButtonType.SECONDARY] = keyboard[KeyId.H];
     }
 
     public IAnalogStick this[AnalogStickType analogStickType] =>
