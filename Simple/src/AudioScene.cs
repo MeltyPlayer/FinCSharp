@@ -50,38 +50,45 @@ namespace simple {
     }
 
     private class AudioComponent : BComponent {
-      //private readonly AudioStreamSourceOpenTk audioStreamSource_;
-      private readonly IAudioSource source_;
-      private readonly IAudioBuffer buffer_;
+      private readonly IAudioStreamSource streamSource_;
+      //private readonly IAudioSource source_;
+      //private readonly IAudioBuffer buffer_;
       private readonly IPcmData pcm_;
 
-      public AudioComponent(IAudio audio) {
-        var factory = audio.Factory;
-        this.source_ = factory.NewAudioSource();
-        this.buffer_ = factory.NewAudioBuffer();
+      private int position_ = 0;
 
+      public AudioComponent(IAudio audio) {
         this.pcm_ =
             new OggLoader().Load(
-                LocalFile.WithinResources("music/lobbyBackAndForth.ogg"));
+                LocalFile.WithinResources("music/lobby.ogg"));
+
+        var factory = audio.Factory;
+
+        /*this.source_ = factory.NewAudioSource();
+        this.buffer_ = factory.NewAudioBuffer();
+
         this.buffer_.FillWithPcm(this.pcm_);
 
-        Logger.Log(LogType.DEBUG, LogSeverity.INFO, "" + this.pcm_.Channels);
-        Logger.Log(LogType.DEBUG, LogSeverity.INFO, "" + this.pcm_.SampleRate);
-        Logger.Log(LogType.DEBUG,
-                   LogSeverity.INFO,
-                   "" + this.pcm_.BytesPerSample);
-        Logger.Log(LogType.DEBUG, LogSeverity.INFO, "" + this.pcm_.Pcm.Length);
+        this.source_.Play(this.buffer_, true);*/
 
-        Logger.Log(LogType.DEBUG, LogSeverity.INFO, "---");
-
-        /*for (var i = 0; i < 10000; ++i) {
-          Logger.Log(LogType.DEBUG, LogSeverity.INFO, "" + this.pcm_.Pcm[i]);
-        }*/
-
-        this.source_.Play(this.buffer_, true);
+        this.streamSource_ = factory.NewAudioStreamSource(bytes => {
+          var pcm = this.pcm_.Pcm;
+          for (var i = 0; i < bytes.Length; ++i) {
+            bytes[i] = pcm[this.position_];
+            if (++this.position_ > pcm.Length) {
+              this.position_ = 0;
+            }
+          }
+        }, this.pcm_.SampleRate);
+        this.streamSource_.Play(true);
       }
 
       protected override void Discard() {}
+
+      [OnTick]
+      private void StartTick_(StartTickEvent _) {
+        this.streamSource_.PollForProcessedBuffers();
+      }
 
       [OnTick]
       private void RenderForOrthographicCamera_(

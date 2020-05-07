@@ -48,7 +48,8 @@
       using var library = new Library();
 
       var bytes =
-          LocalFileUtil.ReadBytes(LocalFile.At("fonts/" + fontFileName));
+          LocalFileUtil.ReadBytes(
+              LocalFile.WithinResources("fonts/" + fontFileName));
       using var face = new Face(library, bytes, 0);
 
       const uint fontSize = 32;
@@ -92,8 +93,8 @@
       var fontGlyphs = new Dictionary<char, FontGlyph>();
       var atlasPixelGrid =
           new FinSparseGrid<Color>(atlasWidth,
-                                atlasHeight,
-                                ColorConstants.TRANSPARENT_BLACK);
+                                   atlasHeight,
+                                   ColorConstants.TRANSPARENT_BLACK);
       var atlasImageData = new ImageData(ImageType.RGBA, atlasPixelGrid);
 
       var x = 0;
@@ -153,7 +154,8 @@
                                       (1d * height) / fontSize,
                                       (1d * (int) metrics.HorizontalAdvance) /
                                       fontSize,
-                                      (1d * (int) metrics.HorizontalBearingY + extraAtlasHeight) /
+                                      (1d * (int) metrics.HorizontalBearingY +
+                                       extraAtlasHeight) /
                                       fontSize,
                                       uvCoords);
         fontGlyphs[(char) supportedCharCode] = fontGlyph;
@@ -180,12 +182,13 @@
 
       public ImmutableArray<(double, double)> UvCoords { get; }
 
-      public FontGlyph(char charCode,
-                       double width,
-                       double height,
-                       double advanceX,
-                       double bearingY,
-                       ImmutableArray<(double, double)> uvCoords) {
+      public FontGlyph(
+          char charCode,
+          double width,
+          double height,
+          double advanceX,
+          double bearingY,
+          ImmutableArray<(double, double)> uvCoords) {
         this.charCode_ = charCode;
         this.Width = width;
         this.Height = height;
@@ -200,9 +203,10 @@
       public ITexture Texture { get; }
       public double LineHeight { get; }
 
-      public Font(IDictionary<char, FontGlyph> glyphs,
-                  ITexture texture,
-                  double lineHeight) {
+      public Font(
+          IDictionary<char, FontGlyph> glyphs,
+          ITexture texture,
+          double lineHeight) {
         this.glyphs_ = glyphs;
         this.Texture = texture;
         this.LineHeight = lineHeight;

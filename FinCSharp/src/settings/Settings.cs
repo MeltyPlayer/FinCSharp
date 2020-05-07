@@ -15,7 +15,7 @@ namespace fin.settings {
       const string directoryPath = "data/";
       const string filePath = directoryPath + "settings.json";
 
-      var file = LocalFile.At(filePath);
+      var file = LocalFile.WithinResources(filePath);
       try {
         if (file.Exists()) {
           return JsonUtil.DeserializeFrom<Settings>(file);

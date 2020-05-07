@@ -17,9 +17,8 @@ namespace fin.file {
         File.ReadAllBytes(file.uri);
 
     public static string ReadText(LocalFile file) {
-      using (var reader = new StreamReader(file.uri)) {
-        return reader.ReadToEnd();
-      }
+      using var reader = new StreamReader(file.uri);
+      return reader.ReadToEnd();
     }
 
     public static IPromise<string> ReadTextAsync(LocalFile file) {
@@ -27,10 +26,9 @@ namespace fin.file {
 
       Task.Run(async () => {
         try {
-          using (var reader = new StreamReader(file.uri)) {
-            var text = await reader.ReadToEndAsync();
-            promise.Resolve(text);
-          }
+          using var reader = new StreamReader(file.uri);
+          var text = await reader.ReadToEndAsync();
+          promise.Resolve(text);
         }
         catch (Exception e) {
           promise.Reject(e);
@@ -45,10 +43,9 @@ namespace fin.file {
 
       Task.Run(async () => {
         try {
-          using (var writer = new StreamWriter(file.uri)) {
-            await writer.WriteAsync(text);
-            promise.Resolve();
-          }
+          using var writer = new StreamWriter(file.uri);
+          await writer.WriteAsync(text);
+          promise.Resolve();
         }
         catch (Exception e) {
           promise.Reject(e);

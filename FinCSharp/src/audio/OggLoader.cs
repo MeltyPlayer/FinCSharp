@@ -36,8 +36,6 @@ namespace fin.audio {
             (floatMax - floatMin);
 
         bytePcm[i] = (byte) Math.Round(byteMin + normalizedFloatSample * (byteMax - byteMin));
-
-        //Logger.Log(LogType.DEBUG, LogSeverity.INFO, "" + floatSample + " ==> " + normalizedFloatSample + " ==> " + bytePcm[i]);
       }
 
       return new PcmData(

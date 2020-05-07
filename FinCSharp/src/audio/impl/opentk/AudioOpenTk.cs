@@ -10,6 +10,7 @@ using OpenTK.Audio.OpenAL;
 namespace fin.audio.impl.opentk {
   public class AudioOpenTk : IAudio {
     private readonly AudioContext ctx_;
+
     public AudioOpenTk() {
       this.ctx_ = new AudioContext();
     }
@@ -22,9 +23,15 @@ namespace fin.audio.impl.opentk {
 
     public IAudioSource NewAudioSource() => new AudioSourceOpenTk();
 
-    public IAudioStreamSource NewAudioStreamSource() {
-      throw new NotImplementedException();
-    }
+    public IAudioStreamSource NewAudioStreamSource(
+        Action<byte[]> populateFunc,
+        int frequency = 44100,
+        int numBuffers = 2,
+        int bufferSize = 4096) =>
+        new AudioStreamSourceOpenTk(populateFunc,
+                                    frequency,
+                                    numBuffers,
+                                    bufferSize);
   }
 
   public class AudioSourceOpenTk : DiscardableImpl, IAudioSource {
@@ -134,13 +141,15 @@ namespace fin.audio.impl.opentk {
     private readonly int bufferSize_;
     private int expectedCurrentBufferIndex_ = 0;
 
+    private readonly bool[] readyToProcess_;
+
     private AudioStreamSourceState state_ = AudioStreamSourceState.STOPPED;
 
     public AudioStreamSourceOpenTk(
         Action<byte[]> populateFunc,
         int frequency = 44100,
-        int bufferSize = 4096,
-        int numBuffers = 2) {
+        int numBuffers = 2,
+        int bufferSize = 4096) {
       this.sourceId_ = AL.GenSource();
 
       this.bufferIds_ = AL.GenBuffers(numBuffers).ToImmutableArray();
@@ -148,17 +157,15 @@ namespace fin.audio.impl.opentk {
       this.frequency_ = frequency;
       this.bufferSize_ = bufferSize;
 
+      this.readyToProcess_ = new bool[numBuffers];
+      this.readyToProcess_[0] = true;
+
       this.OnDiscard += _ => this.Destroy_();
     }
 
     //TODO: Don't play until stream is ready.
 
     public void PollForProcessedBuffers() {
-      if (this.state_ != AudioStreamSourceState.READY_TO_PLAY &&
-          this.state_ != AudioStreamSourceState.PLAYING) {
-        return;
-      }
-
       bool bufferProcessed;
 
       do {

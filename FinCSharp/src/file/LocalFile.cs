@@ -1,28 +1,29 @@
 ﻿using System.IO;
 
+using fin.assert;
+
 namespace fin.file {
   public class LocalFile : IFile {
     public string uri { get; }
 
     private LocalFile(string uri) {
-      // TODO: Verify formatting.
+      Asserts.True(Path.IsPathFullyQualified(uri));
+
       this.uri = uri;
     }
 
-    public static LocalFile At(string absolutePath) {
-      return new LocalFile(absolutePath);
-    }
+    public static LocalFile At(string absolutePath) =>
+        new LocalFile(absolutePath);
 
     // TODO: Use resources/ as base?
     public static LocalFile WithinResources(string relativePath) {
-      return LocalFile.At(
+      var absolutePath =
           "R:/Documents/CSharpWorkspace/FinCSharp/FinCSharp/resources/" +
-          relativePath);
-      //throw new System.Exception();
+          relativePath;
+      var mergedFullPath = Path.GetFullPath(absolutePath);
+      return LocalFile.At(mergedFullPath);
     }
 
-    public bool Exists() {
-      return File.Exists(this.uri);
-    }
+    public bool Exists() => File.Exists(this.uri);
   }
 }

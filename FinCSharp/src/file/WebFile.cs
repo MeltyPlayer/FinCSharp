@@ -7,8 +7,7 @@
       this.uri = uri;
     }
 
-    public static WebFile At(string url) {
-      return new WebFile(url);
-    }
+    public static WebFile At(string url) =>
+        new WebFile(url);
   }
 }

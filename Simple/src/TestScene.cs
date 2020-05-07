@@ -1,4 +1,6 @@
-﻿namespace simple {
+﻿using fin.math.number;
+
+namespace simple {
   using System;
   using System.Drawing;
 
@@ -45,7 +47,7 @@
 
     private class TestComponent : BComponent {
       private ICursor cursor_;
-      private double i_ = 0;
+      private IDirection circularProgress_ = Direction.FromDegrees(0);
 
       public TestComponent(ICursor cursor) {
         this.cursor_ = cursor;
@@ -55,7 +57,7 @@
 
       [OnTick]
       private void StartTick_(StartTickEvent _) {
-        this.i_ += .02;
+        this.circularProgress_.Radians += .02;
       }
 
       [OnTick]
@@ -65,7 +67,8 @@
         evt.Graphics.Render2d.Rectangle(0,
                                         480 - 20,
                                         640 * (float) (.5 + .5 *
-                                                       Math.Cos(this.i_)),
+                                                       this.circularProgress_.X
+                                                      ),
                                         20,
                                         true);
 

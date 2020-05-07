@@ -1,4 +1,4 @@
-﻿using fin.data.collections.list;
+﻿using System;
 
 namespace fin.audio {
   public interface IAudio {
@@ -11,7 +11,11 @@ namespace fin.audio {
 
     IAudioBuffer NewAudioBuffer();
 
-    IAudioStreamSource NewAudioStreamSource();
+    IAudioStreamSource NewAudioStreamSource(
+        Action<byte[]> populateFunc,
+        int frequency = 44100,
+        int numBuffers = 2,
+        int bufferSize = 4096);
   }
 
   public interface IAudioSource {
@@ -44,7 +48,11 @@ namespace fin.audio {
     public int SampleRate { get; }
     public byte[] Pcm { get; }
 
-    public PcmData(int channels, int bytesPerSample, int sampleRate, byte[] pcm) {
+    public PcmData(
+        int channels,
+        int bytesPerSample,
+        int sampleRate,
+        byte[] pcm) {
       this.Channels = channels;
       this.BytesPerSample = bytesPerSample;
       this.SampleRate = sampleRate;
