@@ -3,7 +3,9 @@ using fin.app.window;
 using fin.settings;
 using fin.math.geometry;
 
-namespace simple {
+using simple.platformer.player;
+
+namespace simple.platformer {
   public sealed class PlatformScene : BScene {
     protected override void Discard() {}
 

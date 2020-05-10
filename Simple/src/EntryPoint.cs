@@ -1,4 +1,6 @@
-﻿namespace simple {
+﻿using simple.platformer;
+
+namespace simple {
   using fin.app.impl.opentk;
 
   public class EntryPoint {
