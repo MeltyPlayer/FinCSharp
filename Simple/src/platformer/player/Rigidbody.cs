@@ -1,6 +1,9 @@
 ﻿using fin.math;
 
 namespace simple.platformer.player {
+  /// <summary>
+  ///   Simple, common class for managing position, velocity, and acceleration.
+  /// </summary>
   public class Rigidbody {
     public double X { get; set; }
     public double Y { get; set; }

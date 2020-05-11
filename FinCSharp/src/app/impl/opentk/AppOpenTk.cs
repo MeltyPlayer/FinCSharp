@@ -76,6 +76,7 @@ namespace fin.app.impl.opentk {
       this.input_.ButtonManager.HandleTransitions();
       if (this.input_.Keyboard[KeyId.ESC].IsPressed) {
         this.ScheduleCloseApp_();
+
       }
 
       // TODO: Should these args be passed in?
@@ -84,9 +85,10 @@ namespace fin.app.impl.opentk {
       this.sceneManager_.ExitSceneIfScheduled(this.root_);
       this.sceneManager_.EnterSceneIfScheduled(this.root_, this);
 
-      this.root_.Emit(new ControlEvent());
-      this.root_.Emit(new PhysicsEvent());
-      this.root_.Emit(new CollisionEvent());
+      this.root_.Emit(new ProcessInputsEvent());
+      this.root_.Emit(new TickPhysicsEvent());
+      this.root_.Emit(new TickCollisionsEvent());
+      this.root_.Emit(new TickAnimationEvent());
 
       this.root_.Emit(new TriggerRenderViewsTickEvent(this.g_));
     }
