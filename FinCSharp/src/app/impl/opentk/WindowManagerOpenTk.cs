@@ -12,6 +12,9 @@ namespace fin.app.impl.opentk {
         this.parent_ = parent;
       }
 
+      // TODO: Delete this.
+      public IEnumerable<IWindow> Windows => this.windows_;
+
       public void ProcessEvents() {
         foreach (var window in this.windows_) {
           window.ProcessEvents();

@@ -51,7 +51,6 @@ namespace fin.app.impl.opentk {
     public void Launch(IScene scene) {
       this.sceneManager_.ScheduleGoToScene(scene);
       this.ticker_.Start();
-      //this.window_.Title = $"SimpleGame ({(int)this.ticker_.ActualFrequency})";
     }
 
     private void Tick_() {
@@ -76,7 +75,6 @@ namespace fin.app.impl.opentk {
       this.input_.ButtonManager.HandleTransitions();
       if (this.input_.Keyboard[KeyId.ESC].IsPressed) {
         this.ScheduleCloseApp_();
-
       }
 
       // TODO: Should these args be passed in?
@@ -91,6 +89,10 @@ namespace fin.app.impl.opentk {
       this.root_.Emit(new TickAnimationEvent());
 
       this.root_.Emit(new TriggerRenderViewsTickEvent(this.g_));
+
+      foreach (var window in this.windowManager_.Windows) {
+        window.Title = $"SimpleGame ({(int)this.ticker_.ActualFrequency})";
+      }
     }
   }
 }

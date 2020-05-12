@@ -2,7 +2,7 @@
 
 namespace fin.retro {
   class TileLayer<TTileKey> {
-    private readonly TileMap<TTileKey> tileMap_;
+    /*private readonly TileMap<TTileKey> tileMap_;
     private readonly IFinGrid<TTileKey> tileKeyGrid_;
 
     public TileLayer(TileMap<TTileKey> tileMap, int width, int height) {
@@ -17,6 +17,6 @@ namespace fin.retro {
           this.tileMap_.render(canvas, tileKey, x, y);
         }
       }
-    }
+    }*/
   }
 }

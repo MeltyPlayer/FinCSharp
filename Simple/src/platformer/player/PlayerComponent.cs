@@ -5,6 +5,8 @@ using fin.graphics.camera;
 using fin.graphics.color;
 using fin.input;
 
+using simple.platformer.world;
+
 namespace simple.platformer.player {
   public class PlayerComponent : BComponent {
     private IGamepad gamepad_;
@@ -14,26 +16,33 @@ namespace simple.platformer.player {
     };
 
     private readonly Rigidbody rigidbody_;
-    private readonly PlayerMotor playerMotor_;
+    private readonly PlayerMotor motor_;
+    private readonly PlayerCollider collider_;
     private readonly BoxPlayerRenderer boxPlayerRenderer_;
 
     public PlayerComponent(IGamepad gamepad) {
       this.gamepad_ = gamepad;
 
       this.rigidbody_ = new Rigidbody {
-          Y = PlayerConstants.FLOOR_Y,
+          Position = (LevelConstants.SIZE * 10, LevelConstants.SIZE * 13),
           YAcceleration = PlayerConstants.GRAVITY,
           MaxYSpeed = double.MaxValue,
       };
 
-      this.playerMotor_ = new PlayerMotor {
-          Rigidbody = this.rigidbody_,
+      this.motor_ = new PlayerMotor {
           StateMachine = this.stateMachine_,
+          Rigidbody = this.rigidbody_,
+      };
+
+      this.collider_ = new PlayerCollider {
+          StateMachine = this.stateMachine_,
+          Rigidbody = this.rigidbody_,
       };
 
       this.boxPlayerRenderer_ = new BoxPlayerRenderer {
           Rigidbody = this.rigidbody_,
-          Size = PlayerConstants.SIZE,
+          HSize = PlayerConstants.HSIZE,
+          VSize = PlayerConstants.VSIZE,
       };
     }
 
@@ -44,17 +53,17 @@ namespace simple.platformer.player {
       var primaryAnalogStick = this.gamepad_[AnalogStickType.PRIMARY];
       var heldAxes = primaryAnalogStick.NormalizedAxes;
       var runButton = this.gamepad_[FaceButtonType.SECONDARY];
-      this.playerMotor_.ScheduleMoveAttempt(heldAxes.X, runButton.IsDown);
+      this.motor_.ScheduleMoveAttempt(heldAxes.X, runButton.IsDown);
 
       var jumpButton = this.gamepad_[FaceButtonType.PRIMARY];
       if (jumpButton.IsPressed) {
-        this.playerMotor_.ScheduleJumpStartAttempt();
+        this.motor_.ScheduleJumpStartAttempt();
       }
-      else if(jumpButton.IsReleased) {
-        this.playerMotor_.ScheduleJumpStopAttempt();
+      else if (jumpButton.IsReleased) {
+        this.motor_.ScheduleJumpStopAttempt();
       }
 
-      this.playerMotor_.ProcessInputs();
+      this.motor_.ProcessInputs();
     }
 
     [OnTick]
@@ -87,13 +96,7 @@ namespace simple.platformer.player {
 
     [OnTick]
     private void TickCollisions_(TickCollisionsEvent _) {
-      if (this.rigidbody_.Y <= PlayerConstants.FLOOR_Y) {
-        if (this.stateMachine_.IsInAir) {
-          this.stateMachine_.State = PlayerState.STANDING;
-        }
-        this.rigidbody_.Y = PlayerConstants.FLOOR_Y;
-        this.rigidbody_.YVelocity = 0;
-      }
+      this.collider_.TickCollisions();
 
       // If falling while meant to be on the ground, then switch to falling state.
       if (this.stateMachine_.IsOnGround && this.rigidbody_.YVelocity < 0) {
@@ -119,12 +122,22 @@ namespace simple.platformer.player {
     [OnTick]
     private void RenderForOrthographicCamera_(
         RenderForOrthographicCameraTickEvent evt) {
-      evt.Graphics.Primitives.VertexColor(ColorConstants.GREEN);
-      evt.Graphics.Render2d.Rectangle(0,
-                                      (int) (480 - PlayerConstants.FLOOR_Y),
-                                      640,
-                                      (int) PlayerConstants.FLOOR_Y,
-                                      true);
+      var level = LevelConstants.LEVEL;
+      var size = LevelConstants.SIZE;
+      evt.Graphics.Primitives.VertexColor(ColorConstants.WHITE);
+      for (var r = 0; r < level.Height; ++r) {
+        for (var c = 0; c < level.Width; ++c) {
+          // TODO: Use iterator instead.
+          if (level[c, r]) {
+            var (x, y) = (size * c, size * r);
+            evt.Graphics.Render2d.Rectangle((int) x,
+                                            (int) y,
+                                            (int) size,
+                                            (int) size,
+                                            true);
+          }
+        }
+      }
 
       this.boxPlayerRenderer_.Render(evt.Graphics);
     }

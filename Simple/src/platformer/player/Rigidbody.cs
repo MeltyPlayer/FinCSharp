@@ -6,11 +6,25 @@ namespace simple.platformer.player {
   /// </summary>
   public class Rigidbody {
     public double X { get; set; }
+
     public double Y { get; set; }
 
     public (double, double) Position {
       get => (this.X, this.Y);
       set => (this.X, this.Y) = value;
+    }
+
+
+    public double PreviousX { get; private set; }
+    public double PreviousY { get; private set; }
+
+    public (double, double) PreviousPosition {
+      get => (this.PreviousX, this.PreviousY);
+      private set => (this.PreviousX, this.PreviousY) = value;
+    }
+
+    private void UpdatePreviousPosition_() {
+      this.PreviousPosition = this.Position;
     }
 
 
@@ -45,6 +59,8 @@ namespace simple.platformer.player {
 
 
     public void TickPhysics(int eulerMethodStepCount) {
+      this.UpdatePreviousPosition_();
+
       var eulerFrac = 1d / eulerMethodStepCount;
       for (var i = 0; i < eulerMethodStepCount; ++i) {
         // TODO: Move this to collision?

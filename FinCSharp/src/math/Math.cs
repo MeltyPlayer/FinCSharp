@@ -69,6 +69,18 @@ namespace fin.math {
              Math.IsLessThanOrEqualTo(value, max);
     }
 
+    public static bool IsIncreasing<TNumber>(params TNumber[] values)
+        where TNumber : IComparable {
+      var previousValue = values[0];
+      foreach (var value in values) {
+        if (Math.IsGreaterThan(previousValue, value)) {
+          return false;
+        }
+        previousValue = value;
+      }
+      return true;
+    }
+
     /**
      * Applying value ranges
      */

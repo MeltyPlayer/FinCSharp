@@ -11,6 +11,8 @@ namespace fin.data.collections.grid {
     private readonly T defaultValue_;
     public int Width { get; }
     public int Height { get; }
+
+    public bool ShouldThrowExceptions { get; set; } = true;
     
     public FinSparseGrid(int width, int height, T defaultValue) {
       this.Width = width;

@@ -18,7 +18,7 @@ namespace fin.file {
     // TODO: Use resources/ as base?
     public static LocalFile WithinResources(string relativePath) {
       var absolutePath =
-          "R:/Documents/CSharpWorkspace/FinCSharp/FinCSharp/resources/" +
+          "R:/Documents/CSharpWorkspace/FinCSharp/Simple/resources/" +
           relativePath;
       var mergedFullPath = Path.GetFullPath(absolutePath);
       return LocalFile.At(mergedFullPath);
