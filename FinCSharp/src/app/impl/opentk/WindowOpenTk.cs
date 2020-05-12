@@ -11,6 +11,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using OpenTK.Platform;
 
 namespace fin.app.impl.opentk {
   public sealed partial class AppOpenTk {
@@ -63,6 +64,8 @@ namespace fin.app.impl.opentk {
                                                 GraphicsContextFlags.Default);
           this.glContext_.MakeCurrent(windowInfo);
           ((IGraphicsContextInternal) this.glContext_).LoadAll();
+
+          //this.glContext_.SwapInterval = 0;
 
           this.windowBoundingBox_ =
               new MutableBoundingBox<int>(0, 0, initialWidth, initialHeight);

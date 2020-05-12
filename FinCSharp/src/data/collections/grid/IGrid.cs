@@ -1,5 +1,4 @@
 ﻿namespace fin.data.collections.grid {
-  // TODO: Inherit from ICollection
   public interface IReadableFinGrid<T> : IReadableFinCollection<T> {
     int Width { get; }
     int Height { get; }

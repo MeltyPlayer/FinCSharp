@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 
 using fin.data.collections.grid;
 using fin.file;
@@ -7,6 +8,7 @@ namespace simple.platformer.world {
   public class LevelConstants {
     public const double SIZE = 32;
     public static readonly IFinGrid<bool> LEVEL;
+    public static readonly IList<(int, int)> BLOCKS = new List<(int, int)>();
 
     static LevelConstants() {
       var bitmap =
@@ -23,6 +25,7 @@ namespace simple.platformer.world {
           var color = bitmap.GetPixel(x, y);
           if (color.R == 0) {
             LevelConstants.LEVEL[x, y] = true;
+            LevelConstants.BLOCKS.Add((x, y));
           }
         }
       }

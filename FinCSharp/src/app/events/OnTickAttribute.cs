@@ -52,9 +52,6 @@ namespace fin.app.events {
         var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
         var specificHandler =
             onTickHandler.CreateDelegate(actionType, onTickHandlerOwner);
-        // TODO: Possible to remove this?
-        Action<dynamic> genericHandler =
-            evt => specificHandler.DynamicInvoke(evt);
 
         //var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
         //Action<dynamic> handler = evt => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt });
@@ -62,7 +59,7 @@ namespace fin.app.events {
                                                                      new object
                                                                          [] {
                                                                              safeEventParameterType,
-                                                                             genericHandler
+                                                                             specificHandler
                                                                          });
 
         //onTick.MakeGenericMethod(eventParameterType).Invoke(this, new object[] { safeEventParameterType, handler });

@@ -1,6 +1,7 @@
 ﻿using fin.app;
 using fin.app.events;
 using fin.app.node;
+using fin.graphics;
 using fin.graphics.camera;
 using fin.graphics.color;
 using fin.input;
@@ -123,21 +124,25 @@ namespace simple.platformer.player {
     private void RenderForOrthographicCamera_(
         RenderForOrthographicCameraTickEvent evt) {
       var level = LevelConstants.LEVEL;
+      var blocks = LevelConstants.BLOCKS;
       var size = LevelConstants.SIZE;
-      evt.Graphics.Primitives.VertexColor(ColorConstants.WHITE);
-      for (var r = 0; r < level.Height; ++r) {
-        for (var c = 0; c < level.Width; ++c) {
-          // TODO: Use iterator instead.
-          if (level[c, r]) {
-            var (x, y) = (size * c, size * r);
-            evt.Graphics.Render2d.Rectangle((int) x,
-                                            (int) y,
-                                            (int) size,
-                                            (int) size,
-                                            true);
-          }
-        }
+
+      var primitives = evt.Graphics.Primitives;
+      primitives.VertexColor(ColorConstants.WHITE).Begin(PrimitiveType.QUADS);
+      foreach (var (c, r) in blocks) {
+        var (x, y) = (size * c, size * r);
+
+        var leftX = (int) x;
+        var rightX = (int) (x + size);
+        var topY = (int) y;
+        var bottomY = (int) (y + size);
+
+        primitives.Vertex(leftX, topY)
+                  .Vertex(rightX, topY)
+                  .Vertex(rightX, bottomY)
+                  .Vertex(leftX, bottomY);
       }
+      primitives.End();
 
       this.boxPlayerRenderer_.Render(evt.Graphics);
     }
