@@ -17,14 +17,14 @@ namespace simple.platformer.player {
     public const double MAX_SLOW_XSPD = 2.5;
     public const double MAX_FAST_XSPD = 5;
 
-    public const double GRAVITY = -.7;
+    public const double GRAVITY = -.9; // -.7
 
-    public const double JUMP_HEIGHT = VSIZE * 3;
+    public const double JUMP_HEIGHT = VSIZE * 2;
 
     public static readonly double JUMP_SPEED =
         PlayerConstants.CalculateJumpSpeed_(JUMP_HEIGHT);
 
-    public const double BACKFLIP_JUMP_HEIGHT = VSIZE * 4;
+    public const double BACKFLIP_JUMP_HEIGHT = VSIZE * 3;
 
     public static readonly double BACKFLIP_JUMP_SPEED =
         PlayerConstants.CalculateJumpSpeed_(BACKFLIP_JUMP_HEIGHT);

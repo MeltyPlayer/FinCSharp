@@ -1,12 +1,14 @@
-﻿namespace fin.data.collections.grid {
-  using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-  using exception;
+using fin.data.collections.list;
+using fin.exception;
 
+namespace fin.data.collections.grid {
   // TODO: Add tests.
   public class FinArrayGrid<T> : IFinGrid<T> {
-    private T[] impl_;
-    private bool touched = false;
+    private IFinList<GridNode> impl_;
+    private bool touched_ = false;
+
     public int Width { get; }
     public int Height { get; }
 
@@ -18,42 +20,44 @@
       this.Width = width;
       this.Height = height;
 
-      this.impl_ = new T[width * height];
       this.defaultValue_ = defaultValue;
-      for (var i = 0; i < this.impl_.Length; ++i) {
-        this.impl_[i] = defaultValue;
+
+      var size = width * height;
+      this.impl_ = new FinArrayList<GridNode>(size);
+      for (var y = 0; y < height; ++y) {
+        for (var x = 0; x < width; ++x) {
+          var i = this.CalculateIndex_(x, y);
+          this.impl_[i] = new GridNode(x, y, defaultValue);
+        }
       }
     }
 
-    public int Count => this.impl_.Length;
+    public int Count => this.impl_.Count;
 
-    public IEnumerator<T> GetEnumerator() =>
-        new ConvertedEnumerator<T>(this.impl_.GetEnumerator(),
-                                   obj => (T) obj);
+    public IEnumerator<IGridNode<T>> GetEnumerator() =>
+        this.impl_.GetEnumerator();
 
     public bool Clear() {
-      if (!this.touched) {
+      if (!this.touched_) {
         return false;
       }
 
-      var size = this.Width * this.Height;
-      this.impl_ = new T[size];
-      for (var i = 0; i < size; ++i) {
-        this.impl_[i] = this.defaultValue_;
+      foreach (var node in this.impl_) {
+        node.Value = this.defaultValue_;
       }
 
-      this.touched = false;
+      this.touched_ = false;
       return true;
     }
 
     public T this[int x, int y] {
       get => this.VerifyIndex_(x, y)
-                 ? this.impl_[this.CalculateIndex_(x, y)]
+                 ? this.impl_[this.CalculateIndex_(x, y)].Value
                  : this.defaultValue_;
       set {
         if (this.VerifyIndex_(x, y)) {
-          this.impl_[this.CalculateIndex_(x, y)] = value;
-          this.touched = true;
+          this.impl_[this.CalculateIndex_(x, y)].Value = value;
+          this.touched_ = true;
         }
       }
     }
@@ -71,5 +75,17 @@
     }
 
     private int CalculateIndex_(int x, int y) => y * this.Width + x;
+
+    private class GridNode : IGridNode<T> {
+      public int X { get; }
+      public int Y { get; }
+      public T Value { get; set; }
+
+      public GridNode(int x, int y, T value) {
+        this.X = x;
+        this.Y = y;
+        this.Value = value;
+      }
+    }
   }
 }

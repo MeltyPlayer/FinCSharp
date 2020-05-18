@@ -3,7 +3,15 @@ using System.Collections.Generic;
 
 namespace fin.data.collections.list {
   public class FinArrayList<T> : IFinList<T> {
-    private readonly ArrayList impl_ = new ArrayList();
+    private readonly ArrayList impl_;
+
+    public FinArrayList() {
+      this.impl_ = new ArrayList();
+    }
+
+    public FinArrayList(int size) {
+      this.impl_ = new ArrayList(size);
+    }
 
     public int Count => this.impl_.Count;
 

@@ -1,12 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Threading;
-
-using fin.data.collections.grid;
-using fin.file;
-using fin.log;
-
-using simple.platformer.player;
+﻿using simple.platformer.player;
 using simple.platformer.world;
 
 using CMath = System.Math;

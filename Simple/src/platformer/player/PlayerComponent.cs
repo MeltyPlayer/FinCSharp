@@ -124,12 +124,14 @@ namespace simple.platformer.player {
     private void RenderForOrthographicCamera_(
         RenderForOrthographicCameraTickEvent evt) {
       var level = LevelConstants.LEVEL;
-      var blocks = LevelConstants.BLOCKS;
       var size = LevelConstants.SIZE;
 
       var primitives = evt.Graphics.Primitives;
       primitives.VertexColor(ColorConstants.WHITE).Begin(PrimitiveType.QUADS);
-      foreach (var (c, r) in blocks) {
+      foreach (var node in level) {
+        var c = node.X;
+        var r = node.Y;
+
         var (x, y) = (size * c, size * r);
 
         var leftX = (int) x;

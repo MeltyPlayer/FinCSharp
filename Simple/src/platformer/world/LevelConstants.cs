@@ -16,7 +16,7 @@ namespace simple.platformer.world {
 
       var (width, height) = (bitmap.Width, bitmap.Height);
       LevelConstants.LEVEL =
-          new FinArrayGrid<bool>(bitmap.Width, bitmap.Height, false) {
+          new FinSparseGrid<bool>(bitmap.Width, bitmap.Height, false) {
               ShouldThrowExceptions = false,
           };
 

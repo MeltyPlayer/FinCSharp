@@ -16,9 +16,9 @@ using OpenTK.Platform;
 namespace fin.app.impl.opentk {
   public sealed partial class AppOpenTk {
     private sealed partial class WindowManagerOpenTk {
-      // TODO: Separate keystate dictionaries?
       // TODO: App should only be closed when the final window is closed.
       // TODO: What if a window never opens??? Need a safety measure to auto-close.
+      // TODO: Fix vsync stuttering.
       public IWindow NewWindow(IWindowArgs args)
         => this.parent_.Instantiator.Wrap(this.parent_.root_,
                                           new WindowOpenTk(
