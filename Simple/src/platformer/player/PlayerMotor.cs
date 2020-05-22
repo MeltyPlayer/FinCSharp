@@ -117,7 +117,10 @@ namespace simple.platformer.player {
           this.StateMachine.State = newState;
 
           if (isBackflip) {
-            this.Rigidbody.XVelocity = 0;
+            // Instantly flip horizontal velocity.
+            var moveDirection = Math.Sign(this.Rigidbody.XVelocity);
+            this.Rigidbody.XVelocity =
+                -moveDirection * PlayerConstants.MAX_SLOW_XSPD;
           }
         }
       }
