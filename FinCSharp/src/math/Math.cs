@@ -19,6 +19,14 @@ namespace fin.math {
     public static TNumber Mod<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable => (dynamic) lhs % (dynamic) rhs;
 
+    // TODO: Dear god. Fix this.
+    public static TNumber Sqrt<TNumber>(TNumber value)
+      => (TNumber) (dynamic) CMath.Sqrt((double) (dynamic) value!);
+
+    public static TNumber Pow<TNumber>(TNumber value, TNumber exponent)
+      => (TNumber) (dynamic) CMath.Pow((double) (dynamic) value!,
+                                       (double) (dynamic) exponent!);
+
     /**
      * Working w/ signs
      */
@@ -81,16 +89,28 @@ namespace fin.math {
       return true;
     }
 
+    public static bool IsDecreasing<TNumber>(params TNumber[] values)
+        where TNumber : IComparable {
+      var previousValue = values[0];
+      foreach (var value in values) {
+        if (Math.IsLessThan(previousValue, value)) {
+          return false;
+        }
+        previousValue = value;
+      }
+      return true;
+    }
+
     /**
      * Applying value ranges
      */
-    public static TNumber Min<TNumber>(TNumber a, TNumber b)
+    public static TNumber Min<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable
-      => Math.IsLessThan(a, b) ? a : b;
+      => Math.IsLessThan(lhs, rhs) ? lhs : rhs;
 
-    public static TNumber Max<TNumber>(TNumber a, TNumber b)
+    public static TNumber Max<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable
-      => Math.IsGreaterThan(a, b) ? a : b;
+      => Math.IsGreaterThan(lhs, rhs) ? lhs : rhs;
 
     public static TNumber Clamp<TNumber>(
         TNumber min,

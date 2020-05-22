@@ -13,6 +13,8 @@ namespace simple.platformer.player {
     JUMPING,
     BACKFLIPPING,
     FALLING,
+
+    SWINGING,
   }
 
   public class PlayerStateMachine {
@@ -26,6 +28,11 @@ namespace simple.platformer.player {
                                               PlayerState.STOPPING,
                                               PlayerState.DUCKING,
                                               PlayerState.SLIDING);
+
+    public bool IsMovingOnGround => this.IsInState_(PlayerState.WALKING,
+                                                    PlayerState.RUNNING,
+                                                    PlayerState.TURNING,
+                                                    PlayerState.STOPPING);
 
     public bool CanMoveOnGround => this.IsInState_(PlayerState.STANDING,
                                                    PlayerState.WALKING,

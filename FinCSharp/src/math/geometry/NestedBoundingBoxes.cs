@@ -66,10 +66,10 @@ namespace fin.math.geometry {
           var boxRightX = boxLeftX + (dynamic) boxWidth;
           var boxBottomY = boxTopY + (dynamic) boxHeight;
 
-          var adjustedLeftX = Max_(currentLeftX, boxLeftX);
-          var adjustedRightX = Min_(currentRightX, boxRightX);
-          var adjustedTopY = Max_(currentTopY, boxTopY);
-          var adjustedBottomY = Min_(currentBottomY, boxBottomY);
+          var adjustedLeftX = Math.Max(currentLeftX, boxLeftX);
+          var adjustedRightX = Math.Min(currentRightX, boxRightX);
+          var adjustedTopY = Math.Max(currentTopY, boxTopY);
+          var adjustedBottomY = Math.Min(currentBottomY, boxBottomY);
           var adjustedWidth = Math.Max(0, adjustedRightX - adjustedLeftX);
           var adjustedHeight = Math.Max(0, adjustedBottomY - adjustedTopY);
 
@@ -82,13 +82,5 @@ namespace fin.math.geometry {
 
       return intersection;
     }
-
-    private static TComparable Max_<TComparable>(TComparable left,
-      TComparable right) where TComparable : IComparable
-      => left.CompareTo(right) > 0 ? left : right;
-
-    private static TComparable Min_<TComparable>(TComparable left,
-      TComparable right) where TComparable : IComparable
-      => left.CompareTo(right) < 0 ? left : right;
   }
 }

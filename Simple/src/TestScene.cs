@@ -67,7 +67,7 @@ namespace simple {
         evt.Graphics.Render2d.Rectangle(0,
                                         480 - 20,
                                         640 * (float) (.5 + .5 *
-                                                       this.circularProgress_.X
+                                                       this.circularProgress_.NormalX
                                                       ),
                                         20,
                                         true);

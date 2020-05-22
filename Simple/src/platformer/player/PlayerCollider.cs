@@ -80,7 +80,7 @@ namespace simple.platformer {
       }
     }
 
-    public void PerformCeilingCollision_(
+    private void PerformCeilingCollision_(
         double blockX,
         double blockY,
         double wiggleRoom = 0) {
@@ -103,7 +103,7 @@ namespace simple.platformer {
       }
     }
 
-    public void PerformLeftWallCollision_(double blockX, double blockY) {
+    private void PerformLeftWallCollision_(double blockX, double blockY) {
       var blockSize = LevelConstants.SIZE;
 
       var blockLeftX = blockX;
@@ -116,12 +116,14 @@ namespace simple.platformer {
             blockLeftX,
             this.RightX)) {
           this.RightX = blockLeftX;
-          this.Rigidbody.XVelocity = 0;
+          if (this.Rigidbody.XVelocity > 0) {
+            this.Rigidbody.XVelocity = 0;
+          }
         }
       }
     }
 
-    public void PerformRightWallCollision_(double blockX, double blockY) {
+    private void PerformRightWallCollision_(double blockX, double blockY) {
       var blockSize = LevelConstants.SIZE;
 
       var blockRightX = blockX + blockSize;
@@ -132,9 +134,11 @@ namespace simple.platformer {
         if (Math.IsIncreasing(this.LeftX,
                               blockRightX,
                               this.RightX
-            /*, this.PreviousLeftX*/)) {
+                /*, this.PreviousLeftX*/)) {
           this.LeftX = blockRightX;
-          this.Rigidbody.XVelocity = 0;
+          if (this.Rigidbody.XVelocity < 0) {
+            this.Rigidbody.XVelocity = 0;
+          }
         }
       }
     }

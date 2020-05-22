@@ -5,20 +5,20 @@ namespace simple.platformer.player {
     public const double HSIZE = 32;
     public const double VSIZE = 64;
 
-    public const double GROUND_REACTION_FRAC = .2;
+    public const double GROUND_REACTION_FRAC = .5;
     public const double GROUND_SLOW_XACC = .4;
     public const double GROUND_FAST_XACC = .6;
-    public const double GROUND_FRICTION = .2;
+    public const double GROUND_FRICTION = .25;
     public const double GROUND_SLIDING_FRICTION = .1;
 
     public const double AIR_SLOW_XACC = .3;
     public const double AIR_FAST_XACC = .4;
     public const double AIR_FRICTION = .1;
 
-    public const double MAX_SLOW_XSPD = 2.5;
-    public const double MAX_FAST_XSPD = 5;
+    public const double MAX_SLOW_XSPD = 3;
+    public const double MAX_FAST_XSPD = 6;
 
-    public const double GRAVITY = -1.1; // -.9
+    public const double GRAVITY = -1.3; // -.9
 
     public const double JUMP_HEIGHT = VSIZE * 2;
 

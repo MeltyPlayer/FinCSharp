@@ -103,7 +103,7 @@ namespace simple.platformer.player {
       var (xVelocity, yVelocity) = this.rigidbody_.Velocity;
 
       // When comes to a stop, start standing.
-      if (this.stateMachine_.State == PlayerState.STOPPING && xVelocity == 0) {
+      if (this.stateMachine_.IsMovingOnGround && xVelocity == 0) {
         this.stateMachine_.State = PlayerState.STANDING;
       }
 
