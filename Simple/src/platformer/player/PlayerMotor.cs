@@ -14,14 +14,20 @@ namespace simple.platformer.player {
     private double scheduledHeldXAxis_;
     private bool scheduledIsRunning_;
 
-    private enum ScheduledJumpState {
+    private enum ScheduledState {
       UNDEFINED,
       STARTING,
       STOPPING,
     }
 
-    private ScheduledJumpState
-        scheduledJumpState_ = ScheduledJumpState.UNDEFINED;
+    private ScheduledState scheduledDuckState_ = ScheduledState.UNDEFINED;
+    private ScheduledState scheduledJumpState_ = ScheduledState.UNDEFINED;
+
+    public void ScheduleDuckStartAttempt() =>
+        this.scheduledDuckState_ = ScheduledState.STARTING;
+
+    public void ScheduleDuckStopAttempt() =>
+        this.scheduledDuckState_ = ScheduledState.STOPPING;
 
     /// <summary>
     ///   Schedules an attempt at horizontal movement. This will be performed
@@ -37,25 +43,46 @@ namespace simple.platformer.player {
     ///   next tick if possible.
     /// </summary>
     // TODO: Support early/late jumps so it feels more responsive?
-    public void ScheduleJumpStartAttempt() {
-      this.scheduledJumpState_ = ScheduledJumpState.STARTING;
-    }
+    public void ScheduleJumpStartAttempt() =>
+        this.scheduledJumpState_ = ScheduledState.STARTING;
 
     /// <summary>
     ///   Schedules an attempt to stop a jump early. This will be performed in
     ///   the next tick if possible. 
     /// </summary>
-    public void ScheduleJumpStopAttempt() {
-      this.scheduledJumpState_ = ScheduledJumpState.STOPPING;
-    }
+    public void ScheduleJumpStopAttempt() =>
+        this.scheduledJumpState_ = ScheduledState.STOPPING;
 
     public void ProcessInputs() {
+      this.ProcessScheduledDuck_();
       this.ProcessScheduledHorizontalMovement_();
       this.ProcessScheduledJump_();
 
       this.scheduledHeldXAxis_ = 0;
       this.scheduledIsRunning_ = false;
-      this.scheduledJumpState_ = ScheduledJumpState.UNDEFINED;
+      this.scheduledDuckState_ = ScheduledState.UNDEFINED;
+      this.scheduledJumpState_ = ScheduledState.UNDEFINED;
+    }
+
+    private void ProcessScheduledDuck_() {
+      if (this.scheduledDuckState_ == ScheduledState.STARTING) {
+        if (this.StateMachine.State == PlayerState.RUNNING) {
+          this.StateMachine.State = PlayerState.SLIDING;
+          this.Rigidbody.XAcceleration = 0;
+        }
+        if (this.StateMachine.CanMoveOnGround) {
+          this.StateMachine.State = PlayerState.DUCKING;
+          this.Rigidbody.XAcceleration = 0;
+        }
+      }
+      else if (this.scheduledDuckState_ == ScheduledState.STOPPING) {
+        if (this.StateMachine.State == PlayerState.DUCKING) {
+          this.StateMachine.State = PlayerState.STANDING;
+        }
+        if (this.StateMachine.State == PlayerState.SLIDING) {
+          this.StateMachine.State = PlayerState.STOPPING;
+        }
+      }
     }
 
     private void ProcessScheduledHorizontalMovement_() {
@@ -101,8 +128,8 @@ namespace simple.platformer.player {
     }
 
     private void ProcessScheduledJump_() {
-      if (this.StateMachine.IsOnGround) {
-        if (this.scheduledJumpState_ == ScheduledJumpState.STARTING) {
+      if (this.scheduledJumpState_ == ScheduledState.STARTING) {
+        if (this.StateMachine.IsOnGround) {
           var isBackflip = this.StateMachine.State == PlayerState.TURNING &&
                            Math.Abs(this.Rigidbody.XVelocity) >
                            PlayerConstants.MAX_SLOW_XSPD;
@@ -124,8 +151,8 @@ namespace simple.platformer.player {
           }
         }
       }
-      else if (this.StateMachine.IsJumping) {
-        if (this.scheduledJumpState_ == ScheduledJumpState.STOPPING) {
+      else if (this.scheduledJumpState_ == ScheduledState.STOPPING) {
+        if (this.StateMachine.IsJumping) {
           this.StateMachine.State = PlayerState.FALLING;
           this.Rigidbody.YVelocity /= 2;
         }

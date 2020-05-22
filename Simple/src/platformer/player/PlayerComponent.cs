@@ -5,6 +5,7 @@ using fin.graphics;
 using fin.graphics.camera;
 using fin.graphics.color;
 using fin.input;
+using fin.math;
 
 using simple.platformer.world;
 
@@ -20,6 +21,8 @@ namespace simple.platformer.player {
     private readonly PlayerMotor motor_;
     private readonly PlayerCollider collider_;
     private readonly BoxPlayerRenderer boxPlayerRenderer_;
+
+    private double prevHeldY_ = 0;
 
     public PlayerComponent(IGamepad gamepad) {
       this.gamepad_ = gamepad;
@@ -56,6 +59,14 @@ namespace simple.platformer.player {
       var runButton = this.gamepad_[FaceButtonType.SECONDARY];
       this.motor_.ScheduleMoveAttempt(heldAxes.X, runButton.IsDown);
 
+      if (Math.IsIncreasing(heldAxes.Y, -.5, this.prevHeldY_)) {
+        this.motor_.ScheduleDuckStartAttempt();
+      }
+      if (Math.IsIncreasing(this.prevHeldY_, -.5, heldAxes.Y)) {
+        this.motor_.ScheduleDuckStopAttempt();
+      }
+      this.prevHeldY_ = heldAxes.Y;
+
       var jumpButton = this.gamepad_[FaceButtonType.PRIMARY];
       if (jumpButton.IsPressed) {
         this.motor_.ScheduleJumpStartAttempt();
@@ -75,10 +86,17 @@ namespace simple.platformer.player {
                                       ? PlayerConstants.MAX_FAST_XSPD
                                       : PlayerConstants.MAX_SLOW_XSPD;
 
-      var isOnGround = this.stateMachine_.IsOnGround;
-      this.rigidbody_.Friction = isOnGround
-                                     ? PlayerConstants.GROUND_FRICTION
-                                     : PlayerConstants.AIR_FRICTION;
+      if (this.stateMachine_.IsOnGround) {
+        if (this.stateMachine_.State != PlayerState.SLIDING) {
+          this.rigidbody_.Friction = PlayerConstants.GROUND_FRICTION;
+        }
+        else {
+          this.rigidbody_.Friction = PlayerConstants.GROUND_SLIDING_FRICTION;
+        }
+      }
+      else {
+        this.rigidbody_.Friction = PlayerConstants.AIR_FRICTION;
+      }
 
       this.rigidbody_.TickPhysics(3);
 
@@ -113,6 +131,8 @@ namespace simple.platformer.player {
           PlayerState.RUNNING      => ColorConstants.ORANGE,
           PlayerState.TURNING      => ColorConstants.MAGENTA,
           PlayerState.STOPPING     => ColorConstants.RED,
+          PlayerState.DUCKING      => ColorConstants.TEAL,
+          PlayerState.SLIDING      => ColorConstants.GREEN,
           PlayerState.JUMPING      => ColorConstants.BLUE,
           PlayerState.BACKFLIPPING => ColorConstants.PURPLE,
           PlayerState.FALLING      => ColorConstants.CYAN,
@@ -146,6 +166,13 @@ namespace simple.platformer.player {
       }
       primitives.End();
 
+      var isWide = this.stateMachine_.State == PlayerState.SLIDING;
+      var isTall = this.stateMachine_.State != PlayerState.DUCKING &&
+                   this.stateMachine_.State != PlayerState.SLIDING;
+      this.boxPlayerRenderer_.HSize =
+          !isWide ? PlayerConstants.HSIZE : PlayerConstants.VSIZE;
+      this.boxPlayerRenderer_.VSize =
+          isTall ? PlayerConstants.VSIZE : PlayerConstants.HSIZE;
       this.boxPlayerRenderer_.Render(evt.Graphics);
     }
   }
