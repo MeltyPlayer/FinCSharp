@@ -18,6 +18,8 @@ namespace simple.platformer.player {
     };
 
     private readonly Rigidbody rigidbody_;
+    private readonly PlayerRigidbody playerRigidbody_;
+
     private readonly PlayerMotor motor_;
     private readonly PlayerCollider collider_;
     private readonly BoxPlayerRenderer boxPlayerRenderer_;
@@ -32,6 +34,9 @@ namespace simple.platformer.player {
           YAcceleration = PlayerConstants.GRAVITY,
           MaxYSpeed = double.MaxValue,
       };
+      this.playerRigidbody_ = new PlayerRigidbody {
+          Rigidbody = this.rigidbody_,
+      };
 
       this.motor_ = new PlayerMotor {
           StateMachine = this.stateMachine_,
@@ -40,7 +45,7 @@ namespace simple.platformer.player {
 
       this.collider_ = new PlayerCollider {
           StateMachine = this.stateMachine_,
-          Rigidbody = this.rigidbody_,
+          PlayerRigidbody = this.playerRigidbody_,
       };
 
       this.boxPlayerRenderer_ = new BoxPlayerRenderer {

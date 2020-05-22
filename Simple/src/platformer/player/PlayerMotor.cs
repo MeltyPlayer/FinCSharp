@@ -9,6 +9,7 @@ namespace simple.platformer.player {
   // TODO: Should this also manage collisions?
   public class PlayerMotor {
     public PlayerStateMachine StateMachine { get; set; }
+
     public Rigidbody Rigidbody { get; set; }
 
     private double scheduledHeldXAxis_;

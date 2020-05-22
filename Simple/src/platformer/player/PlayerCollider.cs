@@ -13,10 +13,12 @@ namespace simple.platformer {
     private CachedBlocks cachedBlocks_ = new CachedBlocks();
 
     public PlayerStateMachine StateMachine { get; set; }
-    public Rigidbody Rigidbody { get; set; }
+
+    public PlayerRigidbody PlayerRigidbody { get; set; }
+    private Rigidbody Rigidbody => this.PlayerRigidbody.Rigidbody;
 
     public void TickCollisions() {
-      this.cachedBlocks_.CheckAll((this.CenterX, this.CenterY),
+      this.cachedBlocks_.CheckAll((this.PlayerRigidbody.CenterX, this.CenterY),
                                   this.CheckCollisions_);
     }
 
@@ -68,7 +70,8 @@ namespace simple.platformer {
       var blockRightX = blockX + blockSize;
       var blockTopY = blockY;
 
-      if (this.RightX > blockLeftX && this.LeftX < blockRightX) {
+      if (this.PlayerRigidbody.RightX > blockLeftX &&
+          this.PlayerRigidbody.LeftX < blockRightX) {
         if (Math.IsIncreasing(this.PreviousBottomY, blockY, this.BottomY)) {
           if (this.StateMachine.IsInAir) {
             this.StateMachine.State = PlayerState.STANDING;
@@ -90,7 +93,8 @@ namespace simple.platformer {
       var blockRightX = blockX + blockSize - wiggleRoom;
       var blockBottomY = blockY + blockSize;
 
-      if (this.RightX > blockLeftX && this.LeftX < blockRightX) {
+      if (this.PlayerRigidbody.RightX > blockLeftX &&
+          this.PlayerRigidbody.LeftX < blockRightX) {
         if ((this.PreviousTopY > blockBottomY &&
              this.TopY <= blockBottomY) ||
             (this.PreviousTopY >= blockBottomY &&
@@ -112,12 +116,12 @@ namespace simple.platformer {
 
       if (this.BottomY > blockTopY && this.TopY < blockBottomY) {
         if (Math.IsIncreasing( //this.PreviousRightX,
-            this.LeftX,
+            this.PlayerRigidbody.LeftX,
             blockLeftX,
-            this.RightX)) {
-          this.RightX = blockLeftX;
-          if (this.Rigidbody.XVelocity > 0) {
-            this.Rigidbody.XVelocity = 0;
+            this.PlayerRigidbody.RightX)) {
+          this.PlayerRigidbody.RightX = blockLeftX;
+          if (this.PlayerRigidbody.XVelocity > 0) {
+            this.PlayerRigidbody.XVelocity = 0;
           }
         }
       }
@@ -130,32 +134,21 @@ namespace simple.platformer {
       var blockTopY = blockY;
       var blockBottomY = blockY + blockSize;
 
-      if (this.BottomY > blockTopY && this.TopY < blockBottomY) {
-        if (Math.IsIncreasing(this.LeftX,
+      if (this.BottomY > blockTopY &&
+          this.TopY < blockBottomY) {
+        if (Math.IsIncreasing(this.PlayerRigidbody.LeftX,
                               blockRightX,
-                              this.RightX
-                /*, this.PreviousLeftX*/)) {
-          this.LeftX = blockRightX;
-          if (this.Rigidbody.XVelocity < 0) {
-            this.Rigidbody.XVelocity = 0;
+                              this.PlayerRigidbody.RightX
+            /*, this.PreviousLeftX*/)) {
+          this.PlayerRigidbody.LeftX = blockRightX;
+          if (this.PlayerRigidbody.XVelocity < 0) {
+            this.PlayerRigidbody.XVelocity = 0;
           }
         }
       }
     }
 
-    private double CenterX => this.X;
     private double CenterY => this.Y - PlayerConstants.VSIZE / 2;
-
-
-    private double LeftX {
-      get => this.X - PlayerConstants.HSIZE / 2;
-      set => this.X = value + PlayerConstants.HSIZE / 2;
-    }
-
-    private double RightX {
-      get => this.X + PlayerConstants.HSIZE / 2;
-      set => this.X = value - PlayerConstants.HSIZE / 2;
-    }
 
     private double BottomY {
       get => this.Y;
@@ -171,12 +164,6 @@ namespace simple.platformer {
     private double PreviousBottomY => this.PreviousY;
     private double PreviousTopY => this.PreviousY - PlayerConstants.VSIZE;
 
-
-    private double X {
-      get => this.Rigidbody.X;
-      set => this.Rigidbody.X = value;
-    }
-
     // TODO: Remove 480 references.
     // TODO: Remove flipping.
     private double Y {
@@ -184,7 +171,6 @@ namespace simple.platformer {
       set => this.Rigidbody.Y = 480 - value;
     }
 
-    private double PreviousX => this.Rigidbody.PreviousX;
     private double PreviousY => 480 - this.Rigidbody.PreviousY;
 
     private class CachedBlocks {
