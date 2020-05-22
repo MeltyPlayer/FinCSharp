@@ -9,8 +9,11 @@ namespace fin.data.collections.list {
       this.impl_ = new ArrayList();
     }
 
-    public FinArrayList(int size) {
-      this.impl_ = new ArrayList(size);
+    public FinArrayList(int size, T defaultValue = default) {
+      this.impl_ = new ArrayList();
+      for (var i = 0; i < size; ++i) {
+        this.impl_.Add(defaultValue);
+      }
     }
 
     public int Count => this.impl_.Count;

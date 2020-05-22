@@ -1,5 +1,7 @@
 ﻿namespace fin.data.collections.set {
-  public interface IFinSet<T> : IReadableFinSet<T>, IWritableFinSet<T> {}
+  public interface IFinSet<T> : IFinCollection<T>,
+                                IReadableFinSet<T>,
+                                IWritableFinSet<T> {}
 
   public interface IReadableFinSet<T> : IReadableFinCollection<T> {
     bool Contains(T value);
