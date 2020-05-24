@@ -13,6 +13,8 @@ namespace simple.platformer.player {
   public class PlayerComponent : BComponent {
     private IGamepad gamepad_;
 
+    private readonly LevelGridRenderer levelGridRenderer_;
+
     private readonly PlayerStateMachine stateMachine_ = new PlayerStateMachine {
         State = PlayerState.STANDING,
     };
@@ -28,6 +30,10 @@ namespace simple.platformer.player {
 
     public PlayerComponent(IGamepad gamepad) {
       this.gamepad_ = gamepad;
+
+      this.levelGridRenderer_ = new LevelGridRenderer {
+          LevelGrid = LevelConstants.LEVEL_GRID,
+      };
 
       this.rigidbody_ = new Rigidbody {
           Position = (LevelConstants.SIZE * 10, LevelConstants.SIZE * 13),
@@ -112,8 +118,9 @@ namespace simple.platformer.player {
         this.stateMachine_.State = PlayerState.STANDING;
       }
 
-      // When transitions to negative y velocity in air after a jump, start falling.
-      if (this.stateMachine_.IsMovingUpwardInAir && yVelocity < 0) {
+      // When transitions to downward y velocity in air after a jump, start
+      // falling.
+      if (this.stateMachine_.IsMovingUpwardInAir && yVelocity > 0) {
         this.stateMachine_.State = PlayerState.FALLING;
       }
     }
@@ -148,28 +155,8 @@ namespace simple.platformer.player {
     [OnTick]
     private void RenderForOrthographicCamera_(
         RenderForOrthographicCameraTickEvent evt) {
-      var level = LevelConstants.LEVEL;
-      var size = LevelConstants.SIZE;
-
-      var primitives = evt.Graphics.Primitives;
-      primitives.VertexColor(ColorConstants.WHITE).Begin(PrimitiveType.QUADS);
-      foreach (var node in level) {
-        var c = node.X;
-        var r = node.Y;
-
-        var (x, y) = (size * c, size * r);
-
-        var leftX = (int) x;
-        var rightX = (int) (x + size);
-        var topY = (int) y;
-        var bottomY = (int) (y + size);
-
-        primitives.Vertex(leftX, topY)
-                  .Vertex(rightX, topY)
-                  .Vertex(rightX, bottomY)
-                  .Vertex(leftX, bottomY);
-      }
-      primitives.End();
+      var g = evt.Graphics;
+      this.levelGridRenderer_.Render(g);
 
       var isWide = this.stateMachine_.State == PlayerState.SLIDING;
       var isTall = this.stateMachine_.State != PlayerState.DUCKING &&
@@ -178,7 +165,7 @@ namespace simple.platformer.player {
           !isWide ? PlayerConstants.HSIZE : PlayerConstants.VSIZE;
       this.boxPlayerRenderer_.VSize =
           isTall ? PlayerConstants.VSIZE : PlayerConstants.HSIZE;
-      this.boxPlayerRenderer_.Render(evt.Graphics);
+      this.boxPlayerRenderer_.Render(g);
     }
   }
 }

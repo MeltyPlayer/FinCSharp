@@ -1,7 +1,7 @@
 ﻿namespace fin.data.collections.grid {
   public interface IGridNode<T> {
-    int X { get; }
-    int Y { get; }
+    int C { get; }
+    int R { get; }
     T Value { get; set; }
   }
 
@@ -9,14 +9,14 @@
     int Width { get; }
     int Height { get; }
 
-    T this[int x, int y] { get; }
+    T this[int c, int r] { get; }
   }
 
   public interface IWritableFinGrid<T> : IWritableFinCollection<IGridNode<T>> {
-    T this[int x, int y] { set; }
+    T this[int c, int r] { set; }
   }
 
   public interface IFinGrid<T> : IReadableFinGrid<T>, IWritableFinGrid<T> {
-    new T this[int x, int y] { get; set; }
+    new T this[int c, int r] { get; set; }
   }
 }

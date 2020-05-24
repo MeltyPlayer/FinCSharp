@@ -18,7 +18,7 @@ namespace simple.platformer.player {
     public const double MAX_SLOW_XSPD = 3;
     public const double MAX_FAST_XSPD = 6;
 
-    public const double GRAVITY = -1.3; // -.9
+    public const double GRAVITY = 1.3; // -.9
 
     public const double JUMP_HEIGHT = VSIZE * 2;
 
@@ -31,6 +31,6 @@ namespace simple.platformer.player {
         PlayerConstants.CalculateJumpSpeed_(BACKFLIP_JUMP_HEIGHT);
 
     private static double CalculateJumpSpeed_(double height) =>
-        CMath.Sqrt(-2 * GRAVITY * height);
+        -CMath.Sqrt(2 * GRAVITY * height);
   }
 }

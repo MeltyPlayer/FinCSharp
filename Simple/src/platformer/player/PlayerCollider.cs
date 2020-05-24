@@ -10,31 +10,53 @@ using Math = fin.math.Math;
 
 namespace simple.platformer {
   public class PlayerCollider {
-    private CachedBlocks cachedBlocks_ = new CachedBlocks();
-
     public PlayerStateMachine StateMachine { get; set; }
 
     public PlayerRigidbody PlayerRigidbody { get; set; }
     private Rigidbody Rigidbody => this.PlayerRigidbody.Rigidbody;
 
     public void TickCollisions() {
-      this.cachedBlocks_.CheckAll((this.PlayerRigidbody.CenterX, this.CenterY),
-                                  this.CheckCollisions_);
+      var blockSize = LevelConstants.SIZE;
+
+      var (centerLevelC, centerLevelR) =
+          ((int) CMath.Floor(this.PlayerRigidbody.CenterX / blockSize),
+           (int) CMath.Floor(this.PlayerRigidbody.CenterY / blockSize));
+
+      var windowWidth =
+          (int) (1 + CMath.Ceiling(PlayerConstants.HSIZE / blockSize) +
+                 1);
+      var windowHeight =
+          (int) (1 + CMath.Ceiling(PlayerConstants.VSIZE / blockSize) +
+                 1);
+
+      var relativeWindowHStart = (int) -CMath.Floor(windowWidth / 2d);
+      var relativeWindowVStart = (int) -CMath.Floor(windowHeight / 2d);
+
+      var levelGrid = LevelConstants.LEVEL_GRID;
+      for (var r = 0; r < windowHeight; ++r) {
+        for (var c = 0; c < windowWidth; ++c) {
+          var (relativeCacheC, relativeCacheR) =
+              (relativeWindowHStart + c, relativeWindowVStart + r);
+          var (absoluteLevelC, absoluteLevelR) = (centerLevelC + relativeCacheC,
+                                                  centerLevelR +
+                                                  relativeCacheR);
+          var tile = levelGrid.GetAtIndex(absoluteLevelC, absoluteLevelR);
+          if (tile != LevelTileType.EMPTY) {
+            var blockPosition = (absoluteLevelC * blockSize,
+                                 absoluteLevelR * blockSize);
+            this.CheckCollisions_(tile, blockPosition);
+          }
+        }
+      }
     }
 
     private void CheckCollisions_(
-        (int, int) relativeCacheIndex,
+        LevelTileType tile,
         (double, double) blockPosition) {
-      var (relativeCacheC, relativeCacheR) = relativeCacheIndex;
-      var isFloor =
-          !this.cachedBlocks_.Check(relativeCacheC, relativeCacheR - 1);
-      var isCeiling =
-          !this.cachedBlocks_.Check(relativeCacheC, relativeCacheR + 1);
-      var isLeftWall =
-          !this.cachedBlocks_.Check(relativeCacheC - 1, relativeCacheR);
-      var isRightWall =
-          !this.cachedBlocks_.Check(relativeCacheC + 1, relativeCacheR);
-
+      var isFloor = LevelGrid.Matches(tile, LevelTileType.FLOOR);
+      var isCeiling = LevelGrid.Matches(tile, LevelTileType.CEILING);
+      var isLeftWall = LevelGrid.Matches(tile, LevelTileType.LEFT_WALL);
+      var isRightWall = LevelGrid.Matches(tile, LevelTileType.RIGHT_WALL);
 
       var (blockX, blockY) = blockPosition;
       // Landing on a floor has highest priority.
@@ -72,7 +94,7 @@ namespace simple.platformer {
 
       if (this.PlayerRigidbody.RightX > blockLeftX &&
           this.PlayerRigidbody.LeftX < blockRightX) {
-        if (Math.IsIncreasing(this.PreviousBottomY, blockY, this.BottomY)) {
+        if (Math.IsIncreasing(this.PreviousBottomY, blockTopY, this.BottomY)) {
           if (this.StateMachine.IsInAir) {
             this.StateMachine.State = PlayerState.STANDING;
           }
@@ -167,110 +189,10 @@ namespace simple.platformer {
     // TODO: Remove 480 references.
     // TODO: Remove flipping.
     private double Y {
-      get => 480 - this.Rigidbody.Y;
-      set => this.Rigidbody.Y = 480 - value;
+      get => this.Rigidbody.Y;
+      set => this.Rigidbody.Y = value;
     }
 
-    private double PreviousY => 480 - this.Rigidbody.PreviousY;
-
-    private class CachedBlocks {
-      private enum CacheState {
-        UNDEFINED,
-        EMPTY,
-        FILLED,
-      }
-
-      private IFinGrid<CacheState> cachedBlocks_;
-
-      public int Width { get; }
-      public int Height { get; }
-
-      private int centerLevelC_;
-      private int centerLevelR_;
-
-      private int cacheHStart_;
-      private int cacheVStart_;
-
-      public CachedBlocks() {
-        var blockSize = LevelConstants.SIZE;
-
-        var cacheWidth =
-            (int) (1 + 1 + CMath.Ceiling(PlayerConstants.HSIZE / blockSize) +
-                   1 +
-                   1);
-        var cacheHeight =
-            (int) (1 + 1 + CMath.Ceiling(PlayerConstants.VSIZE / blockSize) +
-                   1 +
-                   1);
-
-        this.cachedBlocks_ =
-            new FinArrayGrid<CacheState>(cacheWidth,
-                                         cacheHeight,
-                                         CacheState.UNDEFINED);
-
-        this.Width = this.cachedBlocks_.Width - 2;
-        this.Height = this.cachedBlocks_.Height - 2;
-
-        this.cacheHStart_ = (int) -CMath.Floor(this.Width / 2d);
-        this.cacheVStart_ = (int) -CMath.Floor(this.Height / 2d);
-      }
-
-      public void CheckAll(
-          (double, double) centerPosition,
-          Action<(int, int), (double, double)> onCollision) {
-        var blockSize = LevelConstants.SIZE;
-
-        var (centerX, centerY) = centerPosition;
-        (this.centerLevelC_, this.centerLevelR_) =
-            ((int) CMath.Floor(centerX / blockSize),
-             (int) CMath.Floor(centerY / blockSize));
-
-        this.cachedBlocks_.Clear();
-
-        for (var r = 0; r < this.Height; ++r) {
-          for (var c = 0; c < this.Width; ++c) {
-            var (relativeCacheC, relativeCacheR) =
-                (this.cacheHStart_ + c, this.cacheVStart_ + r);
-
-            if (this.Check(relativeCacheC, relativeCacheR)) {
-              var levelPosition =
-                  ((this.centerLevelC_ + relativeCacheC) * blockSize,
-                   (this.centerLevelR_ + relativeCacheR) * blockSize);
-              onCollision((relativeCacheC, relativeCacheR), levelPosition);
-            }
-          }
-        }
-      }
-
-      public bool Check(int relativeCacheC, int relativeCacheR) {
-        var levelC = this.centerLevelC_ + relativeCacheC;
-        var levelR = this.centerLevelR_ + relativeCacheR;
-
-        var absoluteCacheC = 1 + relativeCacheC - this.cacheHStart_;
-        var absoluteCacheR = 1 + relativeCacheR - this.cacheVStart_;
-
-        return this.CheckImpl_(absoluteCacheC, absoluteCacheR, levelC, levelR);
-      }
-
-      private bool CheckImpl_(
-          int absoluteCacheC,
-          int absoluteCacheR,
-          int levelC,
-          int levelR) {
-        var state = this.cachedBlocks_[absoluteCacheC, absoluteCacheR];
-
-        if (state == CacheState.FILLED) {
-          return true;
-        }
-        if (state == CacheState.EMPTY) {
-          return false;
-        }
-
-        var levelState = LevelConstants.LEVEL[levelC, levelR];
-        this.cachedBlocks_[absoluteCacheC, absoluteCacheR] =
-            levelState ? CacheState.FILLED : CacheState.EMPTY;
-        return levelState;
-      }
-    }
+    private double PreviousY => this.Rigidbody.PreviousY;
   }
 }

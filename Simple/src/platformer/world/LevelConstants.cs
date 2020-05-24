@@ -1,34 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-
-using fin.data.collections.grid;
-using fin.file;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace simple.platformer.world {
-  public class LevelConstants {
-    public const double SIZE = 32;
-    public static readonly IFinGrid<bool> LEVEL;
-    public static readonly IList<(int, int)> BLOCKS = new List<(int, int)>();
+  public static class LevelConstants {
+    public static double SIZE = 32;
 
-    static LevelConstants() {
-      var bitmap =
-          (Bitmap) Image.FromFile(LocalFile.WithinResources("level.bmp").uri);
-
-      var (width, height) = (bitmap.Width, bitmap.Height);
-      LevelConstants.LEVEL =
-          new FinSparseGrid<bool>(bitmap.Width, bitmap.Height, false) {
-              ShouldThrowExceptions = false,
-          };
-
-      for (var y = 0; y < height; ++y) {
-        for (var x = 0; x < width; ++x) {
-          var color = bitmap.GetPixel(x, y);
-          if (color.R == 0) {
-            LevelConstants.LEVEL[x, y] = true;
-            LevelConstants.BLOCKS.Add((x, y));
-          }
-        }
-      }
-    }
+    public static LevelGrid LEVEL_GRID = new LevelGrid(LevelConstants.SIZE);
   }
 }

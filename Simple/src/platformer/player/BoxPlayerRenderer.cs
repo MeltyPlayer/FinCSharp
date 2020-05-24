@@ -13,7 +13,7 @@ namespace simple.platformer.player {
 
       g.Primitives.VertexColor(this.Color);
       g.Render2d.Rectangle((int) (x - this.HSize / 2),
-                           (int) (480 - (y + this.VSize)),
+                           (int) (y - this.VSize),
                            (int) this.HSize,
                            (int) this.VSize,
                            false);

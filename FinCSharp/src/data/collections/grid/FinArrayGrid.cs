@@ -24,10 +24,10 @@ namespace fin.data.collections.grid {
 
       var size = width * height;
       this.impl_ = new FinArrayList<GridNode>(size);
-      for (var y = 0; y < height; ++y) {
-        for (var x = 0; x < width; ++x) {
-          var i = this.CalculateIndex_(x, y);
-          this.impl_[i] = new GridNode(x, y, defaultValue);
+      for (var r = 0; r < height; ++r) {
+        for (var c = 0; c < width; ++c) {
+          var i = this.CalculateIndex_(c, r);
+          this.impl_[i] = new GridNode(c, r, defaultValue);
         }
       }
     }
@@ -50,40 +50,40 @@ namespace fin.data.collections.grid {
       return true;
     }
 
-    public T this[int x, int y] {
-      get => this.VerifyIndex_(x, y)
-                 ? this.impl_[this.CalculateIndex_(x, y)].Value
+    public T this[int c, int r] {
+      get => this.VerifyIndex_(c, r)
+                 ? this.impl_[this.CalculateIndex_(c, r)].Value
                  : this.defaultValue_;
       set {
-        if (this.VerifyIndex_(x, y)) {
-          this.impl_[this.CalculateIndex_(x, y)].Value = value;
+        if (this.VerifyIndex_(c, r)) {
+          this.impl_[this.CalculateIndex_(c, r)].Value = value;
           this.touched_ = true;
         }
       }
     }
 
-    private bool VerifyIndex_(int x, int y) {
-      if (x < 0 || x >= this.Width || y < 0 || y >= this.Height) {
+    private bool VerifyIndex_(int c, int r) {
+      if (c < 0 || c >= this.Width || r < 0 || r >= this.Height) {
         if (this.ShouldThrowExceptions) {
           throw new InvalidIndexException(
               "Invalid position accessed in grid: (" +
-              x + ", " + y + ")");
+              c + ", " + r + ")");
         }
         return false;
       }
       return true;
     }
 
-    private int CalculateIndex_(int x, int y) => y * this.Width + x;
+    private int CalculateIndex_(int c, int r) => r * this.Width + c;
 
     private class GridNode : IGridNode<T> {
-      public int X { get; }
-      public int Y { get; }
+      public int C { get; }
+      public int R { get; }
       public T Value { get; set; }
 
-      public GridNode(int x, int y, T value) {
-        this.X = x;
-        this.Y = y;
+      public GridNode(int c, int r, T value) {
+        this.C = c;
+        this.R = r;
         this.Value = value;
       }
     }

@@ -11,8 +11,8 @@
     }
 
     public double CenterY {
-      get => this.Y + this.Height / 2;
-      set => this.Y = value - this.Height / 2;
+      get => this.Y - this.Height / 2;
+      set => this.Y = value + this.Height / 2;
     }
 
     public double LeftX {
@@ -31,8 +31,8 @@
     }
 
     public double TopY {
-      get => this.Y + PlayerConstants.VSIZE;
-      set => this.Y = value - PlayerConstants.VSIZE;
+      get => this.Y - PlayerConstants.VSIZE;
+      set => this.Y = value + PlayerConstants.VSIZE;
     }
 
     private double X {

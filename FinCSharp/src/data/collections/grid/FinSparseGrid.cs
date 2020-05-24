@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 using fin.data.collections.map;
 using fin.exception;
@@ -34,10 +33,10 @@ namespace fin.data.collections.grid {
 
     public bool Clear() => this.impl_.Clear();
 
-    public T this[int x, int y] {
+    public T this[int c, int r] {
       get {
-        if (this.VerifyIndex_(x, y)) {
-          var node = this.GetNodeAtIndex_(x, y, false);
+        if (this.VerifyIndex_(c, r)) {
+          var node = this.GetNodeAtIndex_(c, r, false);
           if (node != null) {
             return node.Value;
           }
@@ -45,28 +44,28 @@ namespace fin.data.collections.grid {
         return this.defaultValue_;
       }
       set {
-        if (this.VerifyIndex_(x, y)) {
-          var node = this.GetNodeAtIndex_(x, y, true);
+        if (this.VerifyIndex_(c, r)) {
+          var node = this.GetNodeAtIndex_(c, r, true);
           node!.Value = value;
         }
       }
     }
 
-    private GridNode? GetNodeAtIndex_(int x, int y, bool shouldCreate) {
-      if (this.VerifyIndex_(x, y)) {
+    private GridNode? GetNodeAtIndex_(int c, int r, bool shouldCreate) {
+      if (this.VerifyIndex_(c, r)) {
         GridNode node;
         if (shouldCreate) {
-          return this.impl_.GetOrAdd((x, y),
+          return this.impl_.GetOrAdd((c, r),
                                      position => {
-                                       var (x, y) = position;
+                                       var (c, r) = position;
                                        return new GridNode(
-                                           x,
-                                           y,
+                                           c,
+                                           r,
                                            this.defaultValue_);
                                      });
         }
 
-        if (this.impl_.TryGet((x, y), out node)) {
+        if (this.impl_.TryGet((c, r), out node)) {
           return node;
         }
       }
@@ -74,12 +73,12 @@ namespace fin.data.collections.grid {
       return null;
     }
 
-    private bool VerifyIndex_(int x, int y) {
-      if (x < 0 || x >= this.Width || y < 0 || y >= this.Height) {
+    private bool VerifyIndex_(int c, int r) {
+      if (c < 0 || c >= this.Width || r < 0 || r >= this.Height) {
         if (this.ShouldThrowExceptions) {
           throw new InvalidIndexException(
               "Invalid position accessed in grid: (" +
-              x + ", " + y + ")");
+              c + ", " + r + ")");
         }
         return false;
       }
@@ -88,13 +87,13 @@ namespace fin.data.collections.grid {
 
 
     private class GridNode : IGridNode<T> {
-      public int X { get; }
-      public int Y { get; }
+      public int C { get; }
+      public int R { get; }
       public T Value { get; set; }
 
-      public GridNode(int x, int y, T value) {
-        this.X = x;
-        this.Y = y;
+      public GridNode(int c, int r, T value) {
+        this.C = c;
+        this.R = r;
         this.Value = value;
       }
     }
