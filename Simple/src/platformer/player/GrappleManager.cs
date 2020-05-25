@@ -1,4 +1,4 @@
-﻿using fin.math.number;
+﻿/*using fin.math.number;
 
 namespace simple.platformer.player {
   public class GrappleManager {
@@ -18,7 +18,7 @@ namespace simple.platformer.player {
 
     public PlayerRigidbody PlayerRigidbody { get; set; }
 
-    /*public void ScheduleFire(IDirection grappleDirection) {
+    public void ScheduleFire(IDirection grappleDirection) {
       this.scheduledGrappleDirection_ = grappleDirection.Degrees;
     }
 
@@ -27,7 +27,6 @@ namespace simple.platformer.player {
     }
 
     public void DrawGrapple() {
-      var 
-    }*/
+    }
   }
-}
+}*/

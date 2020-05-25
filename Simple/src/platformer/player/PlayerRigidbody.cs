@@ -2,8 +2,8 @@
   public class PlayerRigidbody {
     public Rigidbody Rigidbody { get; set; }
 
-    public double Width => PlayerConstants.HSIZE;
-    public double Height => PlayerConstants.VSIZE;
+    public double Width { get; set; } = PlayerConstants.HSIZE;
+    public double Height { get; set; } = PlayerConstants.VSIZE;
 
     public double CenterX {
       get => this.X;
@@ -31,9 +31,15 @@
     }
 
     public double TopY {
-      get => this.Y - PlayerConstants.VSIZE;
-      set => this.Y = value + PlayerConstants.VSIZE;
+      get => this.Y - this.Height;
+      set => this.Y = value + this.Height;
     }
+
+
+    public double PreviousBottomY => this.PreviousY;
+    public double PreviousTopY => this.PreviousY - this.Height;
+    private double PreviousY => this.Rigidbody.PreviousY;
+
 
     private double X {
       get => this.Rigidbody.X;
@@ -49,10 +55,12 @@
       get => this.Rigidbody.XVelocity;
       set => this.Rigidbody.XVelocity = value;
     }
+
     public double YVelocity {
       get => this.Rigidbody.YVelocity;
       set => this.Rigidbody.YVelocity = value;
     }
+
     public (double, double) Velocity {
       get => this.Rigidbody.Velocity;
       set => this.Rigidbody.Velocity = value;
@@ -62,14 +70,15 @@
       get => this.Rigidbody.XAcceleration;
       set => this.Rigidbody.XAcceleration = value;
     }
+
     public double YAcceleration {
       get => this.Rigidbody.YAcceleration;
       set => this.Rigidbody.YAcceleration = value;
     }
+
     public (double, double) Acceleration {
       get => this.Rigidbody.Acceleration;
       set => this.Rigidbody.Acceleration = value;
     }
-
   }
 }

@@ -8,10 +8,12 @@ namespace simple.platformer.player {
     TURNING,
     STOPPING,
     DUCKING,
+    DUCKWALKING,
     SLIDING,
 
     JUMPING,
     BACKFLIPPING,
+    LONGJUMPING,
     FALLING,
 
     SWINGING,
@@ -27,32 +29,51 @@ namespace simple.platformer.player {
                                               PlayerState.TURNING,
                                               PlayerState.STOPPING,
                                               PlayerState.DUCKING,
+                                              PlayerState.DUCKWALKING,
                                               PlayerState.SLIDING);
 
-    public bool IsMovingOnGround => this.IsInState_(PlayerState.WALKING,
-                                                    PlayerState.RUNNING,
-                                                    PlayerState.TURNING,
-                                                    PlayerState.STOPPING);
+    public bool IsMovingUprightOnGround => this.IsInState_(PlayerState.WALKING,
+                                                           PlayerState.RUNNING,
+                                                           PlayerState.TURNING,
+                                                           PlayerState
+                                                               .STOPPING);
 
-    public bool CanMoveOnGround => this.IsInState_(PlayerState.STANDING,
-                                                   PlayerState.WALKING,
-                                                   PlayerState.RUNNING,
-                                                   PlayerState.TURNING,
-                                                   PlayerState.STOPPING);
+    public bool IsMovingDuckedOnGround => this.IsInState_(
+        PlayerState.DUCKWALKING,
+        PlayerState.SLIDING);
+
+    public bool CanMoveUprightOnGround => this.IsInState_(PlayerState.STANDING,
+                                                          PlayerState.WALKING,
+                                                          PlayerState.RUNNING,
+                                                          PlayerState.TURNING,
+                                                          PlayerState.STOPPING);
+
+    public bool CanMoveDuckedOnGround => this.IsInState_(PlayerState.DUCKING,
+                                                         PlayerState
+                                                             .DUCKWALKING);
+
+    public bool IsDucked => this.IsInState_(PlayerState.DUCKING,
+                                            PlayerState.DUCKWALKING,
+                                            PlayerState.SLIDING);
 
     public bool IsInAir => this.IsInState_(PlayerState.JUMPING,
                                            PlayerState.BACKFLIPPING,
+                                           PlayerState.LONGJUMPING,
                                            PlayerState.FALLING);
 
     public bool CanMoveInAir => this.IsInState_(PlayerState.JUMPING,
                                                 PlayerState.BACKFLIPPING,
+                                                PlayerState.LONGJUMPING,
                                                 PlayerState.FALLING);
 
     public bool IsJumping =>
-        this.IsInState_(PlayerState.JUMPING, PlayerState.BACKFLIPPING);
+        this.IsInState_(PlayerState.JUMPING,
+                        PlayerState.BACKFLIPPING,
+                        PlayerState.LONGJUMPING);
 
-    public bool IsMovingUpwardInAir =>
-        this.IsInState_(PlayerState.JUMPING, PlayerState.BACKFLIPPING);
+    public bool IsMovingUpwardInAirAndCanFall =>
+        this.IsInState_(PlayerState.JUMPING,
+                        PlayerState.BACKFLIPPING);
 
     private bool IsInState_(params PlayerState[] states) =>
         states.Contains(this.State);

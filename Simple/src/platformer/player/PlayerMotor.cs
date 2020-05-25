@@ -1,4 +1,8 @@
-﻿using Math = fin.math.Math;
+﻿using fin.math;
+
+using simple.platformer.world;
+
+using CMath = System.Math;
 
 namespace simple.platformer.player {
   /// <summary>
@@ -9,8 +13,8 @@ namespace simple.platformer.player {
   // TODO: Should this also manage collisions?
   public class PlayerMotor {
     public PlayerStateMachine StateMachine { get; set; }
-
-    public Rigidbody Rigidbody { get; set; }
+    public PlayerRigidbody PlayerRigidbody { get; set; }
+    public Rigidbody Rigidbody => this.PlayerRigidbody.Rigidbody;
 
     private double scheduledHeldXAxis_;
     private bool scheduledIsRunning_;
@@ -55,13 +59,32 @@ namespace simple.platformer.player {
         this.scheduledJumpState_ = ScheduledState.STOPPING;
 
     public void ProcessInputs() {
-      this.ProcessScheduledDuck_();
-      this.ProcessScheduledHorizontalMovement_();
-      this.ProcessScheduledJump_();
+      // TODO: Move this somewhere else, please.
+      var blockSize = LevelConstants.SIZE;
+      var aboveLeftX = this.PlayerRigidbody.CenterX - blockSize / 3;
+      var aboveRightX = this.PlayerRigidbody.CenterX + blockSize / 3;
+      var aboveY = this.PlayerRigidbody.TopY - blockSize / 2;
+      var levelGrid = LevelConstants.LEVEL_GRID;
+      var isCeilingAbove = levelGrid.CheckAtPosition(aboveLeftX,
+                                                     aboveY,
+                                                     LevelTileType
+                                                         .CEILING) ||
+                           levelGrid.CheckAtPosition(
+                               aboveRightX,
+                               aboveY,
+                               LevelTileType.CEILING);
 
+      if (!isCeilingAbove) {
+        this.ProcessScheduledDuck_();
+      }
+      this.ProcessScheduledHorizontalMovement_();
+      if (!isCeilingAbove) {
+        this.ProcessScheduledJump_();
+      }
+
+      this.scheduledDuckState_ = ScheduledState.UNDEFINED;
       this.scheduledHeldXAxis_ = 0;
       this.scheduledIsRunning_ = false;
-      this.scheduledDuckState_ = ScheduledState.UNDEFINED;
       this.scheduledJumpState_ = ScheduledState.UNDEFINED;
     }
 
@@ -71,7 +94,10 @@ namespace simple.platformer.player {
           this.StateMachine.State = PlayerState.SLIDING;
           this.Rigidbody.XAcceleration = 0;
         }
-        if (this.StateMachine.CanMoveOnGround) {
+        else if (this.StateMachine.IsMovingUprightOnGround) {
+          this.StateMachine.State = PlayerState.DUCKWALKING;
+        }
+        else if (this.StateMachine.CanMoveUprightOnGround) {
           this.StateMachine.State = PlayerState.DUCKING;
           this.Rigidbody.XAcceleration = 0;
         }
@@ -80,7 +106,10 @@ namespace simple.platformer.player {
         if (this.StateMachine.State == PlayerState.DUCKING) {
           this.StateMachine.State = PlayerState.STANDING;
         }
-        if (this.StateMachine.State == PlayerState.SLIDING) {
+        else if (this.StateMachine.State == PlayerState.DUCKWALKING) {
+          this.StateMachine.State = PlayerState.WALKING;
+        }
+        else if (this.StateMachine.State == PlayerState.SLIDING) {
           this.StateMachine.State = PlayerState.STOPPING;
         }
       }
@@ -90,13 +119,13 @@ namespace simple.platformer.player {
       var heldXAxis = this.scheduledHeldXAxis_;
       var isRunning = this.scheduledIsRunning_;
 
-      if (this.StateMachine.CanMoveOnGround) {
+      if (this.StateMachine.CanMoveUprightOnGround) {
         var heldXAxisSign = Math.Sign(heldXAxis);
 
         var groundAcceleration =
             isRunning
-                ? PlayerConstants.GROUND_FAST_XACC
-                : PlayerConstants.GROUND_SLOW_XACC;
+                ? PlayerConstants.GROUND_UPRIGHT_FAST_XACC
+                : PlayerConstants.GROUND_UPRIGHT_SLOW_XACC;
         var reactionFraction =
             heldXAxisSign == -Math.Sign(this.Rigidbody.XVelocity)
                 ? PlayerConstants.GROUND_REACTION_FRAC
@@ -118,8 +147,23 @@ namespace simple.platformer.player {
           this.StateMachine.State = PlayerState.STOPPING;
         }
       }
+      else if (this.StateMachine.CanMoveDuckedOnGround) {
+        var heldXAxisSign = Math.Sign(heldXAxis);
 
-      if (this.StateMachine.CanMoveInAir) {
+        var groundAcceleration =
+            isRunning
+                ? PlayerConstants.GROUND_DUCKED_FAST_XACC
+                : PlayerConstants.GROUND_DUCKED_SLOW_XACC;
+
+        this.Rigidbody.XAcceleration =
+            groundAcceleration * heldXAxis;
+
+        // If holding a direction on the ground, we're either turning, running, or walking.
+        if (heldXAxisSign != 0) {
+          this.StateMachine.State = PlayerState.DUCKWALKING;
+        }
+      }
+      else if (this.StateMachine.CanMoveInAir) {
         var airAcceleration =
             this.scheduledIsRunning_
                 ? PlayerConstants.AIR_FAST_XACC
@@ -131,24 +175,33 @@ namespace simple.platformer.player {
     private void ProcessScheduledJump_() {
       if (this.scheduledJumpState_ == ScheduledState.STARTING) {
         if (this.StateMachine.IsOnGround) {
+          var isLongjump = this.StateMachine.State == PlayerState.SLIDING;
           var isBackflip = this.StateMachine.State == PlayerState.TURNING &&
                            Math.Abs(this.Rigidbody.XVelocity) >
-                           PlayerConstants.MAX_SLOW_XSPD;
+                           PlayerConstants.UPRIGHT_MAX_SLOW_XSPD;
           var newYVel =
-              isBackflip
-                  ? PlayerConstants.BACKFLIP_JUMP_SPEED
-                  : PlayerConstants.JUMP_SPEED;
+              isLongjump
+                  ? PlayerConstants.LONGJUMP_SPEED
+                  : isBackflip
+                      ? PlayerConstants.BACKFLIP_JUMP_SPEED
+                      : PlayerConstants.JUMP_SPEED;
           var newState =
+              isLongjump ? PlayerState.LONGJUMPING :
               isBackflip ? PlayerState.BACKFLIPPING : PlayerState.JUMPING;
 
           this.Rigidbody.YVelocity = newYVel;
           this.StateMachine.State = newState;
 
-          if (isBackflip) {
+          if (isLongjump) {
+            this.Rigidbody.XVelocity = this.Rigidbody.XVelocity /
+                                       PlayerConstants.UPRIGHT_MAX_FAST_XSPD *
+                                       PlayerConstants.LONGJUMP_MAX_XSPD;
+          }
+          else if (isBackflip) {
             // Instantly flip horizontal velocity.
             var moveDirection = Math.Sign(this.Rigidbody.XVelocity);
             this.Rigidbody.XVelocity =
-                -moveDirection * PlayerConstants.MAX_SLOW_XSPD;
+                -moveDirection * PlayerConstants.UPRIGHT_MAX_SLOW_XSPD;
           }
         }
       }

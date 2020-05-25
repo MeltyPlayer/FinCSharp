@@ -89,7 +89,7 @@ namespace simple.platformer.world {
       => this.tiles_[c, r];
 
     public bool CheckAtIndex(int c, int r, LevelTileType tile)
-      => LevelGrid.Matches(this.GetAtIndex(c, r), LevelTileType.EMPTY);
+      => LevelGrid.Matches(this.GetAtIndex(c, r), tile);
 
     public LevelTileType GetAtPosition(double x, double y) {
       var (c, r) = this.GetIndexFromPosition(x, y);
@@ -97,7 +97,7 @@ namespace simple.platformer.world {
     }
 
     public bool CheckAtPosition(double x, double y, LevelTileType tile)
-      => LevelGrid.Matches(this.GetAtPosition(x, y), LevelTileType.EMPTY);
+      => LevelGrid.Matches(this.GetAtPosition(x, y), tile);
 
     public static bool Matches(LevelTileType lhs, LevelTileType rhs) {
       var matches = lhs & rhs;

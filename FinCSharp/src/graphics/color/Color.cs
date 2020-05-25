@@ -1,4 +1,6 @@
-﻿namespace fin.graphics.color {
+﻿using CColor = System.Drawing.Color;
+
+namespace fin.graphics.color {
   public interface IColor {
     uint I { get; }
 
@@ -33,15 +35,17 @@
     public static Color FromRgbB(byte r, byte g, byte b)
       => Color.FromRgbaB(r, g, b, 255);
 
-    public static Color FromRgbaF(float r, float g, float b, float a) {
-      return Color.FromRgbaB((byte) (r * 255),
-                             (byte) (g * 255),
-                             (byte) (b * 255),
-                             (byte) (a * 255));
-    }
+    public static Color FromRgbaF(float r, float g, float b, float a)
+      => Color.FromRgbaB((byte) (r * 255),
+                         (byte) (g * 255),
+                         (byte) (b * 255),
+                         (byte) (a * 255));
 
-    public static Color FromRgbF(float r, float g, float b) =>
-        Color.FromRgbaF(r, g, b, 1);
+    public static Color FromRgbF(float r, float g, float b)
+      => Color.FromRgbaF(r, g, b, 1);
+
+    public static Color FromCColor(CColor cColor)
+      => Color.FromRgbaB(cColor.R, cColor.G, cColor.B, cColor.A);
 
     public byte Rb => (byte) (this.I >> 24 & 0xff);
     public byte Gb => (byte) (this.I >> 16 & 0xff);
@@ -52,5 +56,8 @@
     public float Gf => this.Gb / 255f;
     public float Bf => this.Bb / 255f;
     public float Af => this.Ab / 255f;
+
+    public static implicit operator Color(CColor cColor) =>
+        Color.FromCColor(cColor);
   }
 }

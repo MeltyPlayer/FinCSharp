@@ -1,8 +1,4 @@
-﻿using System;
-
-using fin.data.collections.grid;
-
-using simple.platformer.player;
+﻿using simple.platformer.player;
 using simple.platformer.world;
 
 using CMath = System.Math;
@@ -16,7 +12,8 @@ namespace simple.platformer {
     private Rigidbody Rigidbody => this.PlayerRigidbody.Rigidbody;
 
     public void TickCollisions() {
-      var blockSize = LevelConstants.SIZE;
+      var levelGrid = LevelConstants.LEVEL_GRID;
+      var blockSize = levelGrid.Size;
 
       var (centerLevelC, centerLevelR) =
           ((int) CMath.Floor(this.PlayerRigidbody.CenterX / blockSize),
@@ -32,7 +29,6 @@ namespace simple.platformer {
       var relativeWindowHStart = (int) -CMath.Floor(windowWidth / 2d);
       var relativeWindowVStart = (int) -CMath.Floor(windowHeight / 2d);
 
-      var levelGrid = LevelConstants.LEVEL_GRID;
       for (var r = 0; r < windowHeight; ++r) {
         for (var c = 0; c < windowWidth; ++c) {
           var (relativeCacheC, relativeCacheR) =
@@ -94,12 +90,14 @@ namespace simple.platformer {
 
       if (this.PlayerRigidbody.RightX > blockLeftX &&
           this.PlayerRigidbody.LeftX < blockRightX) {
-        if (Math.IsIncreasing(this.PreviousBottomY, blockTopY, this.BottomY)) {
+        if (Math.IsIncreasing(this.PlayerRigidbody.PreviousBottomY,
+                              blockTopY,
+                              this.PlayerRigidbody.BottomY)) {
           if (this.StateMachine.IsInAir) {
             this.StateMachine.State = PlayerState.STANDING;
           }
 
-          this.BottomY = blockTopY;
+          this.PlayerRigidbody.BottomY = blockTopY;
           this.Rigidbody.YVelocity = 0;
         }
       }
@@ -117,13 +115,15 @@ namespace simple.platformer {
 
       if (this.PlayerRigidbody.RightX > blockLeftX &&
           this.PlayerRigidbody.LeftX < blockRightX) {
-        if ((this.PreviousTopY > blockBottomY &&
-             this.TopY <= blockBottomY) ||
-            (this.PreviousTopY >= blockBottomY &&
-             this.TopY < blockBottomY)) {
-          this.StateMachine.State = PlayerState.FALLING;
+        if ((this.PlayerRigidbody.PreviousTopY > blockBottomY &&
+             this.PlayerRigidbody.TopY <= blockBottomY) ||
+            (this.PlayerRigidbody.PreviousTopY >= blockBottomY &&
+             this.PlayerRigidbody.TopY < blockBottomY)) {
+          if (this.StateMachine.IsMovingUpwardInAirAndCanFall) {
+            this.StateMachine.State = PlayerState.FALLING;
+          }
 
-          this.TopY = blockBottomY;
+          this.PlayerRigidbody.TopY = blockBottomY;
           this.Rigidbody.YVelocity = 0;
         }
       }
@@ -136,7 +136,8 @@ namespace simple.platformer {
       var blockTopY = blockY;
       var blockBottomY = blockY + blockSize;
 
-      if (this.BottomY > blockTopY && this.TopY < blockBottomY) {
+      if (this.PlayerRigidbody.BottomY > blockTopY &&
+          this.PlayerRigidbody.TopY < blockBottomY) {
         if (Math.IsIncreasing( //this.PreviousRightX,
             this.PlayerRigidbody.LeftX,
             blockLeftX,
@@ -156,8 +157,8 @@ namespace simple.platformer {
       var blockTopY = blockY;
       var blockBottomY = blockY + blockSize;
 
-      if (this.BottomY > blockTopY &&
-          this.TopY < blockBottomY) {
+      if (this.PlayerRigidbody.BottomY > blockTopY &&
+          this.PlayerRigidbody.TopY < blockBottomY) {
         if (Math.IsIncreasing(this.PlayerRigidbody.LeftX,
                               blockRightX,
                               this.PlayerRigidbody.RightX
@@ -169,30 +170,5 @@ namespace simple.platformer {
         }
       }
     }
-
-    private double CenterY => this.Y - PlayerConstants.VSIZE / 2;
-
-    private double BottomY {
-      get => this.Y;
-      set => this.Y = value;
-    }
-
-    private double TopY {
-      get => this.Y - PlayerConstants.VSIZE;
-      set => this.Y = value + PlayerConstants.VSIZE;
-    }
-
-
-    private double PreviousBottomY => this.PreviousY;
-    private double PreviousTopY => this.PreviousY - PlayerConstants.VSIZE;
-
-    // TODO: Remove 480 references.
-    // TODO: Remove flipping.
-    private double Y {
-      get => this.Rigidbody.Y;
-      set => this.Rigidbody.Y = value;
-    }
-
-    private double PreviousY => this.Rigidbody.PreviousY;
   }
 }

@@ -1,5 +1,7 @@
 ﻿using fin.graphics.color;
 
+using CColor = System.Drawing.Color;
+
 namespace fin.graphics {
   public enum PrimitiveType {
     POINTS,
@@ -33,6 +35,9 @@ namespace fin.graphics {
 
     public virtual IPrimitives VertexColor(Color color) =>
         this.VertexColorB(color.Rb, color.Gb, color.Bb, color.Ab);
+
+    public virtual IPrimitives VertexColor(CColor cColor) =>
+        this.VertexColorB(cColor.R, cColor.G, cColor.B, cColor.A);
 
     public abstract IPrimitives VertexColorB(byte r, byte g, byte b, byte a);
 
