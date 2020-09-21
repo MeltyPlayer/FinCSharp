@@ -13,7 +13,7 @@ dotnet_diagnostic.CS8618.severity = error
 dotnet_diagnostic.CS8602.severity = error
 
 # CS8601: Possible null reference assignment.
-dotnet_diagnostic.CS8601.severity = error
+dotnet_diagnostic.CS8601.severity = warning
 
 # CS8600: Converting null literal or possible null value to non-nullable type.
 dotnet_diagnostic.CS8600.severity = error

@@ -5,7 +5,6 @@ using fin.log;
 
 namespace simple {
   using System;
-  using System.Drawing;
 
   using fin.app;
   using fin.app.events;
@@ -14,8 +13,6 @@ namespace simple {
   using fin.app.window;
   using fin.graphics.camera;
   using fin.graphics.color;
-  using fin.input;
-  using fin.input.button;
   using fin.settings;
   using fin.math.geometry;
   using fin.file;
@@ -51,8 +48,8 @@ namespace simple {
 
     private class AudioComponent : BComponent {
       private readonly IAudioStreamSource streamSource_;
-      //private readonly IAudioSource source_;
-      //private readonly IAudioBuffer buffer_;
+      private readonly IAudioSource source_;
+      private readonly IAudioBuffer buffer_;
       private readonly IPcmData pcm_;
 
       private int position_ = 0;
@@ -60,18 +57,18 @@ namespace simple {
       public AudioComponent(IAudio audio) {
         this.pcm_ =
             new OggLoader().Load(
-                LocalFile.WithinResources("music/lobby.ogg"));
+                LocalFile.WithinResources("music/lobbyBackAndForth.ogg"));
 
         var factory = audio.Factory;
 
-        /*this.source_ = factory.NewAudioSource();
+        this.source_ = factory.NewAudioSource();
         this.buffer_ = factory.NewAudioBuffer();
 
         this.buffer_.FillWithPcm(this.pcm_);
 
-        this.source_.Play(this.buffer_, true);*/
+        this.source_.Play(this.buffer_, true);
 
-        this.streamSource_ = factory.NewAudioStreamSource(bytes => {
+        /*this.streamSource_ = factory.NewAudioStreamSource(bytes => {
           var pcm = this.pcm_.Pcm;
           for (var i = 0; i < bytes.Length; ++i) {
             bytes[i] = pcm[this.position_];
@@ -80,35 +77,79 @@ namespace simple {
             }
           }
         }, this.pcm_.SampleRate);
-        this.streamSource_.Play(true);
+        this.streamSource_.Play(true);*/
       }
 
       protected override void Discard() {}
 
       [OnTick]
       private void StartTick_(StartTickEvent _) {
-        this.streamSource_.PollForProcessedBuffers();
+        //this.streamSource_.PollForProcessedBuffers();
       }
 
       [OnTick]
       private void RenderForOrthographicCamera_(
           RenderForOrthographicCameraTickEvent evt) {
-        var p = evt.Graphics.Primitives;
-        var bytes = this.pcm_.Pcm;
+        var g = evt.Graphics;
 
-        var cY = 480 / 2;
+        this.RenderWaveform_(g, this.left_);
+        this.RenderWaveform_(g, this.right_, true);
 
-        p.Begin(PrimitiveType.LINE_STRIP);
-        for (var x = 0; x < 640; ++x) {
-          var i = (int) Math.Round((1f * x) / 640 * bytes.Length);
+        var p = g.Primitives;
+        var r2d = g.Render2d;
 
-          p.VertexColor(ColorConstants.RED);
-          p.Vertex(x, cY + bytes[i]);
-        }
-        p.End();
+        var cursorX = 640 * this.source_.SampleOffsetFraction ?? 0;
+
+        p.VertexColor(ColorConstants.WHITE);
+        r2d.Line(new Vertex2d(cursorX, 0), new Vertex2d(cursorX, 480));
+      }
+
+      private static int WAVEFORM_HEIGHT = 200;
+
+      private IBoundingBox<int> left_ =
+          new MutableBoundingBox<int>(0,
+                                      480 / 4 - AudioComponent.WAVEFORM_HEIGHT /
+                                      2,
+                                      640,
+                                      AudioComponent.WAVEFORM_HEIGHT);
+
+      private IBoundingBox<int> right_ =
+          new MutableBoundingBox<int>(0,
+                                      480 * 3 / 4 -
+                                      AudioComponent.WAVEFORM_HEIGHT /
+                                      2,
+                                      640,
+                                      AudioComponent.WAVEFORM_HEIGHT);
+
+      private void RenderWaveform_(
+          IGraphics g,
+          IBoundingBox<int> boundingBox,
+          bool rightSide = false) {
+        var p = g.Primitives;
+        var r2d = g.Render2d;
+
+        var leftX = boundingBox.LeftX;
+        var rightX = boundingBox.RightX;
+        var width = boundingBox.Dimensions.Width;
+
+        var cY = boundingBox.CenterY;
+        var maxAmplitude = boundingBox.Dimensions.Height * .5f;
 
         p.VertexColor(ColorConstants.GREEN);
-        evt.Graphics.Render2d.Line(new Vertex2d(0, cY), new Vertex2d(640, cY));
+        r2d.Line(new Vertex2d(leftX, cY), new Vertex2d(rightX, cY));
+
+        p.Begin(PrimitiveType.LINE_STRIP);
+        for (var x = leftX; x < leftX + rightX; ++x) {
+          var i = (int) Math.Floor((1f * x) / width * this.pcm_.SampleCount);
+
+          var amplitude = !rightSide
+                              ? this.pcm_.GetLeftAmplitude(i)
+                              : this.pcm_.GetRightAmplitude(i);
+
+          p.VertexColor(ColorConstants.RED);
+          p.Vertex(x, cY + maxAmplitude * amplitude);
+        }
+        p.End();
       }
     }
   }

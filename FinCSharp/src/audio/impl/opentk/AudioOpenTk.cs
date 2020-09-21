@@ -74,9 +74,27 @@ namespace fin.audio.impl.opentk {
       AL.SourceStop(this.Id);
       this.currentBuffer_ = null;
     }
+
+    public int? SampleOffset {
+      get {
+        if (this.currentBuffer_ == null) {
+          return null;
+        }
+
+        AL.GetSource(this.Id, ALGetSourcei.SampleOffset, out var sampleOffset);
+        return sampleOffset;
+      }
+    }
+
+    public float? SampleOffsetFraction =>
+        (this.currentBuffer_ != null)
+            ? 1f * this.SampleOffset / this.currentBuffer_.SampleCount
+            : null;
   }
 
   public class AudioBufferOpenTk : DiscardableImpl, IAudioBuffer {
+
+    private IPcmData? pcm_;
     public int Id { get; }
 
     public AudioBufferOpenTk() {
@@ -88,27 +106,25 @@ namespace fin.audio.impl.opentk {
       AL.DeleteBuffer(this.Id);
     }
 
+    public int SampleCount => this.pcm_?.SampleCount ?? 0;
+
     public void FillWithPcm(IPcmData pcm) {
+      this.pcm_ = pcm;
+
       ALFormat? format = null;
 
       var channels = pcm.Channels;
       var bytesPerSample = pcm.BytesPerSample;
-      if (channels == 1) {
-        if (bytesPerSample == 1) {
-          format = ALFormat.Mono8;
-        }
-        else if (bytesPerSample == 2) {
-          format = ALFormat.Mono16;
-        }
-      }
-      else if (channels == 2) {
-        if (bytesPerSample == 1) {
-          format = ALFormat.Stereo8;
-        }
-        else if (bytesPerSample == 2) {
-          format = ALFormat.Stereo16;
-        }
-      }
+      format = channels switch {
+          1 => bytesPerSample switch {
+              1 => ALFormat.Mono8,
+              2 => ALFormat.Mono16,
+          },
+          2 => bytesPerSample switch {
+              1 => ALFormat.Stereo8,
+              2 => ALFormat.Stereo16,
+          },
+      };
 
       var bytes = pcm.Pcm;
 
