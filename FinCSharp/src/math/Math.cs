@@ -28,6 +28,21 @@ namespace fin.math {
                                        (double) (dynamic) exponent!);
 
     /**
+     * Working w/ averages
+     */
+    public static TNumber Mean<TNumber>(params TNumber[] values)
+        where TNumber : IComparable {
+      dynamic runningMean = 0;
+      var multiplier = 1f / values.Length;
+
+      foreach (var value in values) {
+        runningMean += (dynamic)value * multiplier;
+      }
+
+      return (TNumber)runningMean;
+    }
+
+    /**
      * Working w/ signs
      */
     public static TNumber Abs<TNumber>(TNumber value)
@@ -158,21 +173,6 @@ namespace fin.math {
 
       var sign = Math.Sign(range);
       return dStart + sign * inc;
-    }
-
-    /**
-     * Working w/ averages
-     */
-    public static TNumber Mean<TNumber>(params TNumber[] values)
-        where TNumber : IComparable {
-      dynamic runningMean = 0;
-      var multiplier = 1f / values.Length;
-
-      foreach (var value in values) {
-        runningMean += (dynamic) value * multiplier;
-      }
-
-      return (TNumber) runningMean;
     }
   }
 }

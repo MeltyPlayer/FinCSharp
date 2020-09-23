@@ -13,7 +13,7 @@
 
     public double Max => this.impl_.Max;
 
-    public BFraction(IRangedNumber<double> impl) {
+    protected BFraction(IRangedNumber<double> impl) {
       this.impl_ = impl;
     }
   }

@@ -21,21 +21,21 @@ namespace simple.platformer.world {
       foreach (var node in this.LevelGrid) {
         var tile = node.Value;
 
-        if (tile == LevelTileType.EMPTY) {
+        if (tile == LevelTileTypes.EMPTY) {
           continue;
         }
 
         var color = Color.FromRgbF(
-            LevelGrid.Matches(tile, LevelTileType.LEFT_WALL) ||
-            LevelGrid.Matches(tile, LevelTileType.RIGHT_WALL)
+            LevelGrid.Matches(tile, LevelTileTypes.LEFT_WALL) ||
+            LevelGrid.Matches(tile, LevelTileTypes.RIGHT_WALL)
                 ? 1
                 : 0,
-            LevelGrid.Matches(tile, LevelTileType.FLOOR)
+            LevelGrid.Matches(tile, LevelTileTypes.FLOOR)
                 ? 1
                 : 0,
             LevelGrid.Matches(
                 tile,
-                LevelTileType.CEILING)
+                LevelTileTypes.CEILING)
                 ? 1
                 : 0);
 

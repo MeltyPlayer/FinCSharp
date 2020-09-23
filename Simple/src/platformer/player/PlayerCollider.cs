@@ -37,7 +37,7 @@ namespace simple.platformer {
                                                   centerLevelR +
                                                   relativeCacheR);
           var tile = levelGrid.GetAtIndex(absoluteLevelC, absoluteLevelR);
-          if (tile != LevelTileType.EMPTY) {
+          if (tile != LevelTileTypes.EMPTY) {
             var blockPosition = (absoluteLevelC * blockSize,
                                  absoluteLevelR * blockSize);
             this.CheckCollisions_(tile, blockPosition);
@@ -47,12 +47,12 @@ namespace simple.platformer {
     }
 
     private void CheckCollisions_(
-        LevelTileType tile,
+        LevelTileTypes tile,
         (double, double) blockPosition) {
-      var isFloor = LevelGrid.Matches(tile, LevelTileType.FLOOR);
-      var isCeiling = LevelGrid.Matches(tile, LevelTileType.CEILING);
-      var isLeftWall = LevelGrid.Matches(tile, LevelTileType.LEFT_WALL);
-      var isRightWall = LevelGrid.Matches(tile, LevelTileType.RIGHT_WALL);
+      var isFloor = LevelGrid.Matches(tile, LevelTileTypes.FLOOR);
+      var isCeiling = LevelGrid.Matches(tile, LevelTileTypes.CEILING);
+      var isLeftWall = LevelGrid.Matches(tile, LevelTileTypes.LEFT_WALL);
+      var isRightWall = LevelGrid.Matches(tile, LevelTileTypes.RIGHT_WALL);
 
       var (blockX, blockY) = blockPosition;
       // Landing on a floor has highest priority.

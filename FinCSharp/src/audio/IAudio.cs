@@ -1,21 +1,30 @@
 ﻿using System;
 
+using fin.discardable;
+
 namespace fin.audio {
   public interface IAudio {
     IAudioFactory Factory { get; }
+
+    void Poll();
   }
 
   // TODO: Rethink this.
   public interface IAudioFactory {
+    private const int DEFAULT_FREQUENCY = 44100;
+    private const int DEFAULT_BUFFER_SIZE = 2 * 2 * DEFAULT_FREQUENCY;
+
     IAudioSource NewAudioSource();
 
     IAudioBuffer NewAudioBuffer();
 
     IAudioStreamSource NewAudioStreamSource(
         Action<byte[]> populateFunc,
-        int frequency = 44100,
+        int channels = 1,
+        int bytesPerSample = 1,
+        int frequency = DEFAULT_FREQUENCY,
         int numBuffers = 2,
-        int bufferSize = 4096);
+        int bufferSize = DEFAULT_BUFFER_SIZE);
   }
 
   public interface IAudioSource {
@@ -31,7 +40,7 @@ namespace fin.audio {
     void FillWithPcm(IPcmData pcm);
   }
 
-  public interface IAudioStreamSource {
+  public interface IAudioStreamSource : IDiscardable {
     void PollForProcessedBuffers();
     void Play(bool looping);
     void Pause();

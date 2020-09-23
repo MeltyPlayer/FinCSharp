@@ -4,11 +4,10 @@ using System.Drawing;
 
 using fin.data.collections.grid;
 using fin.file;
-using fin.math.geometry;
 
 namespace simple.platformer.world {
   [Flags]
-  public enum LevelTileType {
+  public enum LevelTileTypes {
     EMPTY = 0,
     FLOOR = 1,
     CEILING = 1 << 2,
@@ -17,7 +16,7 @@ namespace simple.platformer.world {
   }
 
   public class LevelGrid {
-    private readonly IFinGrid<LevelTileType> tiles_;
+    private readonly IFinGrid<LevelTileTypes> tiles_;
 
     public double Size { get; }
 
@@ -41,10 +40,10 @@ namespace simple.platformer.world {
         }
       }
 
-      this.tiles_ = new FinSparseGrid<LevelTileType>(
+      this.tiles_ = new FinSparseGrid<LevelTileTypes>(
           bitmap.Width,
           bitmap.Height,
-          LevelTileType.EMPTY) {
+          LevelTileTypes.EMPTY) {
           ShouldThrowExceptions = false,
       };
       foreach (var node in boolGrid) {
@@ -54,26 +53,26 @@ namespace simple.platformer.world {
 
         var (c, r) = (node.C, node.R);
 
-        var tile = LevelTileType.EMPTY;
+        var tile = LevelTileTypes.EMPTY;
 
         var isFloor = !boolGrid[c, r - 1];
         if (isFloor) {
-          tile |= LevelTileType.FLOOR;
+          tile |= LevelTileTypes.FLOOR;
         }
 
         var isCeiling = !boolGrid[c, r + 1];
         if (isCeiling) {
-          tile |= LevelTileType.CEILING;
+          tile |= LevelTileTypes.CEILING;
         }
 
         var isLeftWall = !boolGrid[c - 1, r];
         if (isLeftWall) {
-          tile |= LevelTileType.LEFT_WALL;
+          tile |= LevelTileTypes.LEFT_WALL;
         }
 
         var isRightWall = !boolGrid[c + 1, r];
         if (isRightWall) {
-          tile |= LevelTileType.RIGHT_WALL;
+          tile |= LevelTileTypes.RIGHT_WALL;
         }
 
         this.tiles_[c, r] = tile;
@@ -82,29 +81,28 @@ namespace simple.platformer.world {
       boolGrid.Clear();
     }
 
-    public IEnumerator<IGridNode<LevelTileType>> GetEnumerator() =>
+    public IEnumerator<IGridNode<LevelTileTypes>> GetEnumerator() =>
         this.tiles_.GetEnumerator();
 
-    public LevelTileType GetAtIndex(int c, int r)
-      => this.tiles_[c, r];
+    public LevelTileTypes GetAtIndex(int c, int r) => this.tiles_[c, r];
 
-    public bool CheckAtIndex(int c, int r, LevelTileType tile)
+    public bool CheckAtIndex(int c, int r, LevelTileTypes tile)
       => LevelGrid.Matches(this.GetAtIndex(c, r), tile);
 
-    public LevelTileType GetAtPosition(double x, double y) {
-      var (c, r) = this.GetIndexFromPosition(x, y);
+    public LevelTileTypes GetAtPosition(double x, double y) {
+      var (c, r) = this.GetIndexFromPosition_(x, y);
       return this.GetAtIndex(c, r);
     }
 
-    public bool CheckAtPosition(double x, double y, LevelTileType tile)
+    public bool CheckAtPosition(double x, double y, LevelTileTypes tile)
       => LevelGrid.Matches(this.GetAtPosition(x, y), tile);
 
-    public static bool Matches(LevelTileType lhs, LevelTileType rhs) {
+    public static bool Matches(LevelTileTypes lhs, LevelTileTypes rhs) {
       var matches = lhs & rhs;
-      return matches != LevelTileType.EMPTY;
+      return matches != LevelTileTypes.EMPTY;
     }
 
-    public (int, int) GetIndexFromPosition(double x, double y)
+    private (int, int) GetIndexFromPosition_(double x, double y)
       => ((int) Math.Floor(x / this.Size), (int) Math.Floor(y / this.Size));
   }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Immutable;
-using System.Linq;
+using System.Collections.Generic;
 
 using fin.discardable;
 
@@ -10,28 +9,52 @@ using OpenTK.Audio.OpenAL;
 namespace fin.audio.impl.opentk {
   public class AudioOpenTk : IAudio {
     private readonly AudioContext ctx_;
+    private readonly AudioFactoryOpenTk factory_ = new AudioFactoryOpenTk();
 
     public AudioOpenTk() {
       this.ctx_ = new AudioContext();
     }
 
-    public IAudioFactory Factory { get; } = new AudioFactoryOpenTk();
+    public IAudioFactory Factory => this.factory_;
+
+    public void Poll() {
+      this.factory_.Poll();
+    }
   }
 
   public class AudioFactoryOpenTk : IAudioFactory {
+    // TODO: Use a discardable list.
+    private IList<IAudioStreamSource> streamSources_ =
+        new List<IAudioStreamSource>();
+
+    public void Poll() {
+      foreach (var streamSource in this.streamSources_) {
+        if (!streamSource.IsDiscarded) {
+          streamSource.PollForProcessedBuffers();
+        }
+      }
+    }
+
     public IAudioBuffer NewAudioBuffer() => new AudioBufferOpenTk();
 
     public IAudioSource NewAudioSource() => new AudioSourceOpenTk();
 
     public IAudioStreamSource NewAudioStreamSource(
         Action<byte[]> populateFunc,
-        int frequency = 44100,
-        int numBuffers = 2,
-        int bufferSize = 4096) =>
-        new AudioStreamSourceOpenTk(populateFunc,
-                                    frequency,
-                                    numBuffers,
-                                    bufferSize);
+        int channels,
+        int bytesPerSample,
+        int frequency,
+        int numBuffers,
+        int bufferSize) {
+      var streamSource = new AudioStreamSourceOpenTk(populateFunc,
+                                                     channels,
+                                                     bytesPerSample,
+                                                     frequency,
+                                                     numBuffers,
+                                                     bufferSize);
+      this.streamSources_.Add(streamSource);
+      return streamSource;
+    }
   }
 
   public class AudioSourceOpenTk : DiscardableImpl, IAudioSource {
@@ -92,8 +115,28 @@ namespace fin.audio.impl.opentk {
             : null;
   }
 
-  public class AudioBufferOpenTk : DiscardableImpl, IAudioBuffer {
+  public static class PcmHelperOpenTk {
+    public static ALFormat GetPcmFormat(int channels, int bytesPerSample) {
+      ALFormat? format = channels switch {
+          1 => bytesPerSample switch {
+              1 => ALFormat.Mono8,
+              2 => ALFormat.Mono16,
+          },
+          2 => bytesPerSample switch {
+              1 => ALFormat.Stereo8,
+              2 => ALFormat.Stereo16,
+          },
+      };
 
+      if (format != null) {
+        return (ALFormat) format;
+      }
+
+      throw new Exception("Unsupported PCM format.");
+    }
+  }
+
+  public class AudioBufferOpenTk : DiscardableImpl, IAudioBuffer {
     private IPcmData? pcm_;
     public int Id { get; }
 
@@ -111,133 +154,16 @@ namespace fin.audio.impl.opentk {
     public void FillWithPcm(IPcmData pcm) {
       this.pcm_ = pcm;
 
-      ALFormat? format = null;
-
       var channels = pcm.Channels;
       var bytesPerSample = pcm.BytesPerSample;
-      format = channels switch {
-          1 => bytesPerSample switch {
-              1 => ALFormat.Mono8,
-              2 => ALFormat.Mono16,
-          },
-          2 => bytesPerSample switch {
-              1 => ALFormat.Stereo8,
-              2 => ALFormat.Stereo16,
-          },
-      };
+      var format = PcmHelperOpenTk.GetPcmFormat(channels, bytesPerSample);
 
       var bytes = pcm.Pcm;
-
-      if (format != null) {
-        AL.BufferData(this.Id,
-                      (ALFormat) format,
-                      bytes,
-                      bytes.Length,
-                      pcm.SampleRate);
-      }
-      else {
-        throw new FormatException("Unsupported audio format.");
-      }
-    }
-  }
-
-  public enum AudioStreamSourceState {
-    READY_TO_PLAY,
-    PLAYING,
-    PAUSED,
-    STOPPED,
-  }
-
-  public class AudioStreamSourceOpenTk : DiscardableImpl, IAudioStreamSource {
-    private readonly int sourceId_;
-
-    private readonly ImmutableArray<int> bufferIds_;
-    private readonly Action<byte[]> populateFunc_;
-    private readonly int frequency_;
-    private readonly int bufferSize_;
-    private int expectedCurrentBufferIndex_ = 0;
-
-    private readonly bool[] readyToProcess_;
-
-    private AudioStreamSourceState state_ = AudioStreamSourceState.STOPPED;
-
-    public AudioStreamSourceOpenTk(
-        Action<byte[]> populateFunc,
-        int frequency = 44100,
-        int numBuffers = 2,
-        int bufferSize = 4096) {
-      this.sourceId_ = AL.GenSource();
-
-      this.bufferIds_ = AL.GenBuffers(numBuffers).ToImmutableArray();
-      this.populateFunc_ = populateFunc;
-      this.frequency_ = frequency;
-      this.bufferSize_ = bufferSize;
-
-      this.readyToProcess_ = new bool[numBuffers];
-      this.readyToProcess_[0] = true;
-
-      this.OnDiscard += _ => this.Destroy_();
-    }
-
-    //TODO: Don't play until stream is ready.
-
-    public void PollForProcessedBuffers() {
-      bool bufferProcessed;
-
-      do {
-        var expectedBufferId =
-            this.bufferIds_[this.expectedCurrentBufferIndex_];
-        AL.GetSource(this.sourceId_,
-                     ALGetSourcei.Buffer,
-                     out var actualBufferId);
-
-        bufferProcessed = expectedBufferId != actualBufferId;
-        if (bufferProcessed) {
-          byte[] pcm = new byte[this.bufferSize_];
-          this.populateFunc_(pcm);
-
-          AL.BufferData(expectedBufferId,
-                        ALFormat.Mono8,
-                        pcm,
-                        this.bufferSize_,
-                        this.frequency_);
-
-          ++this.expectedCurrentBufferIndex_;
-          if (this.expectedCurrentBufferIndex_ == this.bufferIds_.Length) {
-            this.expectedCurrentBufferIndex_ = 0;
-          }
-        }
-      } while (bufferProcessed);
-    }
-
-    public void Play(bool loop) {
-      if (AL.GetSourceState(this.sourceId_) == ALSourceState.Paused) {
-        AL.SourcePlay(this.sourceId_);
-        return;
-      }
-
-      AL.SourceRewind(this.sourceId_);
-      AL.SourceQueueBuffers(this.sourceId_,
-                            this.bufferIds_.Length,
-                            this.bufferIds_.ToArray());
-
-      AL.Source(this.sourceId_, ALSourceb.Looping, loop);
-
-      AL.SourcePlay(this.sourceId_);
-    }
-
-    public void Pause() {
-      AL.SourcePause(this.sourceId_);
-    }
-
-    public void Stop() {
-      AL.SourceStop(this.sourceId_);
-    }
-
-    private void Destroy_() {
-      AL.DeleteSource(this.sourceId_);
-      AL.DeleteBuffers(this.bufferIds_.ToArray());
-      this.bufferIds_.Clear();
+      AL.BufferData(this.Id,
+                    format,
+                    bytes,
+                    bytes.Length,
+                    pcm.SampleRate);
     }
   }
 }

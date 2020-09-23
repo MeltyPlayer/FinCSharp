@@ -77,6 +77,8 @@ namespace fin.app.impl.opentk {
         this.ScheduleCloseApp_();
       }
 
+      this.Audio.Poll();
+
       // TODO: Should these args be passed in?
       // TODO: Event triggering should probably be limited to this class.
       // TODO: Instantiator should probably be pre-scoped to the root already.

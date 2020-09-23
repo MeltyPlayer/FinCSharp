@@ -67,12 +67,12 @@ namespace simple.platformer.player {
       var levelGrid = LevelConstants.LEVEL_GRID;
       var isCeilingAbove = levelGrid.CheckAtPosition(aboveLeftX,
                                                      aboveY,
-                                                     LevelTileType
+                                                     LevelTileTypes
                                                          .CEILING) ||
                            levelGrid.CheckAtPosition(
                                aboveRightX,
                                aboveY,
-                               LevelTileType.CEILING);
+                               LevelTileTypes.CEILING);
 
       if (!isCeilingAbove) {
         this.ProcessScheduledDuck_();
