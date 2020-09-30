@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
+using fin.data.collections.dictionary;
 using fin.data.collections.set;
 using fin.pointer.contract;
 using fin.type;
@@ -19,10 +20,10 @@ namespace fin.events.impl {
             contracts_ = new FinHashSet<IContractPointer<IEventSubscription>>();
 
         private readonly
-            ConcurrentDictionary<SafeType<IEvent>,
-                ISet<IContractPointer<IEventSubscription>>> sets_ =
-                new ConcurrentDictionary<SafeType<IEvent>,
-                    ISet<IContractPointer<IEventSubscription>>>();
+            IMultiDictionary<SafeType<IEvent>,
+                IContractPointer<IEventSubscription>> sets_ =
+                new MultiDictionary<SafeType<IEvent>,
+                    IContractPointer<IEventSubscription>>();
 
         public IEnumerable<IContractPointer<IEventSubscription>> Contracts =>
             this.contracts_;
@@ -30,21 +31,13 @@ namespace fin.events.impl {
         public int Count => this.contracts_.Count;
 
         public IEnumerable<IContractPointer<IEventSubscription>>? Get(
-            SafeType<IEvent> genericEventType) {
-          this.sets_.TryGetValue(genericEventType,
-                                 out ISet<IContractPointer<IEventSubscription>>?
-                                         set);
-          return set;
-        }
+            SafeType<IEvent> genericEventType)
+          => this.sets_.TryGet(genericEventType);
 
         public bool Add(IContractPointer<IEventSubscription> contract) {
           if (this.contracts_.Add(contract)) {
             var genericEventType = contract.Value.EventType;
-            var set = this.sets_.GetOrAdd(genericEventType,
-                                          genericEventType =>
-                                              new HashSet<IContractPointer<
-                                                  IEventSubscription>>());
-            set.Add(contract);
+            this.sets_.Add(genericEventType, contract);
             return true;
           }
 
@@ -53,19 +46,11 @@ namespace fin.events.impl {
 
         public bool Remove(IContractPointer<IEventSubscription> contract) {
           var genericEventType = contract.Value.EventType;
-          if (this.sets_.TryGetValue(genericEventType,
-                                     out ISet<IContractPointer<
-                                             IEventSubscription>>? set)) {
-            if (set!.Remove(contract)) {
-              if (set.Count() == 0) {
-                this.sets_.TryRemove(genericEventType,
-                                     out ISet<IContractPointer<
-                                             IEventSubscription>>? _);
-                this.contracts_.Remove(contract);
-              }
-
-              return true;
+          if (this.sets_.Remove(genericEventType, contract)) {
+            if (this.Get(genericEventType) == null) {
+              this.contracts_.Remove(contract);
             }
+            return true;
           }
 
           return false;
@@ -81,8 +66,10 @@ namespace fin.events.impl {
         }
       }
 
-      private EventContractDictionary set_ = new EventContractDictionary();
-      protected IWeakContractPointerOwner<IEventSubscription> owner_;
+      private readonly EventContractDictionary set_ =
+          new EventContractDictionary();
+
+      protected readonly IWeakContractPointerOwner<IEventSubscription> owner_;
 
       public EventOwner() {
         this.owner_ = IContractFactory.INSTANCE.NewWeakOwner(this.set_);

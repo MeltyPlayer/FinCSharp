@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 using fin.discardable;
-using fin.log;
+using fin.math.number;
 
 using OpenTK.Audio.OpenAL;
 
@@ -27,7 +27,7 @@ namespace fin.audio.impl.opentk {
     private readonly ALFormat format_;
     private readonly int frequency_;
     private readonly int bufferSize_;
-    private int currentBufferIndex_ = 0;
+    private readonly CircularRangedNumber<int> currentBufferIndex_;
 
     private readonly Queue<int> readyBuffersIds_;
 
@@ -52,6 +52,9 @@ namespace fin.audio.impl.opentk {
       this.frequency_ = frequency;
       this.bufferSize_ = bufferSize;
 
+      this.currentBufferIndex_ =
+          new CircularRangedNumber<int>(0, 0, numBuffers);
+
       // TODO: Delay this until the observable has returned some value. Stream
       // should remember stop/play/paused state as expected in the meantime.
       this.readyBuffersIds_ = new Queue<int>();
@@ -70,14 +73,10 @@ namespace fin.audio.impl.opentk {
 
       for (var i = 0; i < processed; ++i) {
         var processedBufferId =
-            this.bufferIds_[this.currentBufferIndex_];
+            this.bufferIds_[this.currentBufferIndex_.Value++];
 
         AL.SourceUnqueueBuffers(this.sourceId_, 1);
         this.readyBuffersIds_.Enqueue(processedBufferId);
-
-        if (++this.currentBufferIndex_ == this.bufferIds_.Length) {
-          this.currentBufferIndex_ = 0;
-        }
       }
 
       this.PopulateAndQueueReadyBuffers_();

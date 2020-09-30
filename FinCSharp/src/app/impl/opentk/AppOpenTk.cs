@@ -29,7 +29,7 @@ namespace fin.app.impl.opentk {
 
     public IInstantiator Instantiator { get; } = new InstantiatorImpl();
 
-    public IWindowManager WindowManager => this.windowManager_;
+    public IAppWindowManager WindowManager => this.windowManager_;
     private readonly WindowManagerOpenTk windowManager_;
 
     public AppOpenTk() {
@@ -85,7 +85,7 @@ namespace fin.app.impl.opentk {
       this.sceneManager_.ExitSceneIfScheduled(this.root_);
       this.sceneManager_.EnterSceneIfScheduled(this.root_, this);
 
-      this.root_.Emit(new ProcessInputsEvent());
+      this.root_.Emit(new ProcessInputsEvent(this.input_));
       this.root_.Emit(new TickPhysicsEvent());
       this.root_.Emit(new TickCollisionsEvent());
       this.root_.Emit(new TickAnimationEvent());

@@ -20,9 +20,17 @@ namespace fin.data.collections.dictionary {
     public IEnumerable<TKey> Keys => this.impl_.Keys;
 
     public IEnumerable<TValue> Get(TKey key) => this.impl_[key];
+    public IEnumerable<TValue>? TryGet(TKey key) {
+      try {
+        return this.Get(key);
+      }
+      catch {
+        return null;
+      }
+    }
 
     public bool Add(TKey key, TValue value) => this.impl_
-      .GetOrAdd(key, _ => new FinHashSet<TValue>()).Add(value);
+                                                   .GetOrAdd(key, _ => new FinHashSet<TValue>()).Add(value);
 
     public bool Remove(TKey key, TValue value) {
       if (!this.impl_.TryGet(key, out var values) || !values.Remove(value)) {

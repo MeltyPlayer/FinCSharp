@@ -14,8 +14,6 @@ namespace fin.data.collections.list {
     public int Count => this.impl_.Count;
     public IEnumerator<T> GetEnumerator() => this.impl_.GetEnumerator();
 
-    public T this[int index] {
-      get => this.impl_[index];
-    }
+    public T this[int index] => this.impl_[index];
   }
 }

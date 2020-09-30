@@ -19,14 +19,14 @@ namespace fin.app.impl.opentk {
       // TODO: App should only be closed when the final window is closed.
       // TODO: What if a window never opens??? Need a safety measure to auto-close.
       // TODO: Fix vsync stuttering.
-      public IWindow NewWindow(IWindowArgs args)
+      public IAppWindow NewWindow(IWindowArgs args)
         => this.parent_.Instantiator.Wrap(this.parent_.root_,
                                           new WindowOpenTk(
                                               args,
                                               this.parent_.input_,
                                               this.parent_.ScheduleCloseApp_));
 
-      private sealed partial class WindowOpenTk : BComponent, IWindow {
+      private sealed partial class WindowOpenTk : BComponent, IAppWindow {
         private readonly INativeWindow nativeWindow_;
 
         private readonly IGraphicsContext glContext_;

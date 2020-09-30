@@ -7,6 +7,7 @@ namespace fin.data.collections.dictionary {
     IEnumerable<TKey> Keys { get; }
 
     IEnumerable<TValue> Get(TKey key);
+    IEnumerable<TValue>? TryGet(TKey key);
 
     bool Add(TKey key, TValue value);
 

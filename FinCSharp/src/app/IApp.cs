@@ -13,6 +13,6 @@ namespace fin.app {
     IAudio Audio { get; }
     IInput Input { get; }
     IInstantiator Instantiator { get; }
-    IWindowManager WindowManager { get; }
+    IAppWindowManager WindowManager { get; }
   }
 }

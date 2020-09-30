@@ -17,6 +17,9 @@ namespace fin.data.collections.list {
       return true;
     }
 
+    /// <remarks>
+    /// Time: O(1)
+    /// </remarks>
     public T this[int index] {
       get => this.impl_[index];
       set => this.impl_[index] = value;

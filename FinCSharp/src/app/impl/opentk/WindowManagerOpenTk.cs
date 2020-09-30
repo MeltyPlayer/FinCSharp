@@ -4,7 +4,7 @@ namespace fin.app.impl.opentk {
   using System.Collections.Generic;
 
   public sealed partial class AppOpenTk {
-    private sealed partial class WindowManagerOpenTk : IWindowManager {
+    private sealed partial class WindowManagerOpenTk : IAppWindowManager {
       private readonly AppOpenTk parent_;
       private readonly IList<WindowOpenTk> windows_ = new List<WindowOpenTk>();
 
@@ -13,7 +13,7 @@ namespace fin.app.impl.opentk {
       }
 
       // TODO: Delete this.
-      public IEnumerable<IWindow> Windows => this.windows_;
+      public IEnumerable<IAppWindow> Windows => this.windows_;
 
       public void ProcessEvents() {
         foreach (var window in this.windows_) {
@@ -21,12 +21,12 @@ namespace fin.app.impl.opentk {
         }
       }
 
-      public IWindow[] InitWindowsForScene(params IWindowArgs[] args) {
+      public IAppWindow[] InitWindowsForScene(params IWindowArgs[] args) {
         // TODO: Reuse old windows.
         // TODO: Delete extra windows.
         // TODO: Reset state.
         var count = args.Length;
-        var windows = new IWindow[count];
+        var windows = new IAppWindow[count];
         for (var i = 0; i < count; ++i) {
           var window = this.NewWindow(args[i]);
           windows[i] = window;

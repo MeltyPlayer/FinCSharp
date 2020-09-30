@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.discardable {
   [TestClass]
@@ -89,6 +91,19 @@ namespace fin.discardable {
       parent.Discard();
       Assert.IsFalse(d.IsDiscarded);
       Assert.AreEqual("", output);
+    }
+
+    [TestMethod]
+    public void TestDiscardAtEndOfScope() {
+      var output = "";
+
+      {
+        var d = new DiscardableImpl();
+        d.OnDiscard += _ => output += "foobar";
+      }
+
+      // Nothing should happen since it was removed.
+      Assert.AreEqual("foobar", output);
     }
   }
 }

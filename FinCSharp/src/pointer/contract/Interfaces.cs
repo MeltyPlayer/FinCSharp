@@ -20,7 +20,9 @@ namespace fin.pointer.contract {
   }
 
   /// <summary>
-  ///   Do not inherit this type directly.
+  ///   Interface for a contract pointer, a transient pointer shared between
+  ///   multiple owners that can be used for things like subscriptions. Do not
+  ///   inherit this type directly.
   /// </summary>
   public interface IContractPointer<T> : IContract {
     T Value { get; }
@@ -30,11 +32,12 @@ namespace fin.pointer.contract {
   ///   Interface for a closed contract pointer. Once instantiated, no new
   ///   owners can join this contract. Preferred over open contracts.
   /// </summary>
-  public interface IClosedContractPointer<T> : IContractPointer<T> { }
+  public interface IClosedContractPointer<T> : IContractPointer<T> {}
 
   /// <summary>
   ///   Interface for an open contract pointer. Even after instantiation, new
-  ///   owners can join this contract. Prefer a closed contract if possible.
+  ///   owners can join this contract. Prefer using closed contracts if
+  ///   possible.
   /// </summary>
   public interface IOpenContractPointer<T> : IContractPointer<T> {
     bool Join(IContractPointerOwner<T> owner);
@@ -42,8 +45,9 @@ namespace fin.pointer.contract {
 
   /// <summary>
   ///   Interface for a special contract that is a combination of other
-  ///   contracts. Once this contract becomes empty or all of the contracts
-  ///   contained within are broken, this will also break.
+  ///   contracts, similar to Promise.All(). Once this contract becomes empty
+  ///   or all of the contracts contained within are broken, this will also
+  ///   break.
   /// </summary>
   public interface ISuperContract : IContract {
     bool Add(IContract contract);
@@ -52,20 +56,23 @@ namespace fin.pointer.contract {
   }
 
   /// <summary>
-  ///   Do not inherit this type directly.
+  ///   Interface for an owner of a contract. Do not inherit this type
+  ///   directly.
   /// </summary>
   public interface IContractPointerOwner<T> {
     IEnumerable<IContractPointer<T>> Contracts { get; }
 
     IOpenContractPointer<T> FormOpen(T value);
 
-    IOpenContractPointer<T> FormOpenWith(T value,
-      IContractPointerOwner<T> other,
-      params IContractPointerOwner<T>[] additional);
+    IOpenContractPointer<T> FormOpenWith(
+        T value,
+        IContractPointerOwner<T> other,
+        params IContractPointerOwner<T>[] additional);
 
-    IClosedContractPointer<T> FormClosedWith(T value,
-      IContractPointerOwner<T> other,
-      params IContractPointerOwner<T>[] additional);
+    IClosedContractPointer<T> FormClosedWith(
+        T value,
+        IContractPointerOwner<T> other,
+        params IContractPointerOwner<T>[] additional);
 
     bool Join(IOpenContractPointer<T> contract);
 
@@ -74,13 +81,26 @@ namespace fin.pointer.contract {
     void BreakAll();
   }
 
-  public interface IStrongContractPointerOwner<T> : IContractPointerOwner<T> { }
+  /// <summary>
+  ///   Interface for a contract owner whose contracts depend on to live. If
+  ///   all strong owners break with a contract, the contract will break for
+  ///   any remaining weak owners.
+  /// </summary>
+  public interface IStrongContractPointerOwner<T> : IContractPointerOwner<T> {}
 
-  public interface IWeakContractPointerOwner<T> : IContractPointerOwner<T> { }
+  /// <summary>
+  ///   Interface for a contract owner whose contracts do NOT depend on to
+  ///   live. Any number of weak owners can break with a contract without
+  ///   breaking it for everyone.
+  /// </summary>
+  public interface IWeakContractPointerOwner<T> : IContractPointerOwner<T> {}
 
   /// <summary>
   ///   Interface for the underlying storage of an IContractPointerOwner. This
-  ///   type shouldn't perform any joining/breaking, just storing data.
+  ///   is exposed in case any contract owners need special methods of
+  ///   storing/accessing contracts (e.g. events which opt to join an existing
+  ///   contract instead of creating a new one). This type shouldn't perform
+  ///   any joining/breaking, just storing data.
   /// </summary>
   public interface IContractPointerSet<T> {
     IEnumerable<IContractPointer<T>> Contracts { get; }
@@ -96,7 +116,7 @@ namespace fin.pointer.contract {
   public class DefaultContractPointerSet<T> : IContractPointerSet<T> {
     // TODO: Higher overhead than should be necessary.
     private IFinSet<IContractPointer<T>> impl_ =
-      new FinHashSet<IContractPointer<T>>();
+        new FinHashSet<IContractPointer<T>>();
 
     public IEnumerable<IContractPointer<T>> Contracts => this.impl_;
 
@@ -105,7 +125,7 @@ namespace fin.pointer.contract {
     public bool Add(IContractPointer<T> contract) => this.impl_.Add(contract);
 
     public bool Remove(IContractPointer<T> contract) =>
-      this.impl_.Remove(contract);
+        this.impl_.Remove(contract);
 
     public void ClearAndBreak(Action<IContractPointer<T>> breakHandler) {
       while (this.impl_.Count > 0) {
@@ -121,16 +141,18 @@ namespace fin.pointer.contract {
   /// </summary>
   public interface IContractFactory {
     protected readonly static IDelegator<IContractFactory> DELEGATED_INSTANCE =
-      new Delegator<IContractFactory>();
+        new Delegator<IContractFactory>();
+
     public readonly static IContractFactory INSTANCE = new ContractFactory();
 
-    ISuperContract NewSuperContract(IContract first,
-      params IContract[] additional);
+    ISuperContract NewSuperContract(
+        IContract first,
+        params IContract[] additional);
 
     IStrongContractPointerOwner<T> NewStrongOwner<T>();
 
     IStrongContractPointerOwner<T>
-      NewStrongOwner<T>(IContractPointerSet<T> set);
+        NewStrongOwner<T>(IContractPointerSet<T> set);
 
     IWeakContractPointerOwner<T> NewWeakOwner<T>();
 

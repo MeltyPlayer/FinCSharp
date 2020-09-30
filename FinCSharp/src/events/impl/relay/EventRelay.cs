@@ -21,8 +21,6 @@ namespace fin.events.impl {
       private readonly IEventEmitter emitter_ =
         IEventFactory.INSTANCE.NewEmitter();
 
-      public EventRelay() { }
-
       public void Destroy() {
         foreach (var genericRelayStream in this.relayStreams_.Values.ToList()) {
           genericRelayStream.Destroy();

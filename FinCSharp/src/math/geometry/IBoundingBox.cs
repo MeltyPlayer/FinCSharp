@@ -44,6 +44,11 @@ namespace fin.math.geometry {
                                 (dynamic) this.Dimensions.Height);
 
     TNumber CenterY => Math.Mean(this.TopY, this.BottomY);
+
+    // TODO: Should we allow negative widths/heights? If we don't the above
+    // stuff gets way easier.
+    TNumber Width => Math.Abs(this.Dimensions.Width);
+    TNumber Height => Math.Abs(this.Dimensions.Height);
   }
 
   public class AggregationBoundingBox<TNumber> : IBoundingBox<TNumber>

@@ -18,17 +18,17 @@ namespace fin.app.window {
     }
   }
 
-  public interface IWindowManager {
+  public interface IAppWindowManager {
     /// <summary>
     ///   Creates a new window.
     /// </summary>
-    public IWindow NewWindow(IWindowArgs args);
+    public IAppWindow NewWindow(IWindowArgs args);
 
     /// <summary>
     ///   Initializes windows for the current scene such that {count} exist.
     ///   Creates windows if none exist, reuses existing ones if available,
     ///   closes some if there are too many.
     /// </summary>
-    public IWindow[] InitWindowsForScene(params IWindowArgs[] args);
+    public IAppWindow[] InitWindowsForScene(params IWindowArgs[] args);
   }
 }
