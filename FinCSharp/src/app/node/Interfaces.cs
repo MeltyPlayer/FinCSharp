@@ -7,52 +7,30 @@ using fin.events;
 using fin.type;
 
 namespace fin.app.node {
-  public interface IComponent : IDependentDiscardable {}
+  public interface IComponent {}
 
-  public abstract class BComponent : IComponent {
-    private readonly DiscardableImpl discardableImpl_ = new DiscardableImpl();
+  public interface IAppNode {
+    void SetParent(IAppNode parent);
 
-    public BComponent() {
-      this.discardableImpl_.OnDiscard += _ => this.Discard();
-    }
-
-    public bool IsDiscarded => this.discardableImpl_.IsDiscarded;
-
-    // TODO: Come up w/ naming scheme for abstract methods?
-    protected abstract void Discard();
-
-    // TODO: Is it possible to remove these...????
-    public bool AddParent(IEventDiscardable parent)
-      => this.discardableImpl_.AddParent(parent);
-
-    public bool RemoveParent(IEventDiscardable parent)
-      => this.discardableImpl_.RemoveParent(parent);
-  }
-
-  public interface IRootAppNode : IPubliclyDiscardable, IAppNode {}
-
-  public interface IChildAppNode : IAppNode {
-    IAppNode Parent { get; set; }
-
-    IEventSubscription OnTick<TEvent>(SafeType<TEvent> eventType,
-                                      Action<TEvent> handler)
-      where TEvent : IEvent;
-  }
-
-  public interface IAppNode : IPubliclyDiscardable, IEventDiscardable {
     // TODO: Should this be limited to IChildAppNode?
     bool AddComponent(IComponent component);
     bool RemoveComponent(IComponent component);
 
+    IEventSubscription OnTick<TEvent>(
+        SafeType<TEvent> eventType,
+        Action<TEvent> handler)
+        where TEvent : IEvent;
+
     void Emit<TEvent>(TEvent evt) where TEvent : IEvent;
+    Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent;
   }
 
   public interface IInstantiator {
-    IRootAppNode NewRoot();
-    IChildAppNode NewTopLevelChild(params IComponent[] components);
-    IChildAppNode NewChild(IAppNode parent, params IComponent[] components);
+    IAppNode NewRoot();
+    IAppNode NewTopLevelChild(params IComponent[] components);
+    IAppNode NewChild(IAppNode parent, params IComponent[] components);
 
     TComponent Wrap<TComponent>(IAppNode parent, TComponent component)
-      where TComponent : IComponent;
+        where TComponent : IComponent;
   }
 }

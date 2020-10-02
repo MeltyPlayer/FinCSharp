@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using fin.app.events;
 using fin.app.node;
 using fin.app.window;
+using fin.discardable;
 using fin.input.impl.opentk;
 using fin.math.geometry;
 
@@ -22,13 +23,15 @@ namespace fin.app.impl.opentk {
       public IAppWindow NewWindow(IWindowArgs args)
         => this.parent_.Instantiator.Wrap(this.parent_.root_,
                                           new WindowOpenTk(
+                                              this.node_,
                                               args,
                                               this.parent_.input_,
                                               this.parent_.ScheduleCloseApp_));
 
-      private sealed partial class WindowOpenTk : BComponent, IAppWindow {
-        private readonly INativeWindow nativeWindow_;
+      private sealed partial class WindowOpenTk : IComponent, IAppWindow {
+        private readonly IDiscardableNode node_;
 
+        private readonly INativeWindow nativeWindow_;
         private readonly IGraphicsContext glContext_;
 
         private readonly MutableBoundingBox<int> windowBoundingBox_;
@@ -39,9 +42,14 @@ namespace fin.app.impl.opentk {
         private readonly IList<WindowOpenTkView> views_ =
             new List<WindowOpenTkView>();
 
-        public WindowOpenTk(IWindowArgs args,
-                            InputOpenTk input,
-                            Action onClose) {
+        public WindowOpenTk(
+            IDiscardableNode parent,
+            IWindowArgs args,
+            InputOpenTk input,
+            Action onClose) {
+          this.node_ = parent.CreateChild();
+          this.node_.OnDiscard += _ => this.Discard_();
+
           var initialWidth = args.Dimensions.Width;
           var initialHeight = args.Dimensions.Height;
 
@@ -118,7 +126,7 @@ namespace fin.app.impl.opentk {
           };
         }
 
-        protected override void Discard() {
+        private void Discard_() {
           this.nativeWindow_.Close();
 
           this.nativeWindow_.Dispose();

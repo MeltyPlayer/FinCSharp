@@ -76,8 +76,11 @@ namespace fin.events.impl {
 
       public void RemoveAllListeners() => this.emitter_.RemoveAllListeners();
 
-      public void Emit<TEvent>(TEvent evt) where TEvent : IEvent =>
-        this.emitter_.Emit(evt);
+      public void Emit<TEvent>(TEvent evt) where TEvent : IEvent 
+        => this.emitter_.Emit(evt);
+
+      public Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent
+        => this.emitter_.CompileEmit<TEvent>();
     }
   }
 }

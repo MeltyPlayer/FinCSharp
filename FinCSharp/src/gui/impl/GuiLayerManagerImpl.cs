@@ -10,12 +10,12 @@ using fin.input.button;
 namespace fin.gui.impl {
   // TODO: Calculate reflows. Ideally before inputs are processed.
   public class GuiLayerManagerImpl {
-    private IList<IGuiWindow> windows_ = new List<IGuiWindow>();
+    private readonly IList<IGuiWindow> windows_ = new List<IGuiWindow>();
 
     private IGuiWindow? activeWindow_;
 
     private IGuiWindow? windowUnderMouse_;
-    private IGuiNode? nodeUnderMouse_;
+    //private IGuiNode? nodeUnderMouse_;
 
     [OnTick]
     private void ProcessInputs_(ProcessInputsEvent evt) {
@@ -25,14 +25,13 @@ namespace fin.gui.impl {
 
       if (cursorPosition == null) {
         this.windowUnderMouse_ = null;
-        this.nodeUnderMouse_ = null;
-      }
-      else {
+        //this.nodeUnderMouse_ = null;
+      } else {
         var cursorX = cursorPosition.X;
         var cursorY = cursorPosition.Y;
 
         this.windowUnderMouse_ = this.FindWindowAt_(cursorX, cursorY);
-        this.nodeUnderMouse_ = this.FindNodeUnderMouse_(cursorX, cursorY);
+        //this.nodeUnderMouse_ = this.FindNodeUnderMouse_(cursorX, cursorY);
 
         if (cursor.LeftButton.State == ButtonState.PRESSED) {
           this.activeWindow_ = this.windowUnderMouse_;

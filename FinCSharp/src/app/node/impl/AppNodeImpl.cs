@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
 
 using fin.app.events;
-using fin.assert;
+using fin.assert.fluent;
 using fin.data.collections.set;
-using fin.data.graph;
 using fin.discardable;
 using fin.events;
 using fin.type;
@@ -12,8 +10,9 @@ using fin.type;
 namespace fin.app.node.impl {
   // TODO: Make this internal.
   public sealed partial class InstantiatorImpl : IInstantiator {
-    private abstract class BAppNode : IAppNode {
-      private readonly Node<BAppNode> node_;
+    private sealed class AppNodeImpl : IAppNode {
+      private readonly IDiscardableNode discardableImpl_;
+      private AppNodeImpl? parent_;
 
       private readonly IFinSet<IComponent> components_ =
           new FinHashSet<IComponent>();
@@ -24,15 +23,12 @@ namespace fin.app.node.impl {
       private readonly IEventRelay downwardRelay_ =
           IEventFactory.INSTANCE.NewRelay();
 
-      protected readonly DiscardableImpl discardableImpl_ =
-          new DiscardableImpl();
-
       private readonly ForOnTickMethodImpl forOnTickMethod_;
 
       private class ForOnTickMethodImpl : IForOnTickMethod {
-        private readonly BAppNode parent_;
+        private readonly AppNodeImpl parent_;
 
-        public ForOnTickMethodImpl(BAppNode parent) {
+        public ForOnTickMethodImpl(AppNodeImpl parent) {
           this.parent_ = parent;
         }
 
@@ -42,76 +38,65 @@ namespace fin.app.node.impl {
           => this.parent_.OnTick(eventType, handler);
       }
 
-      public BAppNode(BAppNode? parent) {
-        this.node_ = new Node<BAppNode>(this);
-        this.ParentImpl = parent;
-
+      public AppNodeImpl(IDiscardableNode parentDiscardableNode) {
+        this.discardableImpl_ = parentDiscardableNode.CreateChild();
         this.discardableImpl_.OnDiscard += _ => this.Discard_();
 
         this.forOnTickMethod_ = new ForOnTickMethodImpl(this);
       }
 
-      public event IEventDiscardable.OnDiscardHandler OnDiscard {
+      public AppNodeImpl(AppNodeImpl parentAppNode) {
+        this.discardableImpl_ = parentAppNode.discardableImpl_.CreateChild();
+        this.discardableImpl_.OnDiscard += _ => this.Discard_();
+
+        this.SetParent(parentAppNode);
+
+        this.forOnTickMethod_ = new ForOnTickMethodImpl(this);
+      }
+
+      public event IDiscardableNode.OnDiscardHandler OnDiscard {
         add => this.discardableImpl_.OnDiscard += value;
         remove => this.discardableImpl_.OnDiscard -= value;
       }
 
       public bool IsDiscarded => this.discardableImpl_.IsDiscarded;
 
-      // TODO: Schedule for destruction, handle this at a later time.
-      public bool Discard() => this.discardableImpl_.Discard();
-
-      public void Discard_() {
-        this.node_.RemoveAllIncoming();
-
+      private void Discard_() {
         this.listener_.UnsubscribeAll();
         this.downwardRelay_.Destroy();
       }
 
-      // Hierarchy logic.
-      protected BAppNode? ParentImpl {
-        get {
-          var incoming = this.node_.IncomingNodes;
+      public void SetParent(IAppNode parent)
+        => this.SetParent_(Expect.That(parent).AsA<AppNodeImpl>());
 
-          if (incoming.Count() > 0) {
-            return incoming.Single().Value;
-          }
-
-          return null;
+      private void SetParent_(AppNodeImpl parent) {
+        if (this.IsDiscarded) {
+          return;
         }
-        set {
-          if (this.IsDiscarded) {
-            return;
-          }
+        // TODO: Check no loops!
+        // TODO: Leverage discardableImpl hierarchy??
 
-          var oldParent = this.ParentImpl;
-          if (oldParent != null) {
-            oldParent.node_.RemoveOutgoing(this.node_);
-            this.downwardRelay_.RemoveRelaySource(oldParent.downwardRelay_);
-            this.discardableImpl_.RemoveParent(oldParent);
-          }
-
-          var newParent = value;
-          if (newParent != null) {
-            Asserts.Different(this, newParent);
-            newParent.node_.AddOutgoing(this.node_);
-            this.downwardRelay_.AddRelaySource(newParent.downwardRelay_);
-            this.discardableImpl_.AddParent(newParent);
-          }
+        // Clean up old parent
+        if (this.parent_ != null) {
+          this.downwardRelay_.RemoveRelaySource(this.parent_.downwardRelay_);
         }
+
+        // Set new parent
+        this.parent_ = parent;
+        this.downwardRelay_.AddRelaySource(this.parent_.downwardRelay_);
+        this.discardableImpl_.SetParent(this.parent_.discardableImpl_);
       }
 
       /**
        * Component logic
        */
       public bool AddComponent(IComponent component) {
-        if (component.IsDiscarded) {
-          return false;
-        }
+        // TODO: Assert that component is not discarded.
 
         if (this.components_.Add(component)) {
           // TODO: Remove these in the Remove counterpart.
-          OnTickAttribute.SniffAndAddMethods(component, this.forOnTickMethod_);
+          OnTickAttribute.SniffAndAddMethods(component,
+                                             this.forOnTickMethod_);
           return true;
         }
 
@@ -138,6 +123,10 @@ namespace fin.app.node.impl {
         this.downwardRelay_.Emit(evt);
       }
 
+      public Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent
+        => this.downwardRelay_.CompileEmit<TEvent>();
+
+
       public IEventSubscription? OnTick<TEvent>(
           SafeType<TEvent> eventType,
           Action<TEvent> handler) where TEvent : IEvent {
@@ -145,10 +134,10 @@ namespace fin.app.node.impl {
           return null;
         }
 
-        if (this.ParentImpl != null) {
-          return this.ParentImpl.downwardRelay_.AddListener(this.listener_,
-                                                            eventType,
-                                                            handler);
+        if (this.parent_ != null) {
+          return this.parent_.downwardRelay_.AddListener(this.listener_,
+                                                         eventType,
+                                                         handler);
         }
 
         return null;

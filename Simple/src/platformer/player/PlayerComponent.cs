@@ -11,7 +11,7 @@ using simple.platformer.world;
 using CColor = System.Drawing.Color;
 
 namespace simple.platformer.player {
-  public class PlayerComponent : BComponent {
+  public class PlayerComponent : IComponent {
     private IGamepad gamepad_;
 
     private readonly LevelGridRenderer levelGridRenderer_;
@@ -57,8 +57,6 @@ namespace simple.platformer.player {
           PlayerRigidbody = this.playerRigidbody_,
       };
     }
-
-    protected override void Discard() {}
 
     [OnTick]
     private void ProcessInputs_(ProcessInputsEvent _) {

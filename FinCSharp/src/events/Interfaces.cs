@@ -71,6 +71,8 @@ namespace fin.events {
   /// </summary>
   public interface IEventEmitter : IEventSource {
     void Emit<TEvent>(TEvent evt) where TEvent : IEvent;
+
+    Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent;
   }
 
   /// <summary>

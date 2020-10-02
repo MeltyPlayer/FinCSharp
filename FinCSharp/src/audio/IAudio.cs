@@ -12,7 +12,9 @@ namespace fin.audio {
   // TODO: Rethink this.
   public interface IAudioFactory {
     private const int DEFAULT_FREQUENCY = 44100;
-    private const int DEFAULT_BUFFER_SIZE = 2 * 2 * DEFAULT_FREQUENCY;
+
+    private const int DEFAULT_BUFFER_SIZE =
+        2 * 2 * IAudioFactory.DEFAULT_FREQUENCY;
 
     IAudioSource NewAudioSource();
 
@@ -22,9 +24,9 @@ namespace fin.audio {
         Action<byte[]> populateFunc,
         int channels = 1,
         int bytesPerSample = 1,
-        int frequency = DEFAULT_FREQUENCY,
+        int frequency = IAudioFactory.DEFAULT_FREQUENCY,
         int numBuffers = 2,
-        int bufferSize = DEFAULT_BUFFER_SIZE);
+        int bufferSize = IAudioFactory.DEFAULT_BUFFER_SIZE);
   }
 
   public interface IAudioSource {
@@ -40,7 +42,7 @@ namespace fin.audio {
     void FillWithPcm(IPcmData pcm);
   }
 
-  public interface IAudioStreamSource : IDiscardable {
+  public interface IAudioStreamSource {
     void PollForProcessedBuffers();
     void Play(bool looping);
     void Pause();

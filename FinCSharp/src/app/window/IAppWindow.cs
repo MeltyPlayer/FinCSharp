@@ -3,7 +3,7 @@ using fin.graphics;
 using fin.math.geometry;
 
 namespace fin.app.window {
-  public interface IAppWindow : IComponent {
+  public interface IAppWindow {
     string Title { get; set; }
 
     int Width { get; set; }

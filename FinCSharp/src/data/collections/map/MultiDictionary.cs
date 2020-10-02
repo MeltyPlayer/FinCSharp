@@ -6,8 +6,8 @@ using fin.data.collections.set;
 // TODO: Add tests.
 namespace fin.data.collections.dictionary {
   public class MultiDictionary<TKey, TValue> : IMultiDictionary<TKey, TValue> {
-    private IFinMap<TKey, IFinSet<TValue>> impl_ =
-      new FinHashMap<TKey, IFinSet<TValue>>();
+    private readonly IFinMap<TKey, IFinSet<TValue>> impl_ =
+        new FinHashMap<TKey, IFinSet<TValue>>();
 
     public void Clear() {
       foreach (var values in this.impl_.Values) {
@@ -19,8 +19,8 @@ namespace fin.data.collections.dictionary {
 
     public IEnumerable<TKey> Keys => this.impl_.Keys;
 
-    public IEnumerable<TValue> Get(TKey key) => this.impl_[key];
-    public IEnumerable<TValue>? TryGet(TKey key) {
+    public IFinCollection<TValue> Get(TKey key) => this.impl_[key];
+    public IFinCollection<TValue>? TryGet(TKey key) {
       try {
         return this.Get(key);
       }
@@ -42,7 +42,6 @@ namespace fin.data.collections.dictionary {
       }
 
       return true;
-
     }
 
     public void RemoveAll(TKey key) {

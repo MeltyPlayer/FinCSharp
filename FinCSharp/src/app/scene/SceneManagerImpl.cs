@@ -12,10 +12,10 @@
 
     // TODO: Maybe this should be a component instead?
     // TODO: I'm not liking these params...?
-    void ExitSceneIfScheduled(IRootAppNode root);
+    void ExitSceneIfScheduled(IAppNode root);
 
     // TODO: Does it make sense to have this much power???
-    void EnterSceneIfScheduled(IRootAppNode root, IApp app);
+    void EnterSceneIfScheduled(IAppNode root, IApp app);
   }
 
   public class SceneManagerImpl : ISceneManager {
@@ -26,17 +26,17 @@
       this.pendingScene_ = scene;
     }
 
-    public void ExitSceneIfScheduled(IRootAppNode root) {
+    public void ExitSceneIfScheduled(IAppNode root) {
       if (this.pendingScene_ == null || this.currentNode_ == null) {
         return;
       }
 
       root.Emit(new SceneEndTickEvent());
-      this.currentNode_.Discard();
+      //this.currentNode_.Discard();
       this.currentNode_ = null;
     }
 
-    public void EnterSceneIfScheduled(IRootAppNode root, IApp app) {
+    public void EnterSceneIfScheduled(IAppNode root, IApp app) {
       if (this.pendingScene_ == null) {
         return;
       }

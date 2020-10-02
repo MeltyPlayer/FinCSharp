@@ -1,4 +1,11 @@
-﻿namespace fin.events.impl {
+﻿using System;
+using System.Collections.Generic;
+
+using fin.data.collections;
+using fin.pointer.contract;
+using fin.type;
+
+namespace fin.events.impl {
   public sealed partial class EventFactory {
     public IEventEmitter NewEmitter() => new EventEmitter();
 
@@ -12,6 +19,18 @@
             subscription!.Handler(evt);
           }
         }
+      }
+
+      public Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent {
+        var contracts = this.Get(new SafeType<IEvent>(typeof(TEvent)));
+
+        return evt => {
+          foreach (var contract in contracts!) {
+            var genericSubscription = contract.Value;
+            var subscription = genericSubscription as EventSubscription<TEvent>;
+            subscription!.Handler(evt);
+          }
+        };
       }
     }
   }

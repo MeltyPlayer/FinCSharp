@@ -12,7 +12,7 @@ namespace fin.audio {
 
   public class OggLoader : IOggLoader {
     public IPcmData Load(IFile file) {
-      var ogg = new VorbisReader(file.uri);
+      using var ogg = new VorbisReader(file.uri);
 
       var channels = ogg.Channels;
       var sampleCount = (int) ogg.TotalSamples * channels;
@@ -34,10 +34,10 @@ namespace fin.audio {
       var bytePcm = new byte[sampleCount * bytesPerSample];
       for (var i = 0; i < sampleCount; ++i) {
         var floatSample = floatPcm[i];
-        this.StoreFloatAsBytes_(floatSample,
-                               bytePcm,
-                               i * bytesPerSample,
-                               bytesPerSample);
+        OggLoader.StoreFloatAsBytes_(floatSample,
+                                     bytePcm,
+                                     i * bytesPerSample,
+                                     bytesPerSample);
       }
 
       return new PcmData(
@@ -47,7 +47,7 @@ namespace fin.audio {
           bytePcm);
     }
 
-    private void StoreFloatAsBytes_(
+    private static void StoreFloatAsBytes_(
         float value,
         byte[] bytes,
         int offset,

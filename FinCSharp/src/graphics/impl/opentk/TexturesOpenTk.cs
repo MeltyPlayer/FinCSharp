@@ -98,18 +98,19 @@
       return uintArray;
     }
 
-    private class TextureOpentk : DiscardableImpl, ITexture {
+    // TODO: Discard
+    private class TextureOpentk : ITexture {
       private readonly uint textureId_;
 
       public TextureOpentk(uint textureId) {
         this.textureId_ = textureId;
-        this.OnDiscard += _ => this.DestroyTexture_();
+        //this.OnDiscard += _ => this.DestroyTexture_();
       }
 
       private void DestroyTexture_() {
         var textureIdArray = new[] {this.textureId_};
         GL.DeleteTextures(1, textureIdArray);
-        this.Discard();
+        //this.Discard();
       }
 
       public IColor GetPixel(int x, int y) => Color.FromRgba(0);

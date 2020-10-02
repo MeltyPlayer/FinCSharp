@@ -6,9 +6,9 @@ namespace simple {
   public class EntryPoint {
     public static void Main() {
       var app = new AppOpenTk();
-      //app.Launch(new PlatformScene());
+      app.Launch(new PlatformScene());
       //app.Launch(new TestScene());
-      app.Launch(new AudioScene());
+      //app.Launch(new AudioScene());
     }
   }
 }

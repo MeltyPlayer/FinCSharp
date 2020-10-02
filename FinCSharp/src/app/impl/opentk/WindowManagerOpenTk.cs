@@ -1,15 +1,20 @@
 ﻿using fin.app.window;
+using fin.discardable;
 
 namespace fin.app.impl.opentk {
   using System.Collections.Generic;
 
   public sealed partial class AppOpenTk {
     private sealed partial class WindowManagerOpenTk : IAppWindowManager {
+      private readonly IDiscardableNode node_;
       private readonly AppOpenTk parent_;
       private readonly IList<WindowOpenTk> windows_ = new List<WindowOpenTk>();
 
-      public WindowManagerOpenTk(AppOpenTk parent) {
-        this.parent_ = parent;
+      public WindowManagerOpenTk(
+          AppOpenTk parentApp,
+          IDiscardableNode parentDiscardableNode) {
+        this.parent_ = parentApp;
+        this.node_ = parentDiscardableNode.CreateChild();
       }
 
       // TODO: Delete this.

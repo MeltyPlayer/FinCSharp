@@ -1,35 +1,33 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
 namespace fin.assert {
   public static class Asserts {
-    public static void Fail(string message = "Failed.")
-      => throw new AssertionException(message);
+    public static bool Fail(string? message = null)
+      => throw new AssertionException(message ?? "Failed.");
 
-    public static void True(bool value, string message = "") {
-      if (!value) {
-        Asserts.Fail(message ?? "Expected to be true.");
-      }
-    }
+    public static bool True(bool value, string? message = null)
+      => value || Asserts.Fail(message ?? "Expected to be true.");
 
-    public static void False(bool value, string message = "")
+    public static bool False(bool value, string? message = null)
       => Asserts.True(!value, message ?? "Expected to be false.");
 
-    public static void Nonnull(
+    public static bool Nonnull(
         object? instance,
-        string message = "Expected reference to be nonnull.")
-      => Asserts.True(instance != null, message);
+        string? message = null)
+      => Asserts.True(instance != null,
+                      message ?? "Expected reference to be nonnull.");
 
     public static void Null(
         object? instance,
         string message = "Expected reference to be null.")
       => Asserts.True(instance == null, message);
 
-    public static void Same(
+    public static bool Same(
         object instanceA,
         object instanceB,
-        string message = "Expected references to be the same.") {
-      Asserts.True(object.ReferenceEquals(instanceA, instanceB), message);
-    }
+        string message = "Expected references to be the same.")
+      => Asserts.True(object.ReferenceEquals(instanceA, instanceB), message);
 
     public static void Different(
         object instanceA,
@@ -38,13 +36,12 @@ namespace fin.assert {
       Asserts.False(object.ReferenceEquals(instanceA, instanceB), message);
     }
 
-    public static void Equal(
+    public static bool Equal(
         object? instanceA,
         object? instanceB,
-        string message = "") {
-      Asserts.True(instanceA == instanceB,
-                   message ?? $"Expected {instanceA} to equal {instanceB}.");
-    }
+        string? message = null)
+      => Asserts.True(instanceA == instanceB,
+                      message ?? $"Expected {instanceA} to equal {instanceB}.");
 
     public static void Equal(IEnumerable enumerableA, IEnumerable enumerableB) {
       var enumeratorA = enumerableA.GetEnumerator();
@@ -67,6 +64,20 @@ namespace fin.assert {
 
       Asserts.True(!hasA && !hasB,
                    "Expected enumerables to be the same length.");
+    }
+
+    public static bool IsA<TExpected>(object? instance, string? message = null)
+      => Asserts.IsA(instance, typeof(TExpected), message);
+
+    public static bool IsA(object? instance, Type expected, string? message = null)
+      => Asserts.Nonnull(instance, message) &&
+         Asserts.Equal(instance!.GetType(), expected, message);
+
+    public static TExpected AsA<TExpected>(
+        object? instance,
+        string? message = null) {
+      Asserts.IsA<TExpected>(instance, message);
+      return (TExpected) instance!;
     }
   }
 }

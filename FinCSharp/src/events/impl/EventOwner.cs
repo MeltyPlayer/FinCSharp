@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
+using fin.data.collections;
 using fin.data.collections.dictionary;
 using fin.data.collections.set;
 using fin.pointer.contract;
@@ -22,7 +23,7 @@ namespace fin.events.impl {
         private readonly
             IMultiDictionary<SafeType<IEvent>,
                 IContractPointer<IEventSubscription>> sets_ =
-                new MultiDictionary<SafeType<IEvent>,
+                new EagerMultiDictionary<SafeType<IEvent>,
                     IContractPointer<IEventSubscription>>();
 
         public IEnumerable<IContractPointer<IEventSubscription>> Contracts =>
@@ -30,9 +31,9 @@ namespace fin.events.impl {
 
         public int Count => this.contracts_.Count;
 
-        public IEnumerable<IContractPointer<IEventSubscription>>? Get(
+        public IFinCollection<IContractPointer<IEventSubscription>> Get(
             SafeType<IEvent> genericEventType)
-          => this.sets_.TryGet(genericEventType);
+          => this.sets_.Get(genericEventType);
 
         public bool Add(IContractPointer<IEventSubscription> contract) {
           if (this.contracts_.Add(contract)) {
@@ -47,7 +48,7 @@ namespace fin.events.impl {
         public bool Remove(IContractPointer<IEventSubscription> contract) {
           var genericEventType = contract.Value.EventType;
           if (this.sets_.Remove(genericEventType, contract)) {
-            if (this.Get(genericEventType) == null) {
+            if ((this.sets_.TryGet(genericEventType)?.Count ?? 0) == 0) {
               this.contracts_.Remove(contract);
             }
             return true;
@@ -75,8 +76,9 @@ namespace fin.events.impl {
         this.owner_ = IContractFactory.INSTANCE.NewWeakOwner(this.set_);
       }
 
-      public IEnumerable<IContractPointer<IEventSubscription>>? Get(
-          SafeType<IEvent> genericEventType) => this.set_.Get(genericEventType);
+      public IFinCollection<IContractPointer<IEventSubscription>> Get(
+          SafeType<IEvent> genericEventType)
+        => this.set_.Get(genericEventType);
 
       protected EventSubscription<TEvent> CreateSubscription<TEvent>(
           IEventSource source,

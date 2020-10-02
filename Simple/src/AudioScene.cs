@@ -81,8 +81,6 @@ namespace simple {
   }
 
   public sealed class AudioScene : BScene {
-    protected override void Discard() {}
-
     protected override void Init(SceneInitTickEvent evt) {
       var settings = Settings.Load();
       var appWidth = settings.Resolution.Width;
@@ -109,7 +107,7 @@ namespace simple {
       instantiator.NewChild(viewRoot, new AudioComponent(evt.App.Audio));
     }
 
-    private class AudioComponent : BComponent {
+    private class AudioComponent : IComponent {
       private readonly IAudioStreamSource source_;
 
       //private readonly IAudioSource source_;
@@ -142,8 +140,6 @@ namespace simple {
             this.pcm_.SampleRate);
         this.source_.Play(true);
       }
-
-      protected override void Discard() {}
 
       [OnTick]
       private void StartTick_(StartTickEvent _) {

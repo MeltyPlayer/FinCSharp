@@ -1,5 +1,6 @@
 ﻿using fin.app.events;
 using fin.app.node.impl;
+using fin.discardable;
 using fin.events;
 using fin.type;
 
@@ -8,10 +9,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace fin.app.node {
   [TestClass]
   public class AppNodeTest {
-    private static readonly IInstantiator INSTANTIATOR = new InstantiatorImpl();
+    private static IInstantiator INSTANTIATOR;
 
     private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE =
-      new SafeType<PassStringEvent>();
+        new SafeType<PassStringEvent>();
 
     private class PassStringEvent : BEvent {
       public string Str { get; }
@@ -22,7 +23,7 @@ namespace fin.app.node {
     }
 
     private static readonly SafeType<VoidEvent> VOID_EVENT_TYPE =
-      new SafeType<VoidEvent>();
+        new SafeType<VoidEvent>();
 
     private class VoidEvent : BEvent {}
 
@@ -36,37 +37,40 @@ namespace fin.app.node {
       public void Write(string text) => this.actualText_ += text;
 
       public void AssertText(string expectedText) =>
-        Assert.AreEqual(expectedText, this.actualText_);
+          Assert.AreEqual(expectedText, this.actualText_);
     }
 
     private class StringEvent : BEvent {}
 
-    private class FooComponent : BComponent {
-      protected override void Discard() {}
-
+    private class FooComponent : IComponent {
       [OnTick]
       private void PrintToLog_(VoidEvent evt) => LOG.Write("Foo");
 
       [OnTick]
       private void PrintToLog_(PassStringEvent evt) =>
-        LOG.Write("Foo(" + evt.Str + ")");
+          LOG.Write("Foo(" + evt.Str + ")");
     }
 
-    private class BarComponent : BComponent {
-      protected override void Discard() {}
-
+    private class BarComponent : IComponent {
       [OnTick]
       private void PrintToLog_(VoidEvent evt) => LOG.Write("Bar");
 
       [OnTick]
       private void PrintToLog_(PassStringEvent evt) =>
-        LOG.Write("Bar(" + evt.Str + ")");
+          LOG.Write("Bar(" + evt.Str + ")");
     }
 
     [TestInitialize]
-    public void TestInitialize() => LOG.Reset();
+    public void TestInitialize() {
+      new DiscardableNodeFactoryImpl(rootDiscardable =>
+                                         INSTANTIATOR =
+                                             new InstantiatorImpl(
+                                                 rootDiscardable));
 
-    [TestMethod]
+      LOG.Reset();
+    }
+
+    /*[TestMethod]
     public void TestHierarchy() {
       var root = INSTANTIATOR.NewRoot();
       var son = INSTANTIATOR.NewChild(root);
@@ -76,7 +80,7 @@ namespace fin.app.node {
       Assert.AreEqual(root, son.Parent);
       Assert.AreEqual(root, daughter.Parent);
       Assert.AreEqual(son, grandkid.Parent);
-    }
+    }*/
 
     [TestMethod]
     public void TestManualConfigPropagateVoid() {
@@ -99,11 +103,11 @@ namespace fin.app.node {
       var bar = INSTANTIATOR.NewChild(foo);
 
       foo.OnTick(
-        PASS_STRING_EVENT_TYPE,
-        evt => LOG.Write("Foo(" + evt.Str + ")"));
+          PASS_STRING_EVENT_TYPE,
+          evt => LOG.Write("Foo(" + evt.Str + ")"));
       bar.OnTick(
-        PASS_STRING_EVENT_TYPE,
-        evt => LOG.Write("Bar(" + evt.Str + ")"));
+          PASS_STRING_EVENT_TYPE,
+          evt => LOG.Write("Bar(" + evt.Str + ")"));
 
       root.Emit(new PassStringEvent("_"));
 

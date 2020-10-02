@@ -7,8 +7,6 @@ using simple.platformer.player;
 
 namespace simple.platformer {
   public sealed class PlatformScene : BScene {
-    protected override void Discard() {}
-
     protected override void Init(SceneInitTickEvent evt) {
       var settings = Settings.Load();
       var appWidth = settings.Resolution.Width;

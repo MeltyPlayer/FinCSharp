@@ -17,8 +17,6 @@ namespace simple {
   using fin.math.geometry;
 
   public sealed class TestScene : BScene {
-    protected override void Discard() {}
-
     protected override void Init(SceneInitTickEvent evt) {
       var settings = Settings.Load();
       var appWidth = settings.Resolution.Width;
@@ -45,15 +43,13 @@ namespace simple {
       instantiator.NewChild(viewRoot, new TestComponent(evt.App.Input.Cursor));
     }
 
-    private class TestComponent : BComponent {
+    private class TestComponent : IComponent {
       private ICursor cursor_;
       private IDirection circularProgress_ = Direction.FromDegrees(0);
 
       public TestComponent(ICursor cursor) {
         this.cursor_ = cursor;
       }
-
-      protected override void Discard() {}
 
       [OnTick]
       private void StartTick_(StartTickEvent _) {

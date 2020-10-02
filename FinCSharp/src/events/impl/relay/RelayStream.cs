@@ -35,7 +35,7 @@ namespace fin.events.impl {
 
         public RelayStream(EventRelay parent, SafeType<TEvent> eventType) {
           this.parent_ = parent;
-          this.convertSourceToThisEmit_ = evt => this.parent_.Emit(evt);
+          this.convertSourceToThisEmit_ = this.parent_.CompileEmit<TEvent>();
           this.eventType_ = eventType;
 
           foreach (var source in this.parent_.relaySources_) {

@@ -12,7 +12,7 @@ namespace fin.assert.fluent {
         this.lhs_ = lhs;
       }
 
-      public void Equals(Action rhs, string message = "")
+      public bool Equals(Action rhs, string message = "")
         => Asserts.Equal(this.lhs_, rhs, message);
 
       public void Throws<TException>(TException expected)

@@ -4,4 +4,4 @@
 dotnet_diagnostic.CA1034.severity = silent
 
 # CS8618: Non-nullable field is uninitialized. Consider declaring as nullable.
-dotnet_diagnostic.CS8618.severity = error
+dotnet_diagnostic.CS8618.severity = warning

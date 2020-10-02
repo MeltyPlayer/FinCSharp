@@ -3,32 +3,36 @@ using System.Linq;
 
 using fin.app.events;
 using fin.assert;
+using fin.assert.fluent;
 using fin.data.collections.set;
 using fin.data.graph;
 using fin.discardable;
 using fin.events;
 using fin.type;
 
+using FluentAssertions;
+
 namespace fin.app.node.impl {
   // TODO: Make this internal.
   public sealed partial class InstantiatorImpl : IInstantiator {
-    private IRootAppNode? rootAppNode_;
+    private readonly IDiscardableNode discardableImpl_;
+    private IAppNode? rootAppNode_;
 
-    // TODO: This is messy.
-    public IRootAppNode NewRoot() => this.rootAppNode_ = new RootAppNode();
-
-    private sealed class RootAppNode : BAppNode, IRootAppNode {
-      public RootAppNode() : base(null) {}
-
-      public bool Discard() => this.discardableImpl_.Discard();
+    public InstantiatorImpl(IDiscardableNode parentDiscardable) {
+      this.discardableImpl_ = parentDiscardable.CreateChild();
     }
 
-    public IChildAppNode NewTopLevelChild(params IComponent[] components) =>
-      this.NewChild(this.rootAppNode_!, components);
+    // TODO: This is messy.
+    public IAppNode NewRoot() =>
+        this.rootAppNode_ = new AppNodeImpl(this.discardableImpl_);
 
-    public IChildAppNode NewChild(IAppNode parent,
-                                  params IComponent[] components) {
-      var child = new ChildAppNode((parent as BAppNode)!);
+    public IAppNode NewTopLevelChild(params IComponent[] components) =>
+        this.NewChild(this.rootAppNode_!, components);
+
+    public IAppNode NewChild(
+        IAppNode parent,
+        params IComponent[] components) {
+      var child = new AppNodeImpl(Expect.That(parent).AsA<AppNodeImpl>());
       foreach (var component in components) {
         child.AddComponent(component);
       }
@@ -36,18 +40,9 @@ namespace fin.app.node.impl {
       return child;
     }
 
-    private sealed class ChildAppNode : BAppNode, IChildAppNode {
-      public ChildAppNode(BAppNode parent) : base(parent) {}
-
-      public IAppNode Parent {
-        get => this.ParentImpl!;
-        set => this.ParentImpl = (value as BAppNode)!;
-      }
-    }
-
     public TComponent Wrap<TComponent>(IAppNode parent, TComponent component)
-      where TComponent : IComponent {
-      var child = new ChildAppNode((parent as BAppNode)!);
+        where TComponent : IComponent {
+      var child = new AppNodeImpl(Expect.That(parent).AsA<AppNodeImpl>());
       child.AddComponent(component);
       return component;
     }

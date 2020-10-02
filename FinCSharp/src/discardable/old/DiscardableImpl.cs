@@ -1,9 +1,9 @@
-﻿using System;
+﻿/*using System;
 using System.Linq;
 
 using fin.data.collections.set;
 
-namespace fin.discardable {
+namespace fin.discardableOld {
   public class DiscardableImpl : IPubliclyDiscardable, IEventDiscardable,
     IDependentDiscardable {
     private readonly IFinSet<IEventDiscardable> parents_ =
@@ -23,7 +23,7 @@ namespace fin.discardable {
       }
 
       this.Discard_(true);
-      GC.SuppressFinalize(this);
+      //GC.SuppressFinalize(this);
       return true;
     }
 
@@ -65,4 +65,4 @@ namespace fin.discardable {
       return true;
     }
   }
-}
+}*/
