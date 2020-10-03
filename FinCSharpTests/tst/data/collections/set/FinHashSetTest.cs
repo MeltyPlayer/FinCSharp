@@ -2,7 +2,7 @@
 
 namespace fin.data.collections.set {
   [TestClass]
-  public class FinHashSetTest : BFinSetTest {
+  public class FinHashSetTest : BFinSetTestBase {
     protected override IFinSet<T> NewEmptySet<T>() => new FinHashSet<T>();
   }
 }

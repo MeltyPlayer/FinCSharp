@@ -1,4 +1,6 @@
-﻿namespace fin.app.scene {
+﻿using System;
+
+namespace fin.app.scene {
   using node;
 
   using window;
@@ -31,7 +33,7 @@
         return;
       }
 
-      root.Emit(new SceneEndTickEvent());
+      root.CompileEmit<SceneEndTickEvent>()(new SceneEndTickEvent());
       //this.currentNode_.Discard();
       this.currentNode_ = null;
     }
@@ -42,7 +44,7 @@
       }
 
       app.Instantiator.NewChild(root, this.pendingScene_);
-      root.Emit(new SceneInitTickEvent(app));
+      root.CompileEmit<SceneInitTickEvent>()(new SceneInitTickEvent(app));
       this.pendingScene_ = null;
     }
   }

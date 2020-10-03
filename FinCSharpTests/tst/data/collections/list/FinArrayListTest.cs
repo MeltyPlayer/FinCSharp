@@ -2,7 +2,7 @@
 
 namespace fin.data.collections.list {
   [TestClass]
-  public class FinArrayListTest : BFinListTest {
+  public class FinArrayListTest : BFinListTestBase {
     protected override IFinList<T> NewEmptyList<T>() => new FinArrayList<T>();
 
     [TestMethod]

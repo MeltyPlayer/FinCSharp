@@ -7,6 +7,7 @@ using fin.app.window;
 using fin.audio;
 using fin.audio.impl.opentk;
 using fin.discardable;
+using fin.discardable.impl;
 using fin.function;
 using fin.graphics.impl.opentk;
 using fin.input;

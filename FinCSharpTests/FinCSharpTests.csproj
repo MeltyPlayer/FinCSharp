@@ -41,6 +41,6 @@
     <ProjectReference Include="..\FinCSharp\FinCSharp.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="data\collections\dictionary\" />
+    <Folder Include="tst\data\collections\dictionary\" />
   </ItemGroup>
 </Project>

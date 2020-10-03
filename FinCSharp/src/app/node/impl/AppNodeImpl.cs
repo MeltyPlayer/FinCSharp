@@ -115,17 +115,8 @@ namespace fin.app.node.impl {
       /**
        * Event logic
        */
-      public void Emit<TEvent>(TEvent evt) where TEvent : IEvent {
-        if (this.IsDiscarded) {
-          return;
-        }
-
-        this.downwardRelay_.Emit(evt);
-      }
-
       public Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent
         => this.downwardRelay_.CompileEmit<TEvent>();
-
 
       public IEventSubscription? OnTick<TEvent>(
           SafeType<TEvent> eventType,
@@ -134,13 +125,10 @@ namespace fin.app.node.impl {
           return null;
         }
 
-        if (this.parent_ != null) {
-          return this.parent_.downwardRelay_.AddListener(this.listener_,
-                                                         eventType,
-                                                         handler);
-        }
-
-        return null;
+        return this.parent_?.downwardRelay_.AddListener(
+            this.listener_,
+            eventType,
+            handler);
       }
     }
   }

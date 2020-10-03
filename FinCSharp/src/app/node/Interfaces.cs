@@ -21,7 +21,6 @@ namespace fin.app.node {
         Action<TEvent> handler)
         where TEvent : IEvent;
 
-    void Emit<TEvent>(TEvent evt) where TEvent : IEvent;
     Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent;
   }
 

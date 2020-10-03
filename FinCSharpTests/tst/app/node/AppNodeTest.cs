@@ -2,13 +2,14 @@
 using fin.app.node.impl;
 using fin.discardable;
 using fin.events;
+using fin.helpers;
 using fin.type;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.app.node {
   [TestClass]
-  public class AppNodeTest {
+  public class AppNodeTest : BDiscardableTestBase {
     private static IInstantiator INSTANTIATOR;
 
     private static readonly SafeType<PassStringEvent> PASS_STRING_EVENT_TYPE =
@@ -62,13 +63,12 @@ namespace fin.app.node {
 
     [TestInitialize]
     public void TestInitialize() {
-      new DiscardableNodeFactoryImpl(rootDiscardable =>
-                                         INSTANTIATOR =
-                                             new InstantiatorImpl(
-                                                 rootDiscardable));
-
       LOG.Reset();
     }
+
+    protected override void OnRootDiscardableCreated(
+        IDiscardableNode rootDiscardable)
+      => INSTANTIATOR = new InstantiatorImpl(rootDiscardable);
 
     /*[TestMethod]
     public void TestHierarchy() {
@@ -91,7 +91,7 @@ namespace fin.app.node {
       foo.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Foo"));
       bar.OnTick(VOID_EVENT_TYPE, _ => LOG.Write("Bar"));
 
-      root.Emit(new VoidEvent());
+      root.CompileEmit<VoidEvent>()(new VoidEvent());
 
       LOG.AssertText("FooBar");
     }
@@ -109,7 +109,7 @@ namespace fin.app.node {
           PASS_STRING_EVENT_TYPE,
           evt => LOG.Write("Bar(" + evt.Str + ")"));
 
-      root.Emit(new PassStringEvent("_"));
+      root.CompileEmit<PassStringEvent>()(new PassStringEvent("_"));
 
       LOG.AssertText("Foo(_)Bar(_)");
     }
@@ -120,7 +120,7 @@ namespace fin.app.node {
       var foo = INSTANTIATOR.NewChild(root, new FooComponent());
       _ = INSTANTIATOR.NewChild(foo, new BarComponent());
 
-      root.Emit(new VoidEvent());
+      root.CompileEmit<VoidEvent>()(new VoidEvent());
 
       LOG.AssertText("FooBar");
     }
@@ -131,7 +131,7 @@ namespace fin.app.node {
       var foo = INSTANTIATOR.NewChild(root, new FooComponent());
       _ = INSTANTIATOR.NewChild(foo, new BarComponent());
 
-      root.Emit(new PassStringEvent("_"));
+      root.CompileEmit<PassStringEvent>()(new PassStringEvent("_"));
 
       LOG.AssertText("Foo(_)Bar(_)");
     }

@@ -40,10 +40,12 @@ namespace fin.assert {
         object? instanceA,
         object? instanceB,
         string? message = null)
-      => Asserts.True(instanceA == instanceB,
+      => Asserts.True(instanceA?.Equals(instanceB) ?? false,
                       message ?? $"Expected {instanceA} to equal {instanceB}.");
 
-    public static void Equal(IEnumerable enumerableA, IEnumerable enumerableB) {
+    public static void Equal<TEnumerable>(
+        TEnumerable enumerableA,
+        TEnumerable enumerableB) where TEnumerable : IEnumerable {
       var enumeratorA = enumerableA.GetEnumerator();
       var enumeratorB = enumerableB.GetEnumerator();
 
@@ -66,10 +68,20 @@ namespace fin.assert {
                    "Expected enumerables to be the same length.");
     }
 
+    public static bool Equal<T>(
+        T instanceA,
+        T instanceB,
+        string? message = null)
+      => Asserts.True(instanceA?.Equals(instanceB) ?? false,
+                      message ?? $"Expected {instanceA} to equal {instanceB}.");
+
     public static bool IsA<TExpected>(object? instance, string? message = null)
       => Asserts.IsA(instance, typeof(TExpected), message);
 
-    public static bool IsA(object? instance, Type expected, string? message = null)
+    public static bool IsA(
+        object? instance,
+        Type expected,
+        string? message = null)
       => Asserts.Nonnull(instance, message) &&
          Asserts.Equal(instance!.GetType(), expected, message);
 

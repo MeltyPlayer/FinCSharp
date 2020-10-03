@@ -115,7 +115,7 @@ namespace fin.pointer.contract {
 
   public class DefaultContractPointerSet<T> : IContractPointerSet<T> {
     // TODO: Higher overhead than should be necessary.
-    private IFinSet<IContractPointer<T>> impl_ =
+    private readonly IFinSet<IContractPointer<T>> impl_ =
         new FinHashSet<IContractPointer<T>>();
 
     public IEnumerable<IContractPointer<T>> Contracts => this.impl_;

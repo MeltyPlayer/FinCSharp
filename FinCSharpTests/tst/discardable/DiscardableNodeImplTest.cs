@@ -1,23 +1,22 @@
 ﻿using System;
 
 using fin.assert.fluent;
+using fin.helpers;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.discardable {
   [TestClass]
-  public class DiscardableNodeImplTest {
-    private IDiscardableNode root_ = default;
+  public class DiscardableNodeImplTest : BDiscardableTestBase {
+    private IDiscardableNode rootDiscardable_ = default;
 
-    [TestInitialize]
-    public void BeforeEach() {
-      // TODO: Is this factory needed???
-      new DiscardableNodeFactoryImpl(root => this.root_ = root);
-    }
+    protected override void OnRootDiscardableCreated(
+        IDiscardableNode rootDiscardable)
+      => this.rootDiscardable_ = rootDiscardable;
 
     [TestMethod]
     public void TestDiscard() {
-      var d = this.root_.CreateChild();
+      var d = this.rootDiscardable_.CreateChild();
 
       Assert.IsFalse(d.IsDiscarded);
 
@@ -30,7 +29,7 @@ namespace fin.discardable {
 
     [TestMethod]
     public void TestOnDiscard() {
-      var d = this.root_.CreateChild();
+      var d = this.rootDiscardable_.CreateChild();
 
       var output = "";
       d.OnDiscard += _ => output += "foobar";
@@ -47,7 +46,7 @@ namespace fin.discardable {
 
     [TestMethod]
     public void TestDependentCreateChild() {
-      var parent = this.root_.CreateChild();
+      var parent = this.rootDiscardable_.CreateChild();
       var d = parent.CreateChild();
 
       var output = "";
@@ -67,8 +66,8 @@ namespace fin.discardable {
 
     [TestMethod]
     public void TestDependentSetParent() {
-      var parent = this.root_.CreateChild();
-      var d = this.root_.CreateChild();
+      var parent = this.rootDiscardable_.CreateChild();
+      var d = this.rootDiscardable_.CreateChild();
 
       d.SetParent(parent);
 
@@ -113,7 +112,7 @@ namespace fin.discardable {
 
     [TestMethod]
     public void TestUsing() {
-      var d = this.root_.CreateChild();
+      var d = this.rootDiscardable_.CreateChild();
 
       var output = "";
       d.Using(new TestableDisposable(() => output += "foobar"));

@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.data.collections {
-  public abstract class BFinCollectionTest {
+  public abstract class BFinCollectionTestBase {
     protected abstract IFinCollection<T> NewEmptyCollection<T>();
 
     [TestMethod]

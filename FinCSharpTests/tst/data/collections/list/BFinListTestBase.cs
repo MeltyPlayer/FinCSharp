@@ -3,7 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.data.collections.list {
-  public abstract class BFinListTest : BFinCollectionTest {
+  public abstract class BFinListTestBase : BFinCollectionTestBase {
     protected abstract IFinList<T> NewEmptyList<T>();
 
     protected override IFinCollection<T> NewEmptyCollection<T>() =>
