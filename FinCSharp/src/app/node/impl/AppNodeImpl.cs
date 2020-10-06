@@ -17,11 +17,8 @@ namespace fin.app.node.impl {
       private readonly IFinSet<IComponent> components_ =
           new FinHashSet<IComponent>();
 
-      private readonly IEventListener listener_ =
-          IEventFactory.INSTANCE.NewListener();
-
-      private readonly IEventRelay downwardRelay_ =
-          IEventFactory.INSTANCE.NewRelay();
+      private readonly IEventListener listener_;
+      private readonly IEventRelay downwardRelay_;
 
       private readonly ForOnTickMethodImpl forOnTickMethod_;
 
@@ -42,12 +39,22 @@ namespace fin.app.node.impl {
         this.discardableImpl_ = parentDiscardableNode.CreateChild();
         this.discardableImpl_.OnDiscard += _ => this.Discard_();
 
+        this.listener_ =
+            IEventFactory.INSTANCE.NewListener(this.discardableImpl_);
+        this.downwardRelay_ =
+            IEventFactory.INSTANCE.NewRelay(this.discardableImpl_);
+
         this.forOnTickMethod_ = new ForOnTickMethodImpl(this);
       }
 
       public AppNodeImpl(AppNodeImpl parentAppNode) {
         this.discardableImpl_ = parentAppNode.discardableImpl_.CreateChild();
         this.discardableImpl_.OnDiscard += _ => this.Discard_();
+
+        this.listener_ =
+            IEventFactory.INSTANCE.NewListener(this.discardableImpl_);
+        this.downwardRelay_ =
+            IEventFactory.INSTANCE.NewRelay(this.discardableImpl_);
 
         this.SetParent(parentAppNode);
 

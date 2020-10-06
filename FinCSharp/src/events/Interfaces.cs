@@ -1,5 +1,6 @@
 ﻿using System;
 
+using fin.discardable;
 using fin.events.impl;
 using fin.type;
 
@@ -94,10 +95,10 @@ namespace fin.events {
   public interface IEventFactory {
     public static readonly IEventFactory INSTANCE = new EventFactory();
 
-    IEventListener NewListener();
+    IEventListener NewListener(IDiscardableNode parentDiscardable);
 
-    IEventEmitter NewEmitter();
+    IEventEmitter NewEmitter(IDiscardableNode parentDiscardable);
 
-    IEventRelay NewRelay();
+    IEventRelay NewRelay(IDiscardableNode parentDiscardable);
   }
 }

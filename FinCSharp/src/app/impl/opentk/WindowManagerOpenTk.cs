@@ -6,7 +6,7 @@ namespace fin.app.impl.opentk {
 
   public sealed partial class AppOpenTk {
     private sealed partial class WindowManagerOpenTk : IAppWindowManager {
-      private readonly IDiscardableNode node_;
+      private readonly IDiscardableNode discardableImpl_;
       private readonly AppOpenTk parent_;
       private readonly IList<WindowOpenTk> windows_ = new List<WindowOpenTk>();
 
@@ -14,7 +14,7 @@ namespace fin.app.impl.opentk {
           AppOpenTk parentApp,
           IDiscardableNode parentDiscardableNode) {
         this.parent_ = parentApp;
-        this.node_ = parentDiscardableNode.CreateChild();
+        this.discardableImpl_ = parentDiscardableNode.CreateChild();
       }
 
       // TODO: Delete this.

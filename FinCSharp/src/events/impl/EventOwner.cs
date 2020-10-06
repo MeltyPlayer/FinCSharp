@@ -8,6 +8,7 @@ using System.Linq;
 using fin.data.collections;
 using fin.data.collections.dictionary;
 using fin.data.collections.set;
+using fin.discardable;
 using fin.pointer.contract;
 using fin.type;
 
@@ -59,10 +60,12 @@ namespace fin.events.impl {
 
         public void ClearAndBreak(
             Action<IContractPointer<IEventSubscription>> breakHandler) {
-          while (this.contracts_.Count > 0) {
-            breakHandler(this.contracts_.First());
+          var contractsArray = this.contracts_.ToArray();
+          foreach (var contract in contractsArray) {
+            breakHandler(contract);
           }
 
+          this.contracts_.Clear();
           this.sets_.Clear();
         }
       }
@@ -72,8 +75,11 @@ namespace fin.events.impl {
 
       protected readonly IWeakContractPointerOwner<IEventSubscription> owner_;
 
-      public EventOwner() {
-        this.owner_ = IContractFactory.INSTANCE.NewWeakOwner(this.set_);
+      protected EventOwner(IDiscardableNode parentDiscardable) {
+        this.owner_ =
+            IContractFactory.INSTANCE.NewWeakOwner(
+                parentDiscardable,
+                this.set_);
       }
 
       public IFinCollection<IContractPointer<IEventSubscription>> Get(

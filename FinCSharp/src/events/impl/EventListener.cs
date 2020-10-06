@@ -1,12 +1,17 @@
 ﻿using System;
 
+using fin.discardable;
 using fin.type;
 
 namespace fin.events.impl {
   public sealed partial class EventFactory {
-    public IEventListener NewListener() => new EventListener();
+    public IEventListener NewListener(IDiscardableNode parentDiscardable)
+      => new EventListener(parentDiscardable);
 
     private class EventListener : EventOwner, IEventListener {
+      public EventListener(IDiscardableNode parentDiscardable)
+          : base(parentDiscardable) {}
+
       public IEventSubscription SubscribeTo<TEvent>(
           IEventSource source,
           SafeType<TEvent> eventType,

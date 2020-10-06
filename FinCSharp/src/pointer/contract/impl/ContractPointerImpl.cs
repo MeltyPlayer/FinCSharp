@@ -4,6 +4,8 @@ using fin.data.collections.set;
 
 namespace fin.pointer.contract.impl {
   public sealed partial class ContractFactory {
+    public int Count { get; set; } = 0;
+
     private abstract partial class ContractPointerOwnerImpl<T> {
       private abstract class ContractPointerImpl : IContractPointer<T> {
         private readonly IFinSet<IStrongContractPointerOwner<T>>
@@ -21,6 +23,8 @@ namespace fin.pointer.contract.impl {
           foreach (var owner in owners) {
             this.Join(owner);
           }
+
+          ++IContractFactory.INSTANCE.Count;
         }
 
         public bool Join(IContractPointerOwner<T> owner) {
@@ -72,6 +76,8 @@ namespace fin.pointer.contract.impl {
           this.weakOwners_.Clear();
 
           this.OnBreak(this);
+
+          --IContractFactory.INSTANCE.Count;
 
           return true;
         }

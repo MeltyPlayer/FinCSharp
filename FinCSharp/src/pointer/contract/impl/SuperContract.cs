@@ -10,15 +10,17 @@ namespace fin.pointer.contract.impl {
     private class SuperContract : ISuperContract {
       private readonly ISet<IContract> contracts_ = new HashSet<IContract>();
 
-      public SuperContract(IContract contract, params IContract[] additonal) {
+      public SuperContract(IContract contract, params IContract[] additional) {
         this.Add(contract);
-        foreach (var c in additonal) {
+        foreach (var c in additional) {
           this.Add(c);
         }
 
         if (this.contracts_.Count == 0) {
           this.Break();
         }
+
+        ++IContractFactory.INSTANCE.Count;
       }
 
       public bool IsActive { get; private set; } = true;
@@ -65,6 +67,8 @@ namespace fin.pointer.contract.impl {
         }
 
         this.OnBreak(this);
+
+        --IContractFactory.INSTANCE.Count;
 
         return true;
       }

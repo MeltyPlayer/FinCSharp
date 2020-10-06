@@ -9,7 +9,6 @@ namespace fin.data.collections.grid {
     public int Height { get; }
 
     private readonly T defaultValue_;
-    private readonly GridNode defaultNode_;
 
     private readonly IFinMap<(int, int), GridNode> impl_;
 
@@ -20,9 +19,8 @@ namespace fin.data.collections.grid {
       this.Height = height;
 
       this.defaultValue_ = defaultValue;
-      this.defaultNode_ = new GridNode(0, 0, this.defaultValue_);
 
-      var comparer = new Comparer(width, height);
+      var comparer = new Comparer(width);
       this.impl_ = new FinBinaryMap<(int, int), GridNode>(comparer);
     }
 
@@ -99,12 +97,10 @@ namespace fin.data.collections.grid {
     }
 
     private class Comparer : IComparer<(int, int)> {
-      private int width_;
-      private int height_;
+      private readonly int width_;
 
-      public Comparer(int width, int height) {
+      public Comparer(int width) {
         this.width_ = width;
-        this.height_ = height;
       }
 
       public int Compare((int, int) lhs, (int, int) rhs) {

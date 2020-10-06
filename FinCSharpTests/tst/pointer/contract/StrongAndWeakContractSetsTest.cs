@@ -1,15 +1,24 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using fin.discardable;
+using fin.helpers;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.pointer.contract {
   [TestClass]
-  public class StrongAndWeakContractSetsTest {
+  public class StrongAndWeakContractSetsTest : BContractTestBase {
+    private IDiscardableNode rootDiscardable_ = default;
+
     private static readonly IContractFactory
-      FACTORY = IContractFactory.INSTANCE;
+        FACTORY = IContractFactory.INSTANCE;
+
+    protected override void OnRootDiscardableCreated(
+        IDiscardableNode rootDiscardable)
+      => this.rootDiscardable_ = rootDiscardable;
 
     [TestMethod]
     public void TestJoinFromContract() {
-      var setA = FACTORY.NewStrongOwner<int>();
-      var setB = FACTORY.NewWeakOwner<int>();
+      var setA = FACTORY.NewStrongOwner<int>(this.rootDiscardable_);
+      var setB = FACTORY.NewWeakOwner<int>(this.rootDiscardable_);
 
       var contract = setA.FormOpen(0);
       Assert.IsFalse(contract.Join(setA));
@@ -22,8 +31,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestJoinFromSet() {
-      var setA = FACTORY.NewStrongOwner<int>();
-      var setB = FACTORY.NewWeakOwner<int>();
+      var setA = FACTORY.NewStrongOwner<int>(this.rootDiscardable_);
+      var setB = FACTORY.NewWeakOwner<int>(this.rootDiscardable_);
 
       var contract = setA.FormOpen(0);
       Assert.IsFalse(setA.Join(contract));
@@ -36,8 +45,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestBreakFromContract() {
-      var setA = FACTORY.NewStrongOwner<int>();
-      var setB = FACTORY.NewWeakOwner<int>();
+      var setA = FACTORY.NewStrongOwner<int>(this.rootDiscardable_);
+      var setB = FACTORY.NewWeakOwner<int>(this.rootDiscardable_);
       var contract = setA.FormClosedWith(0, setB);
       Assert.IsTrue(contract.IsActive);
 
@@ -51,8 +60,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestBreakFromSetStrongFirst() {
-      var setA = FACTORY.NewStrongOwner<int>();
-      var setB = FACTORY.NewWeakOwner<int>();
+      var setA = FACTORY.NewStrongOwner<int>(this.rootDiscardable_);
+      var setB = FACTORY.NewWeakOwner<int>(this.rootDiscardable_);
       var contract = setA.FormClosedWith(0, setB);
       Assert.IsTrue(contract.IsActive);
 
@@ -68,8 +77,8 @@ namespace fin.pointer.contract {
 
     [TestMethod]
     public void TestBreakFromSetWeakFirst() {
-      var setA = FACTORY.NewStrongOwner<int>();
-      var setB = FACTORY.NewWeakOwner<int>();
+      var setA = FACTORY.NewStrongOwner<int>(this.rootDiscardable_);
+      var setB = FACTORY.NewWeakOwner<int>(this.rootDiscardable_);
       var contract = setA.FormClosedWith(0, setB);
       Assert.IsTrue(contract.IsActive);
 

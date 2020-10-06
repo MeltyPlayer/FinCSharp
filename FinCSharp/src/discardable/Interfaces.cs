@@ -5,9 +5,9 @@ using fin.assert.fluent;
 
 namespace fin.discardable {
   public interface IDiscardableNode {
-    public delegate void OnDiscardHandler(IDiscardableNode discardable);
+    delegate void OnDiscardHandler(IDiscardableNode discardable);
 
-    public event OnDiscardHandler OnDiscard;
+    event OnDiscardHandler OnDiscard;
 
     bool IsDiscarded { get; }
     bool Discard();

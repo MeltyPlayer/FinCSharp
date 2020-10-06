@@ -2,24 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using fin.discardable;
 using fin.type;
 
 namespace fin.events.impl {
   public sealed partial class EventFactory : IEventFactory {
-    public IEventRelay NewRelay() => new EventRelay();
+    public IEventRelay NewRelay(IDiscardableNode parentDiscardable)
+      => new EventRelay(parentDiscardable);
 
     private sealed partial class EventRelay : IEventRelay {
       private readonly ISet<IEventSource> relaySources_ =
-        new HashSet<IEventSource>();
+          new HashSet<IEventSource>();
 
       private readonly IDictionary<SafeType<IEvent>, IRelayStream> relayStreams_
-        = new Dictionary<SafeType<IEvent>, IRelayStream>();
+          = new Dictionary<SafeType<IEvent>, IRelayStream>();
 
-      private readonly IEventListener listener_ =
-        IEventFactory.INSTANCE.NewListener();
+      private readonly IEventListener listener_;
+      private readonly IEventEmitter emitter_;
 
-      private readonly IEventEmitter emitter_ =
-        IEventFactory.INSTANCE.NewEmitter();
+      public EventRelay(IDiscardableNode parentDiscardable) {
+        this.listener_ =
+            IEventFactory.INSTANCE.NewListener(parentDiscardable);
+        this.emitter_ =
+            IEventFactory.INSTANCE.NewEmitter(parentDiscardable);
+      }
 
       public void Destroy() {
         foreach (var genericRelayStream in this.relayStreams_.Values.ToList()) {
@@ -56,14 +62,16 @@ namespace fin.events.impl {
         return false;
       }
 
-      public IEventSubscription AddListener<TEvent>(IEventListener listener,
-        SafeType<TEvent> eventType,
-        Action<TEvent> handler) where TEvent : IEvent {
+      public IEventSubscription AddListener<TEvent>(
+          IEventListener listener,
+          SafeType<TEvent> eventType,
+          Action<TEvent> handler) where TEvent : IEvent {
         var genericEventType = new SafeType<IEvent>(eventType.Value);
 
         RelayStream<TEvent> relayStream;
         if (this.relayStreams_.TryGetValue(genericEventType,
-          out IRelayStream? genericRelayStream)) {
+                                           out IRelayStream? genericRelayStream)
+        ) {
           relayStream = (genericRelayStream as RelayStream<TEvent>)!;
         }
         else {
@@ -76,7 +84,7 @@ namespace fin.events.impl {
 
       public void RemoveAllListeners() => this.emitter_.RemoveAllListeners();
 
-      public void Emit<TEvent>(TEvent evt) where TEvent : IEvent 
+      public void Emit<TEvent>(TEvent evt) where TEvent : IEvent
         => this.emitter_.Emit(evt);
 
       public Action<TEvent> CompileEmit<TEvent>() where TEvent : IEvent

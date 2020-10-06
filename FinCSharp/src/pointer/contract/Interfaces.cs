@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using fin.data.collections.set;
+using fin.discardable;
 using fin.pointer.contract.impl;
 
 namespace fin.pointer.contract {
@@ -145,17 +146,27 @@ namespace fin.pointer.contract {
 
     public readonly static IContractFactory INSTANCE = new ContractFactory();
 
+    /// <summary>
+    ///   Number of contracts. Debug type for testing.
+    /// </summary>
+    public int Count { get; set; }
+
     ISuperContract NewSuperContract(
         IContract first,
         params IContract[] additional);
 
-    IStrongContractPointerOwner<T> NewStrongOwner<T>();
+    IStrongContractPointerOwner<T> NewStrongOwner<T>(
+        IDiscardableNode parentDiscardable);
 
-    IStrongContractPointerOwner<T>
-        NewStrongOwner<T>(IContractPointerSet<T> set);
+    IStrongContractPointerOwner<T> NewStrongOwner<T>(
+        IDiscardableNode parentDiscardable,
+        IContractPointerSet<T> set);
 
-    IWeakContractPointerOwner<T> NewWeakOwner<T>();
+    IWeakContractPointerOwner<T> NewWeakOwner<T>(
+        IDiscardableNode parentDiscardable);
 
-    IWeakContractPointerOwner<T> NewWeakOwner<T>(IContractPointerSet<T> set);
+    IWeakContractPointerOwner<T> NewWeakOwner<T>(
+        IDiscardableNode parentDiscardable,
+        IContractPointerSet<T> set);
   }
 }

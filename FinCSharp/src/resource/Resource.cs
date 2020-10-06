@@ -33,28 +33,4 @@ namespace fin.resource {
 
     // TODO: Allow default values.
   }
-
-  public interface IResource {
-
-  }
-
-  public interface IResource<T> {
-
-  }
-
-  /*public interface IResourceManager {
-    public IResource<T> Get(string id) {
-    }
-
-    public IResourcePredicate<T> Add(string id) {
-    }
-
-    public IResourcePredicate<T> GetOrAdd(string id) {
-    }
-  }*/
-
-  public interface IResourcePredicate {
-
-
-  }
 }
