@@ -79,8 +79,4 @@ namespace fin.retro.gameboy {
   public enum DataType {
 
   }
-
-  public class Instruction {
-
-  }
 }

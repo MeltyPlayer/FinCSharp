@@ -85,7 +85,7 @@ dotnet_diagnostic.RCS1169.severity = error
 dotnet_diagnostic.IDE0051.severity = warning
 
 # IDE0052: Remove unread private members
-dotnet_diagnostic.IDE0052.severity = error
+dotnet_diagnostic.IDE0052.severity = warning
 
 # RCS1089: Use --/++ operator instead of assignment.
 dotnet_diagnostic.RCS1089.severity = error

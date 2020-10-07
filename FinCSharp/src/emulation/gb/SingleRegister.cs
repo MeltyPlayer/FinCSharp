@@ -2,57 +2,43 @@
 
 namespace fin.emulation.gb {
   public class SingleRegister {
-    private static int UNUSED;
-
     public byte Value { get; set; }
 
-    public byte ShiftLeft(int n) => this.Value <<= n;
+    public bool GetBit(int index) => ((this.Value >> index) & 0x1) == 0x1;
 
-    public byte ShiftLeft(int n, out int carry) {
-      var cappedN = Math.Min(n, 8);
-      var inverseCappedN = 8 - cappedN;
+    public void SetBit(int index, bool value)
+      => this.Value =
+             value
+                 ? (byte) (this.Value | (0x1 << index))
+                 : (byte) ~(~this.Value | (0x1 << index));
 
-      carry = this.Value >> inverseCappedN;
-      return this.Value <<= cappedN;
-    }
-
-    public byte ShiftRight(int n) =>
-        this.ShiftRight(n, out SingleRegister.UNUSED);
-
-    public byte ShiftRight(int n, out int carry) {
-      var cappedN = Math.Min(n, 8);
-      var inverseCappedN = 8 - cappedN;
-
-      carry = (byte) (this.Value << inverseCappedN) >> inverseCappedN;
-      return this.Value >>= cappedN;
-    }
+    public byte ArithmeticShiftRight(out bool carry)
+      => this.Value =
+             (byte)ByteMath.LogicalShiftRight(this.Value, 8, out carry);
 
 
-    public byte RotateLeft(int n)
-      => this.RotateLeft(n, out SingleRegister.UNUSED);
+    public byte LogicalShiftLeft(out bool carry)
+      => this.Value =
+             (byte) ByteMath.LogicalShiftLeft(this.Value, 8, out carry);
 
-    public byte RotateLeft(int n, out int carry) {
-      var cappedN = n % 8;
-      var inverseCappedN = 8 - cappedN;
+    public byte LogicalShiftRight(out bool carry)
+      => this.Value =
+             (byte) ByteMath.LogicalShiftRight(this.Value, 8, out carry);
 
-      var remaining = this.Value << cappedN;
-      carry = this.Value >> inverseCappedN;
 
-      return this.Value = (byte) (remaining | carry);
-    }
+    public byte RotateLeft(out bool carry)
+      => this.Value = (byte) ByteMath.RotateLeft(this.Value, 8, out carry);
 
-    public byte RotateRight(int n) =>
-        this.RotateRight(n, out SingleRegister.UNUSED);
+    public byte RotateRight(out bool carry)
+      => this.Value = (byte) ByteMath.RotateRight(this.Value, 8, out carry);
 
-    public byte RotateRight(int n, out int carry) {
-      var cappedN = n % 8;
-      var inverseCappedN = 8 - cappedN;
 
-      var remaining = this.Value >> cappedN;
-      var carried = this.Value << inverseCappedN;
+    public byte RotateLeftThroughCarry(ref bool carry)
+      => this.Value =
+             (byte) ByteMath.RotateLeftThroughCarry(this.Value, 8, ref carry);
 
-      carry = (byte) carried >> inverseCappedN;
-      return this.Value = (byte) (remaining | carried);
-    }
+    public byte RotateRightThroughCarry(ref bool carry)
+      => this.Value =
+             (byte) ByteMath.RotateRightThroughCarry(this.Value, 8, ref carry);
   }
 }
