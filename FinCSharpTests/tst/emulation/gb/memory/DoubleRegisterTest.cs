@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace fin.emulation.gb {
+namespace fin.emulation.gb.memory {
   [TestClass]
   public class DoubleRegisterTest {
 
