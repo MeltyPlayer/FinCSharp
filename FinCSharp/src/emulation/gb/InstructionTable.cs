@@ -10,7 +10,7 @@ namespace fin.emulation.gb {
   public interface IInstructionTable {
     void Set(byte opcode, int cycles, Action handler);
     void Set(byte opcode, Func<int> handler);
-    void Call(byte opcode);
+    int Call(byte opcode);
   }
 
   public class InstructionTableImpl : IInstructionTable {
@@ -32,13 +32,13 @@ namespace fin.emulation.gb {
       this.impl_[opcode] = handler;
     }
 
-    public void Call(byte opcode) {
+    public int Call(byte opcode) {
       var handler = this.impl_[opcode];
       Asserts.Nonnull(
           handler,
           $"Expected instruction '{opcode}' to be defined.");
 
-      handler!();
+      return handler!();
     }
   }
 }
