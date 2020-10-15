@@ -6,7 +6,7 @@ using RSG;
 namespace fin.file {
   internal static class WebFileUtil {
     static WebFileUtil() {
-      FileUtil.readHandlers.DefineHandler<WebFile>(WebFileUtil.ReadText);
+      FileUtil.readTextHandlers.DefineHandler<WebFile>(WebFileUtil.ReadText);
       FileUtil.asyncReadHandlers.DefineHandler<WebFile>(WebFileUtil
         .ReadTextAsync);
     }

@@ -1,5 +1,14 @@
 ﻿namespace fin.emulation.gb.memory {
-  public interface IRam {
+  public interface IMemoryComponent {
+    void Reset();
+  }
+
+  public interface IMemory : IMemoryComponent {
+  }
+
+  public interface IMemoryMap : IMemoryComponent {
+    IoAddresses IoAddresses { get; }
+    Rom Rom { get; set; }
     byte this[ushort address] { get; set; }
   }
 
@@ -9,6 +18,35 @@
 
     byte Pop8();
     ushort Pop16();
+  }
+
+  public interface IRegisters : IMemoryComponent {
+    public IDoubleRegister Af { get; }
+    public ISingleRegister A { get; }
+    public ISingleRegister F { get; }
+
+    public bool ZFlag { get; set; }
+    public bool NFlag { get; set; }
+    public bool HFlag { get; set; }
+    public bool CFlag { get; set; }
+
+    public IDoubleRegister Bc { get; }
+    public ISingleRegister B { get; }
+    public ISingleRegister C { get; }
+
+
+    public IDoubleRegister De { get; }
+    public ISingleRegister D { get; }
+    public ISingleRegister E { get; }
+
+
+    IDoubleRegister Hl { get; }
+    ISingleRegister H { get; }
+    ISingleRegister L { get; }
+
+    IDoubleRegister Sp { get; }
+    
+    IDoubleRegister Pc { get; }
   }
 
   public interface ISingleRegister {

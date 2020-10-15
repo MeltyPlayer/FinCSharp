@@ -44,6 +44,8 @@ namespace fin.graphics.color {
     public static Color FromRgbF(float r, float g, float b)
       => Color.FromRgbaF(r, g, b, 1);
 
+    public static Color FromVB(byte v) => Color.FromRgbB(v, v, v);
+
     public static Color FromCColor(CColor cColor)
       => Color.FromRgbaB(cColor.R, cColor.G, cColor.B, cColor.A);
 

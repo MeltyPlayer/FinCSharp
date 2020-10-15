@@ -1,21 +1,17 @@
-﻿using fin.math.number;
+﻿using fin.app;
+using fin.app.events;
+using fin.app.node;
+using fin.app.scene;
+using fin.app.window;
+using fin.graphics.camera;
+using fin.graphics.color;
+using fin.input;
+using fin.input.button;
+using fin.settings;
+using fin.math.geometry;
+using fin.math.number;
 
 namespace simple {
-  using System;
-  using System.Drawing;
-
-  using fin.app;
-  using fin.app.events;
-  using fin.app.node;
-  using fin.app.scene;
-  using fin.app.window;
-  using fin.graphics.camera;
-  using fin.graphics.color;
-  using fin.input;
-  using fin.input.button;
-  using fin.settings;
-  using fin.math.geometry;
-
   public sealed class TestScene : BScene {
     protected override void Init(SceneInitTickEvent evt) {
       var settings = Settings.Load();
@@ -63,7 +59,8 @@ namespace simple {
         evt.Graphics.Render2d.Rectangle(0,
                                         480 - 20,
                                         640 * (float) (.5 + .5 *
-                                                       this.circularProgress_.NormalX
+                                                       this.circularProgress_
+                                                           .NormalX
                                                       ),
                                         20,
                                         true);

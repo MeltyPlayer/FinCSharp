@@ -5,14 +5,7 @@ using System.Threading.Tasks;
 using RSG;
 
 namespace fin.file {
-  internal static class LocalFileUtil {
-    static LocalFileUtil() {
-      FileUtil.readHandlers.DefineHandler<LocalFile>(LocalFileUtil.ReadText);
-      FileUtil.asyncReadHandlers.DefineHandler<LocalFile>(LocalFileUtil
-                                                              .ReadTextAsync);
-      //FileUtil.writeHandlers.DefineHandler<LocalFile>(WriteText);
-    }
-
+  public static class LocalFileUtil {
     public static byte[] ReadBytes(LocalFile file) =>
         File.ReadAllBytes(file.uri);
 

@@ -3,7 +3,7 @@
 using fin.emulation.gb.memory;
 
 namespace fin.emulation.gb {
-  public class Opcodes {
+  public class Opcodes : IOpcodes {
     private readonly Memory memory_;
 
     private readonly IInstructionTable instructionTable_ =
@@ -15,17 +15,17 @@ namespace fin.emulation.gb {
     public Opcodes(Memory memory) {
       this.memory_ = memory;
 
-      this._Bc_ = new RamRegister(this.Ram, this.Registers.Bc);
-      this._De_ = new RamRegister(this.Ram, this.Registers.De);
-      this._Hl_ = new RamRegister(this.Ram, this.Registers.Hl);
+      this._Bc_ = new RamRegister(this.MemoryMap, this.Registers.Bc);
+      this._De_ = new RamRegister(this.MemoryMap, this.Registers.De);
+      this._Hl_ = new RamRegister(this.MemoryMap, this.Registers.Hl);
 
       this.Define_();
     }
 
     public int FetchAndRunOp() => this.instructionTable_.Call(this.D8);
 
-    private IRam Ram => this.memory_.Ram;
-    private Registers Registers => this.memory_.Registers;
+    private IMemoryMap MemoryMap => this.memory_.MemoryMap;
+    private IRegisters Registers => this.memory_.Registers;
     private IStack Stack => this.memory_.Stack;
 
     private HaltState HaltState {
@@ -61,7 +61,7 @@ namespace fin.emulation.gb {
       set => this.Registers.Pc.Value = value;
     }
 
-    private byte D8 => this.Ram[this.Pc++];
+    private byte D8 => this.MemoryMap[this.Pc++];
 
     private ushort D16 {
       get {
@@ -73,7 +73,15 @@ namespace fin.emulation.gb {
       }
     }
 
-    private sbyte R8 => (sbyte) (object) this.Ram[this.Pc++];
+    private readonly byte[] wrapper_ = new byte[1];
+
+    private sbyte R8 {
+      get {
+        this.wrapper_[0] = this.MemoryMap[this.Pc++];
+        var converted = (sbyte[]) (Array) this.wrapper_;
+        return converted[0];
+      }
+    }
 
     private void Op(byte opcode, int cycles, Action handler)
       => this.instructionTable_.Set(opcode, cycles, handler);
@@ -98,7 +106,7 @@ namespace fin.emulation.gb {
                    var carry = this.Registers.CFlag;
                    var result = handler(ref carry);
 
-                   this.Registers.ZFlag |= result == 0;
+                   this.Registers.ZFlag = result == 0;
                    this.Registers.CFlag = carry;
                    this.Registers.NFlag =
                        this.Registers.HFlag = false;
@@ -109,8 +117,8 @@ namespace fin.emulation.gb {
                    cycles,
                    () => {
                      var result = handler();
-
-                     this.Registers.ZFlag |= result == 0;
+                     
+                     this.Registers.ZFlag = result == 0;
                      this.Registers.CFlag =
                          this.Registers.NFlag =
                              this.Registers.HFlag = false;
@@ -122,8 +130,8 @@ namespace fin.emulation.gb {
                    () => {
                      var carry = this.Registers.CFlag;
                      var result = handler(ref carry);
-
-                     this.Registers.ZFlag |= result == 0;
+                     
+                     this.Registers.ZFlag = result == 0;
                      this.Registers.CFlag = carry;
                      this.Registers.NFlag =
                          this.Registers.HFlag = false;
@@ -136,6 +144,7 @@ namespace fin.emulation.gb {
       this.Define334_16BitArithmetic_();
       this.Define335_Miscellaneous_();
       this.Define336_RotatesAndShifts_();
+      this.Define337_BitOpcodes_();
       this.Define338_Jumps_();
       this.Define339_Calls_();
       this.Define3310_Restarts_();
@@ -197,7 +206,7 @@ namespace fin.emulation.gb {
       this.Op(0x68, 4, () => this.L.Value = this.B.Value);
       this.Op(0x69, 4, () => this.L.Value = this.C.Value);
       this.Op(0x6a, 4, () => this.L.Value = this.D.Value);
-      this.Op(0x63, 4, () => this.L.Value = this.E.Value);
+      this.Op(0x6b, 4, () => this.L.Value = this.E.Value);
       this.Op(0x6c, 4, () => this.L.Value = this.H.Value);
       this.Op(0x6d, 4, () => {}); // L=L, NOP
       this.Op(0x6e, 8, () => this.E.Value = this._Hl_.Value);
@@ -219,7 +228,7 @@ namespace fin.emulation.gb {
       this.Op(0x0a, 8, () => this.A.Value = this._Bc_.Value);
       this.Op(0x1a, 8, () => this.A.Value = this._De_.Value);
       this.Op(0x7e, 8, () => this.A.Value = this._Hl_.Value);
-      this.Op(0xfa, 16, () => this.A.Value = this.Ram[this.D16]);
+      this.Op(0xfa, 16, () => this.A.Value = this.MemoryMap[this.D16]);
       this.Op(0x3e, 8, () => this.A.Value = this.D8);
       // 4. LD n,A
       this.Op(0x47, 4, () => this.B.Value = this.A.Value);
@@ -231,15 +240,17 @@ namespace fin.emulation.gb {
       this.Op(0x02, 8, () => this._Bc_.Value = this.A.Value);
       this.Op(0x12, 8, () => this._De_.Value = this.A.Value);
       this.Op(0x77, 8, () => this._Hl_.Value = this.A.Value);
-      this.Op(0xea, 16, () => this.Ram[this.D16] = this.A.Value);
+      this.Op(0xea, 16, () => this.MemoryMap[this.D16] = this.A.Value);
       // 5. LD A,(C)
       this.Op(0xf2,
               8,
-              () => this.A.Value = this.Ram[(ushort) (0xff00 + this.C.Value)]);
+              () => this.A.Value =
+                        this.MemoryMap[(ushort) (0xff00 + this.C.Value)]);
       // 6. LD (C),A
       this.Op(0xe2,
               8,
-              () => this.Ram[(ushort) (0xff00 + this.C.Value)] = this.A.Value);
+              () => this.MemoryMap[(ushort) (0xff00 + this.C.Value)] =
+                        this.A.Value);
       // 7. LD A,(HLD) -->
       // 8. LD A,(HL-) -->
       // 9. LDD A,(HL)
@@ -279,11 +290,11 @@ namespace fin.emulation.gb {
       // 19. LDH (n),A
       this.Op(0xe0,
               12,
-              () => this.Ram[(ushort) (0xff00 + this.D8)] = this.A.Value);
+              () => this.MemoryMap[(ushort) (0xff00 + this.D8)] = this.A.Value);
       // 20. LD (C),A
       this.Op(0xf0,
               12,
-              () => this.A.Value = this.Ram[(ushort) (0xff00 + this.D8)]);
+              () => this.A.Value = this.MemoryMap[(ushort) (0xff00 + this.D8)]);
     }
 
     private void Define332_16BitLoads_() {
@@ -311,12 +322,12 @@ namespace fin.emulation.gb {
               20,
               () => {
                 var address = this.D16;
-                this.Ram[address] = this.Sp.Lower.Value;
-                this.Ram[(ushort) (address + 1)] = this.Sp.Upper.Value;
+                this.MemoryMap[address] = this.Sp.Lower.Value;
+                this.MemoryMap[(ushort) (address + 1)] = this.Sp.Upper.Value;
               });
       // 6. PUSH nn
       this.Op(0xf5, 16, () => this.Stack.Push16(this.Af.Value));
-      this.Op(0xc6, 16, () => this.Stack.Push16(this.Bc.Value));
+      this.Op(0xc5, 16, () => this.Stack.Push16(this.Bc.Value));
       this.Op(0xd5, 16, () => this.Stack.Push16(this.De.Value));
       this.Op(0xe5, 16, () => this.Stack.Push16(this.Hl.Value));
       // 7. POP nn
@@ -347,11 +358,11 @@ namespace fin.emulation.gb {
       this.UpdateFlagsAfterAdd_(startA, delta, result);
     }
 
-    private void UpdateFlagsAfterAdd_(int start, int delta, int result) {
-      this.Registers.ZFlag |= this.A.Value == 0;
+    private void UpdateFlagsAfterAdd_(int start, int delta, int result) { 
+      this.Registers.ZFlag = (byte) result == 0;
       this.Registers.NFlag = false;
       this.UpdateHFlag8(start, delta, result);
-      this.Registers.CFlag |= (result & 0x100) != 0;
+      this.Registers.CFlag = (result & 0x100) != 0;
     }
 
     private void SubFromA(byte value) {
@@ -368,7 +379,7 @@ namespace fin.emulation.gb {
 
       var carry = this.Registers.CFlag ? 1 : 0;
       var delta = value + carry;
-      
+
       var result = startA - delta;
       this.A.Value = (byte) result;
 
@@ -376,12 +387,13 @@ namespace fin.emulation.gb {
     }
 
     private void UpdateFlagsAfterSubtract_(int start, int delta, int result) {
-      this.Registers.ZFlag |= this.A.Value == 0;
+      this.Registers.ZFlag = (byte) result == 0;
       this.Registers.NFlag = true;
       this.UpdateHFlag8(start, delta, result);
-      this.Registers.CFlag |= ((-result) & 0x100) != 0;
-    }
 
+      this.Registers.CFlag = (-(sbyte)(result >> 8) & 0x1) != 0;
+    }
+    
     private void UpdateHFlag8(int start, int delta, int result)
       => this.Registers.HFlag = ((start ^ delta ^ result) & 0x10) != 0;
 
@@ -389,7 +401,7 @@ namespace fin.emulation.gb {
       var result = this.A.Value & value;
       this.A.Value = (byte) result;
 
-      this.Registers.ZFlag |= this.A.Value == 0;
+      this.Registers.ZFlag = this.A.Value == 0;
       this.Registers.NFlag = false;
       this.Registers.HFlag = true;
       this.Registers.CFlag = false;
@@ -399,16 +411,16 @@ namespace fin.emulation.gb {
       var result = this.A.Value | value;
       this.A.Value = (byte) result;
 
-      this.Registers.ZFlag |= this.A.Value == 0;
+      this.Registers.ZFlag = this.A.Value == 0;
       this.Registers.NFlag =
           this.Registers.HFlag = this.Registers.CFlag = false;
     }
 
     private void XorWithA(byte value) {
       var result = this.A.Value ^ value;
-      this.A.Value = (byte)result;
-
-      this.Registers.ZFlag |= this.A.Value == 0;
+      this.A.Value = (byte) result;
+      
+      this.Registers.ZFlag = this.A.Value == 0;
       this.Registers.NFlag =
           this.Registers.HFlag = this.Registers.CFlag = false;
     }
@@ -421,20 +433,20 @@ namespace fin.emulation.gb {
 
     private void Inc(ISingleRegister register) {
       var result = register.Value + 1;
-      register.Value = (byte)result;
+      register.Value = (byte) result;
 
-      this.Registers.ZFlag |= register.Value == 0;
+      this.Registers.ZFlag = register.Value == 0;
       this.Registers.NFlag = false;
-      this.Registers.HFlag |= (result & 0x10) != 0;
+      this.Registers.HFlag = (result % 16) == 0;
     }
 
     private void Dec(ISingleRegister register) {
       var result = register.Value - 1;
-      register.Value = (byte)result;
+      register.Value = (byte) result;
 
-      this.Registers.ZFlag |= register.Value == 0;
+      this.Registers.ZFlag = register.Value == 0;
       this.Registers.NFlag = true;
-      this.Registers.HFlag |= (result & 0x10) != 0;
+      this.Registers.HFlag = (result % 16) == 15;
     }
 
     private void Define333_8BitAlu_() {
@@ -538,21 +550,33 @@ namespace fin.emulation.gb {
       this.Op(0x35, 12, () => this.Dec(this._Hl_));
     }
 
-    private void AddTo16(IDoubleRegister register, int value) {
+    private void AddTo16(IDoubleRegister register, ushort value) {
       var start = register.Value;
 
       var result = start + value;
-      register.Value = (byte)result;
+      register.Value = (ushort) result;
 
-      this.Registers.ZFlag |= this.A.Value == 0;
+      this.Registers.ZFlag = register.Value == 0;
       this.Registers.NFlag = false;
-      this.UpdateHFlag16(start, value, result);
-      this.Registers.CFlag |= (result & 0x10000) != 0;
+      this.UpdateHFlag16(start, value, (ushort) result);
+      this.Registers.CFlag = (result & 0x10000) != 0;
     }
 
-    private void UpdateHFlag16(int start, int delta, int result)
+    private void AddTo16Sp(IDoubleRegister register, int value) {
+      var start = register.Value;
+
+      var result = start + value;
+      register.Value = (ushort) result;
+
+      this.Registers.ZFlag = false;
+      this.Registers.NFlag = false;
+      this.Registers.HFlag = (result & 0x10) != 0;
+      this.Registers.CFlag = (result & 0x100) != 0;
+    }
+
+    private void UpdateHFlag16(ushort start, ushort delta, ushort result)
       => this.Registers.HFlag = ((start ^ delta ^ result) & 0x1000) != 0;
-    
+
     private void Define334_16BitArithmetic_() {
       // 1. ADD HL,n
       this.Op(0x09, 8, () => this.AddTo16(this.Hl, this.Bc.Value));
@@ -560,9 +584,12 @@ namespace fin.emulation.gb {
       this.Op(0x29, 8, () => this.AddTo16(this.Hl, this.Hl.Value));
       this.Op(0x39, 8, () => this.AddTo16(this.Hl, this.Sp.Value));
       // 2. ADD SP,n
-      this.Op(0xe8, 16, () => this.AddTo16(this.Sp, this.R8));
+      this.Op(0xe8, 16, () => this.AddTo16Sp(this.Sp, this.R8));
       // 3. INC nn
       this.Op(0x03, 8, () => ++this.Bc.Value);
+      this.Op(0x13, 8, () => ++this.De.Value);
+      this.Op(0x23, 8, () => ++this.Hl.Value);
+      this.Op(0x33, 8, () => ++this.Sp.Value);
       // 4. DEC nn
       this.Op(0x0b, 8, () => --this.Bc.Value);
       this.Op(0x1b, 8, () => --this.De.Value);
@@ -608,8 +635,8 @@ namespace fin.emulation.gb {
                 }
 
                 // these flags are always updated
-                this.Registers.ZFlag |= (a == 0); // the usual z flag
-                this.Registers.HFlag = false;     // h flag is always cleared
+                this.Registers.ZFlag = (a == 0);
+                this.Registers.HFlag = false; // h flag is always cleared
               });
       // 3. CPL
       this.Op(0x2f,
@@ -730,7 +757,7 @@ namespace fin.emulation.gb {
 
     private void TestBit_(ISingleRegister register, int index) {
       var result = register.GetBit(index);
-      this.Registers.ZFlag |= !result;
+      this.Registers.ZFlag = !result;
       this.Registers.NFlag = false;
       this.Registers.HFlag = true;
     }
@@ -793,9 +820,9 @@ namespace fin.emulation.gb {
       this.CbOp(0x54, 8, () => this.TestBit_(this.H, 2));
       this.CbOp(0x5c, 8, () => this.TestBit_(this.H, 3));
       this.CbOp(0x64, 8, () => this.TestBit_(this.H, 4));
-      this.CbOp(0x6d, 8, () => this.TestBit_(this.H, 5));
+      this.CbOp(0x6c, 8, () => this.TestBit_(this.H, 5));
       this.CbOp(0x74, 8, () => this.TestBit_(this.H, 6));
-      this.CbOp(0x7d, 8, () => this.TestBit_(this.H, 7));
+      this.CbOp(0x7c, 8, () => this.TestBit_(this.H, 7));
 
       this.CbOp(0x45, 8, () => this.TestBit_(this.L, 0));
       this.CbOp(0x4d, 8, () => this.TestBit_(this.L, 1));
@@ -865,9 +892,9 @@ namespace fin.emulation.gb {
       this.CbOp(0xd4, 8, () => this.SetBit_(this.H, 2));
       this.CbOp(0xdc, 8, () => this.SetBit_(this.H, 3));
       this.CbOp(0xe4, 8, () => this.SetBit_(this.H, 4));
-      this.CbOp(0xed, 8, () => this.SetBit_(this.H, 5));
+      this.CbOp(0xec, 8, () => this.SetBit_(this.H, 5));
       this.CbOp(0xf4, 8, () => this.SetBit_(this.H, 6));
-      this.CbOp(0xfd, 8, () => this.SetBit_(this.H, 7));
+      this.CbOp(0xfc, 8, () => this.SetBit_(this.H, 7));
 
       this.CbOp(0xc5, 8, () => this.SetBit_(this.L, 0));
       this.CbOp(0xcd, 8, () => this.SetBit_(this.L, 1));
@@ -937,9 +964,9 @@ namespace fin.emulation.gb {
       this.CbOp(0x94, 8, () => this.ResetBit_(this.H, 2));
       this.CbOp(0x9c, 8, () => this.ResetBit_(this.H, 3));
       this.CbOp(0xa4, 8, () => this.ResetBit_(this.H, 4));
-      this.CbOp(0xad, 8, () => this.ResetBit_(this.H, 5));
+      this.CbOp(0xac, 8, () => this.ResetBit_(this.H, 5));
       this.CbOp(0xb4, 8, () => this.ResetBit_(this.H, 6));
-      this.CbOp(0xbd, 8, () => this.ResetBit_(this.H, 7));
+      this.CbOp(0xbc, 8, () => this.ResetBit_(this.H, 7));
 
       this.CbOp(0x85, 8, () => this.ResetBit_(this.L, 0));
       this.CbOp(0x8d, 8, () => this.ResetBit_(this.L, 1));
@@ -962,36 +989,36 @@ namespace fin.emulation.gb {
 
     private void Define338_Jumps_() {
       // 1. JP nn
-      this.Op(0xc3, 12, () => this.Pc = this.D16);
+      this.Op(0xc3, 16, () => this.Pc = this.D16);
       // 2. JP cc,nn
       this.Op(0xc2,
               () => {
+                this.Pc = this.D16;
                 if (!this.Registers.ZFlag) {
-                  this.Pc = this.D16;
                   return 16;
                 }
                 return 12;
               });
       this.Op(0xca,
               () => {
+                this.Pc = this.D16;
                 if (this.Registers.ZFlag) {
-                  this.Pc = this.D16;
                   return 16;
                 }
                 return 12;
               });
       this.Op(0xd2,
               () => {
+                this.Pc = this.D16;
                 if (!this.Registers.CFlag) {
-                  this.Pc = this.D16;
                   return 16;
                 }
                 return 12;
               });
       this.Op(0xda,
               () => {
+                this.Pc = this.D16;
                 if (this.Registers.CFlag) {
-                  this.Pc = this.D16;
                   return 16;
                 }
                 return 12;
@@ -999,36 +1026,43 @@ namespace fin.emulation.gb {
       // 3. JP (HL)
       this.Op(0xe9, 4, () => this.Pc = this._Hl_.Value);
       // 4. JR n
-      this.Op(0x18, 8, () => this.Pc = (ushort) (this.Pc + this.R8));
+      this.Op(0x18, 8, () => {
+        var r8 = this.R8;
+        this.Pc = (ushort) (this.Pc + r8);
+      });
       // 5. JR cc,n
       this.Op(0x20,
               () => {
+                var r8 = this.R8;
                 if (!this.Registers.ZFlag) {
-                  this.Pc = (ushort) (this.Pc + this.R8);
+                  this.Pc = (ushort) (this.Pc + r8);
                   return 12;
                 }
                 return 8;
               });
       this.Op(0x28,
               () => {
+                var r8 = this.R8;
                 if (this.Registers.ZFlag) {
-                  this.Pc = (ushort) (this.Pc + this.R8);
+                  this.Pc = (ushort) (this.Pc + r8);
                   return 12;
                 }
                 return 8;
               });
       this.Op(0x30,
               () => {
+                var r8 = this.R8;
                 if (!this.Registers.CFlag) {
-                  this.Pc = (ushort) (this.Pc + this.R8);
+                  this.Pc = (ushort) (this.Pc + r8);
                   return 12;
                 }
                 return 8;
               });
       this.Op(0x38,
               () => {
+                var r8 = this.R8;
                 if (this.Registers.CFlag) {
-                  this.Pc = this.D16;
+                  this.Pc = (ushort)(this.Pc + r8);
                   return 12;
                 }
                 return 8;
@@ -1036,13 +1070,14 @@ namespace fin.emulation.gb {
     }
 
     private void Call_() {
-      this.Stack.Push16((ushort) (this.Pc + 1));
+      // PC isn't incremented yet, so we have to add 2.
+      this.Stack.Push16((ushort) (this.Pc + 1 + 1));
       this.Pc = this.D16;
     }
 
     private void Define339_Calls_() {
       // 1. CALL nn
-      this.Op(0xcd, 12, this.Call_);
+      this.Op(0xcd, 24, this.Call_);
       // 1. CALL cc,nn
       this.Op(0xc4,
               () => {
@@ -1135,33 +1170,33 @@ namespace fin.emulation.gb {
       this.Op(0xc9, 16, () => this.Pc = this.Stack.Pop16());
       // 2. RET cc
       this.Op(0xc0,
-              () => {
+              () => { 
+                this.Pc = this.Stack.Pop16();
                 if (!this.Registers.ZFlag) {
-                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;
               });
       this.Op(0xc8,
               () => {
+                this.Pc = this.Stack.Pop16();
                 if (this.Registers.ZFlag) {
-                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;
               });
       this.Op(0xd0,
               () => {
+                this.Pc = this.Stack.Pop16();
                 if (!this.Registers.CFlag) {
-                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;
               });
       this.Op(0xd8,
               () => {
+                this.Pc = this.Stack.Pop16();
                 if (this.Registers.CFlag) {
-                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;

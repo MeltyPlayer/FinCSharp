@@ -1,12 +1,21 @@
 ﻿namespace fin.emulation.gb.memory {
-  public class Registers {
-    public IDoubleRegister Af { get; } = new DoubleRegister {
-        Value = ByteMath.MergeBytes(
-            // A: 0x01->GB/SGB; 0xFF->GBP; 0x11->GBC
-            0x01,
-            // F: 0xb0->Z1 N0 H1 C1
-            0xb0)
-    };
+  public class Registers : IRegisters {
+    public Registers() {
+      this.Reset();
+    }
+
+    public void Reset() {
+      this.Af.Value = 0x1180; //0x11b0;
+      this.Bc.Value = 0x0000; //0x0013;
+      this.De.Value = 0xff56; //0x00d8;
+      this.Hl.Value = 0x000d; //0x014d;
+
+      this.Sp.Value = 0xfffe;
+      this.Pc.Value = 0x0100;
+    }
+
+
+    public IDoubleRegister Af { get; } = new DoubleRegister();
 
     public ISingleRegister A => this.Af.Upper;
     public ISingleRegister F => this.Af.Lower;
@@ -31,22 +40,22 @@
       set => this.F.SetBit(4, value);
     }
 
-    public IDoubleRegister Bc { get; } = new DoubleRegister { Value = 0x0013 };
+    public IDoubleRegister Bc { get; } = new DoubleRegister();
     public ISingleRegister B => this.Bc.Upper;
     public ISingleRegister C => this.Bc.Lower;
 
 
-    public IDoubleRegister De { get; } = new DoubleRegister {Value = 0x00d8};
+    public IDoubleRegister De { get; } = new DoubleRegister();
     public ISingleRegister D => this.De.Upper;
     public ISingleRegister E => this.De.Lower;
 
 
-    public IDoubleRegister Hl { get; } = new DoubleRegister {Value = 0x014d};
+    public IDoubleRegister Hl { get; } = new DoubleRegister();
     public ISingleRegister H => this.Hl.Upper;
     public ISingleRegister L => this.Hl.Lower;
 
-    public IDoubleRegister Sp { get; } = new DoubleRegister {Value = 0xfffe};
+    public IDoubleRegister Sp { get; } = new DoubleRegister();
 
-    public IDoubleRegister Pc { get; } = new DoubleRegister {Value = 0x0100};
+    public IDoubleRegister Pc { get; } = new DoubleRegister();
   }
 }

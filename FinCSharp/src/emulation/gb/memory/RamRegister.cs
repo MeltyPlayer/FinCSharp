@@ -1,9 +1,9 @@
 ﻿namespace fin.emulation.gb.memory {
   public class RamRegister : ISingleRegister {
-    private readonly IRam ram_;
+    private readonly IMemoryMap ram_;
     private readonly IDoubleRegister doubleRegister_;
 
-    public RamRegister(IRam ram, IDoubleRegister doubleRegister) {
+    public RamRegister(IMemoryMap ram, IDoubleRegister doubleRegister) {
       this.ram_ = ram;
       this.doubleRegister_ = doubleRegister;
     }
