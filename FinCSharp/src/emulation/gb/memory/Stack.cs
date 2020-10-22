@@ -13,14 +13,14 @@
 
     public void Push16(ushort value) {
       var (upper, lower) = ByteMath.SplitShort(value);
-      this.Push8(lower);
       this.Push8(upper);
+      this.Push8(lower);
     }
 
     public byte Pop8() => this.memoryMap_[this.sp_.Value++];
     public ushort Pop16() {
-      var upper = this.Pop8();
       var lower = this.Pop8();
+      var upper = this.Pop8();
       return ByteMath.MergeBytes(upper, lower);
     }
   }

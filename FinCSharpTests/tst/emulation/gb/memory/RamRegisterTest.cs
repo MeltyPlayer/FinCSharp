@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices.ComTypes;
 
 using fin.assert;
+using fin.emulation.gb.memory.io;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

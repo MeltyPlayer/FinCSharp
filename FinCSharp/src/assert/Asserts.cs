@@ -37,11 +37,11 @@ namespace fin.assert {
     }
 
     public static bool Equal(
-        object? instanceA,
-        object? instanceB,
+        object? expected,
+        object? actual,
         string? message = null)
-      => Asserts.True(instanceA?.Equals(instanceB) ?? false,
-                      message ?? $"Expected {instanceA} to equal {instanceB}.");
+      => Asserts.True(expected?.Equals(actual) ?? false,
+                      message ?? $"Expected {actual} to equal {expected}.");
 
     public static void Equal<TEnumerable>(
         TEnumerable enumerableA,
@@ -69,11 +69,11 @@ namespace fin.assert {
     }
 
     public static bool Equal<T>(
-        T instanceA,
-        T instanceB,
+        T expected,
+        T actual,
         string? message = null)
-      => Asserts.True(instanceA?.Equals(instanceB) ?? false,
-                      message ?? $"Expected {instanceA} to equal {instanceB}.");
+      => Asserts.True(expected?.Equals(actual) ?? false,
+                      message ?? $"Expected {actual} to equal {expected}.");
 
     public static bool IsA<TExpected>(object? instance, string? message = null)
       => Asserts.IsA(instance, typeof(TExpected), message);

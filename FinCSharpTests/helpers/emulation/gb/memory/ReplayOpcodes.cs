@@ -7,11 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace fin.helpers.emulation.gb.memory {
   public class ReplayOpcodes : IOpcodes {
-    private readonly Memory memory_;
+    private readonly Mmu memory_;
     private readonly IOpcodes impl_;
     private readonly Queue<byte> expectedOpcodes_ = new Queue<byte>();
 
-    public ReplayOpcodes(Memory memory) {
+    public ReplayOpcodes(Mmu memory) {
       this.memory_ = memory;
       this.impl_ = new Opcodes(memory);
     }

@@ -1,25 +1,40 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Diagnostics;
 
+using fin.assert;
 using fin.emulation.gb.memory;
+using fin.emulation.gb.memory.io;
 using fin.graphics.color;
+using fin.log;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+
+using SharpFont.PostScript;
 
 namespace fin.emulation.gb {
   public class Cpu {
     private readonly Lcd lcd_;
-    private readonly Memory memory_;
+    private readonly Mmu memory_;
     private readonly IOpcodes opcodes_;
 
-    public Cpu(Lcd lcd, Memory memory, IOpcodes opcodes) {
+    private IMemoryMap MemoryMap { get; }
+    private IoAddresses IoAddresses { get; }
+
+    public Cpu(Lcd lcd, Mmu memory, IOpcodes opcodes) {
       this.lcd_ = lcd;
       this.memory_ = memory;
       this.opcodes_ = opcodes;
+
+      this.MemoryMap = this.memory_.MemoryMap;
+      this.IoAddresses = this.MemoryMap.IoAddresses;
 
       this.Reset();
     }
 
     public void Reset() {
-      this.ScanlineCycleCounter = 288;  // 456;
+      this.UpwardScanlineCycleCounter = 0; //456 - 288; // 288 // 456;
+      this.PpuModeCycleCount = 80;
     }
 
     public int ExecuteCycles(int maxCycles)
@@ -32,57 +47,60 @@ namespace fin.emulation.gb {
       var totalCycles = 0;
       var totalIterations = 0;
 
+      var memory = this.memory_;
+      var stack = memory.Stack;
+      var pc = memory.Registers.Pc;
+
+      var ioAddresses = this.IoAddresses;
+      var if_ = ioAddresses.If;
+
       for (;;) {
         var cyclesThisIteration = 0;
 
-        var memory = this.memory_;
-        var ioAddresses = memory.MemoryMap.IoAddresses;
-        var ie_ = ioAddresses.Ie;
-        var if_ = ioAddresses.If;
+        var ieV = ioAddresses.Ie.Value;
+        var ifV = if_.Value;
         // TODO: Handle interrupts
-        var ie_and_if_ = ie_ & if_;
-        if (ie_and_if_ != 0) {
-          this.memory_.HaltState = HaltState.NOT_HALTED;
+        var ieAndIf = ieV & ifV;
+        if (ieAndIf != 0) {
+          memory.HaltState = HaltState.NOT_HALTED;
 
-          var stack = memory.Stack;
-          var pc = memory.Registers.Pc;
           if (memory.InterruptsState == InterruptsState.ON) {
             //v-sync
-            if ((ie_and_if_ & 0x1) != 0) {
+            if ((ieAndIf & 0x1) != 0) {
               memory.InterruptsState = InterruptsState.OFF;
-              ioAddresses.If = (byte) (ioAddresses.If & ~0x1);
+              if_.Value = (byte) (ifV & ~0x1);
 
               stack.Push16(pc.Value);
               pc.Value = 0x40;
             }
             //LCD STAT
-            else if ((ie_and_if_ & 0x2) != 0) {
+            else if ((ieAndIf & 0x2) != 0) {
               memory.InterruptsState = InterruptsState.OFF;
-              ioAddresses.If = (byte) (ioAddresses.If & ~0x2);
+              if_.Value = (byte) (ifV & ~0x2);
 
               stack.Push16(pc.Value);
               pc.Value = 0x48;
             }
             //Timer
-            else if ((ie_and_if_ & 0x4) != 4) {
+            else if ((ieAndIf & 0x4) != 0) {
               memory.InterruptsState = InterruptsState.OFF;
-              ioAddresses.If = (byte) (ioAddresses.If & ~0x4);
+              if_.Value = (byte) (ifV & ~0x4);
 
               stack.Push16(pc.Value);
               pc.Value = 0x50;
             }
             //Serial
-            else if ((ie_and_if_ & 0x8) != 0) {
+            else if ((ieAndIf & 0x8) != 0) {
               memory.InterruptsState = InterruptsState.OFF;
-              ioAddresses.If = (byte) (ioAddresses.If & ~0x8);
+              if_.Value = (byte) (ifV & ~0x8);
 
               stack.Push16(pc.Value);
               pc.Value = 0x58;
             }
             //Joypad
-            else if ((ie_and_if_ & 0x10) != 0) {
+            else if ((ieAndIf & 0x10) != 0) {
               memory.InterruptsState = InterruptsState.OFF;
-              ioAddresses.If = (byte) (ioAddresses.If & ~0x10);
+              if_.Value = (byte) (ifV & ~0x10);
 
               stack.Push16(pc.Value);
               pc.Value = 0x60;
@@ -92,25 +110,23 @@ namespace fin.emulation.gb {
 
 
         // Enables interrupts if scheduled by EI
-        if (this.memory_.InterruptsState ==
-            InterruptsState.SCHEDULED_TO_BE_ON) {
-          this.memory_.InterruptsState = InterruptsState.ON;
+        if (memory.InterruptsState == InterruptsState.SCHEDULED_TO_BE_ON) {
+          memory.InterruptsState = InterruptsState.ON;
         }
 
 
         // Runs instruction if not halted
-        if (this.memory_.HaltState != HaltState.HALTED) {
+        if (memory.HaltState != HaltState.HALTED) {
           var cycles = this.opcodes_.FetchAndRunOp();
           cyclesThisIteration += cycles;
-        }
-        else {
+        } else {
           cyclesThisIteration += 4;
         }
 
 
         // Updates timers, LCD w/ usedCycles
-        this.updateTimers_(cyclesThisIteration);
-        this.updateLcdStatus_(cyclesThisIteration);
+        this.UpdateTimers_(cyclesThisIteration);
+        this.UpdateLcdStatus_(cyclesThisIteration);
 
         // Checks if we're out of cycles
         totalCycles += cyclesThisIteration;
@@ -129,27 +145,27 @@ namespace fin.emulation.gb {
         1024, 16, 64, 256,
     };
 
-    private void updateTimers_(int cyclesThisIteration) {
-      var ioAddresses = this.memory_.MemoryMap.IoAddresses;
+    private void UpdateTimers_(int cyclesThisIteration) {
+      var ioAddresses = this.IoAddresses;
 
       //DIV
-      ioAddresses.Timer1 += cyclesThisIteration;
+      ioAddresses.DivCounter += cyclesThisIteration;
 
-      if (ioAddresses.Timer1 >= 256) {
-        ioAddresses.Timer1 -= 256;
+      if (ioAddresses.DivCounter >= 256) {
+        ioAddresses.DivCounter -= 256;
         ++ioAddresses.Div;
       }
 
       //TIMA
       if ((ioAddresses.Tac & 0x4) != 0) {
-        ioAddresses.Timer2 += cyclesThisIteration;
+        ioAddresses.TimerCounter += cyclesThisIteration;
 
-        while (ioAddresses.Timer2 >= this.tacCycles_[ioAddresses.Tac & 0x3]) {
-          ioAddresses.Timer2 -= this.tacCycles_[ioAddresses.Tac & 0x3];
-          ++ioAddresses.Tima;
+        var tacCycles = this.tacCycles_[ioAddresses.Tac & 0x3];
+        while (ioAddresses.TimerCounter >= tacCycles) {
+          ioAddresses.TimerCounter -= tacCycles;
 
           //overflow
-          if (ioAddresses.Tima == 0) {
+          if (++ioAddresses.Tima == 0) {
             this.interruptZ80_(InterruptType.TIMER);
             ioAddresses.Tima = ioAddresses.Tma;
           }
@@ -157,94 +173,216 @@ namespace fin.emulation.gb {
       }
     }
 
-    public int ScanlineCycleCounter { get; private set; }
+    public int ScanlineCycleCounter => 456 - this.UpwardScanlineCycleCounter;
+    public int UpwardScanlineCycleCounter { get; set; }
+    public int PpuMode => (int) this.IoAddresses.Stat.Mode;
 
-    private void updateLcdStatus_(int cyclesThisIteration) {
-      var ioAddresses = this.memory_.MemoryMap.IoAddresses;
-      ioAddresses.Stat |= 0x80;
+    public int PpuModeCycleCount { get; set; }
+
+    private void UpdateLcdStatus_(int cyclesThisIteration) {
+      var ioAddresses = this.IoAddresses;
+      var stat = ioAddresses.Stat;
+
+      // TODO: What does this do?
+      stat.Value |= 0x80;
+
+      var ly = ioAddresses.Ly.Value;
+      var lcdc = ioAddresses.Lcdc.Value;
 
       //lcd enabled
-      if ((ioAddresses.Lcdc & 0x80) != 0) {
-        this.ScanlineCycleCounter -= cyclesThisIteration;
+      if ((lcdc & 0x80) != 0) {
+        for (var ci = 0; ci < cyclesThisIteration; ci += 4) {
+          this.UpwardScanlineCycleCounter += 4;
 
-        //setting modes and requesting interrupts when switching
-        if (ioAddresses.Ly >= 144) {
-          //set mode to 1
-          ioAddresses.Stat = (byte) ((ioAddresses.Stat & 0xFC) | 0x1);
+          var mode = stat.Mode;
+          if (mode == PpuModeType.OAM_RAM_SEARCH) {
+            if (this.UpwardScanlineCycleCounter > 80) {
+              this.ChangeStat_(PpuModeType.DATA_TRANSFER);
+              this.PpuModeCycleCount = this.GetMode3TickCount();
+            }
+          }
+          // TODO: Dependent on number of sprites on this line
+          else if (mode == PpuModeType.DATA_TRANSFER) {
+            if (this.UpwardScanlineCycleCounter >
+                80 + this.PpuModeCycleCount) {
+              this.ChangeStat_(PpuModeType.H_BLANK);
+              this.PpuModeCycleCount = 456 - this.UpwardScanlineCycleCounter;
+
+              this.DrawScanline_();
+            }
+          } else if (mode == PpuModeType.H_BLANK) {
+            // 80 + 172 + 204
+            if (this.UpwardScanlineCycleCounter > 456) {
+              this.UpwardScanlineCycleCounter -= 456;
+
+              //starting vsync period
+              if (++ly >= 144) {
+                this.ChangeStat_(PpuModeType.V_BLANK);
+                this.interruptZ80_(InterruptType.V_BLANK);
+              } else {
+                this.ChangeStat_(PpuModeType.OAM_RAM_SEARCH);
+                this.PpuModeCycleCount = 80;
+              }
+              ioAddresses.Ly.Value = ly;
+            }
+            // Needed for the first frame???
+            else if (this.UpwardScanlineCycleCounter < 80 + 172 &&
+                     this.UpwardScanlineCycleCounter > 80) {
+              this.ChangeStat_(PpuModeType.DATA_TRANSFER);
+              this.PpuModeCycleCount = 172;
+            }
+          } else if (mode == PpuModeType.V_BLANK) {
+            if (this.UpwardScanlineCycleCounter > 456) {
+              this.UpwardScanlineCycleCounter -= 456;
+              if (++ly >= 154) {
+                ly = 0;
+                this.ChangeStat_(PpuModeType.OAM_RAM_SEARCH);
+              }
+              ioAddresses.Ly.Value = ly;
+            }
+          }
+
+          this.LyLyc_(ly);
         }
-        else {
-          int previousmode = ioAddresses.Stat & 0x3;
-          int requestinterrupt = 0;
-
-          if (this.ScanlineCycleCounter >= 376) {
-            //set mode to 2 (OAM-RAM search)
-            ioAddresses.Stat = (byte) ((ioAddresses.Stat & 0xFC) | 0x2);
-            requestinterrupt = ioAddresses.Stat & 0x20;
-          }
-          else if (this.ScanlineCycleCounter >= 204) {
-            //set mode to 3 (Data Transfer)
-            ioAddresses.Stat = (byte) ((ioAddresses.Stat & 0xFC) | 0x3);
-          }
-          else {
-            //set to mode 0 (H-Blank)
-            ioAddresses.Stat &= 0xFC;
-            requestinterrupt = ioAddresses.Stat & 0x8;
-          }
-
-          //request interrupt when mode changed for the 1st time
-          if (requestinterrupt != 0 &&
-              (previousmode != (ioAddresses.Stat & 0x3))) {
-            this.interruptZ80_(InterruptType.LCD_STAT);
-          }
-        }
-
-        //move to next scanline
-        if (this.ScanlineCycleCounter <= 0) {
-          ++ioAddresses.Ly;
-          this.ScanlineCycleCounter = 456;
-
-          //starting vsync period
-          if (ioAddresses.Ly == 144) {
-            //request vblank
-            this.interruptZ80_(InterruptType.V_BLANK);
-
-            //set mode to 1
-            ioAddresses.Stat = (byte) ((ioAddresses.Stat & 0xFC) | 0x1);
-            return;
-          }
-
-          if (ioAddresses.Ly < 144) {
-            this.DrawScanline_();
-          }
-
-          ioAddresses.Ly = (byte) (ioAddresses.Ly % 154);
-        }
-
-        this.LyLyc_();
-      }
-      else {
-        //set mode to 0
-        ioAddresses.Stat = (byte) (ioAddresses.Stat & 0xF8);
-        //reset counter
-        this.ScanlineCycleCounter = 456;
-        //reset LY
-        ioAddresses.Ly = 0;
+      } else {
+        // Reset
+        stat.Mode = PpuModeType.H_BLANK;
+        this.UpwardScanlineCycleCounter = 0;
+        ioAddresses.Ly.Value = 0;
       }
     }
 
-    private void LyLyc_() {
-      var ioAddresses = this.memory_.MemoryMap.IoAddresses;
+    private void ChangeStat_(PpuModeType newModeType) {
+      var stat = this.IoAddresses.Stat;
 
-      //LY=LYC?
-      if (ioAddresses.Ly == ioAddresses.Lyc) {
-        //STAT
-        ioAddresses.Stat |= 0x4;
-        if ((ioAddresses.Stat & 0x40) != 0) {
-          this.interruptZ80_(InterruptType.LCD_STAT);
+      var shouldTriggerLcdInterrupt = newModeType switch {
+          PpuModeType.OAM_RAM_SEARCH => stat.OamRamSearchInterruptEnabled,
+          PpuModeType.H_BLANK        => stat.HBlankInterruptEnabled,
+          PpuModeType.V_BLANK        => stat.VBlankInterruptEnabled,
+          _                          => false,
+      };
+
+      if (shouldTriggerLcdInterrupt) {
+        this.interruptZ80_(InterruptType.LCD_STAT);
+      }
+    }
+
+
+    private class Obj {
+      public int X { get; }
+      public int Y { get; }
+
+      public Obj(int x, int y) {
+        this.X = x;
+        this.Y = y;
+      }
+    }
+
+    private int GetMode3TickCount() {
+      var memoryMap = this.MemoryMap;
+      var ioAddresses = this.IoAddresses;
+
+      var minTicks = 172;
+
+      // Obj display
+      var lcdc = ioAddresses.Lcdc.Value;
+      if ((lcdc & 0x1) == 0) {
+        return minTicks;
+      }
+
+      var objSize = (lcdc >> 2) & 0x1; // Bit 3 (index = 2)
+      var objHeight = objSize switch {
+          0 => 8,
+          1 => 16,
+          _ => Asserts.Fail("Invalid obj size") ? 0 : 0,
+      };
+
+      var ly = ioAddresses.Ly.Value;
+
+      var lineObjCount = 0;
+
+      var maxObjsPerLine = 10;
+      var objs = new LinkedList<Obj>();
+
+      var objCount = 40;
+      for (var i = 0; i < objCount; ++i) {
+        /* Put the visible sprites into line_obj. Insert them so sprites with
+         * smaller X-coordinates are earlier, but only on DMG. On CGB, they are
+         * always ordered by obj index. */
+
+        // Sprite attrib memory (OAM) address
+        var index = i * 4;
+        var oamAddress = (ushort) (0xfe00 + index);
+        var objY = memoryMap[oamAddress] - 16;
+
+        var relY = ly - objY;
+
+        if (relY < objHeight) {
+          var objX = memoryMap[(ushort) (oamAddress + 1)] - 8;
+
+          objs.AddLast(new Obj(objX, objY));
+
+          /*int j = line_obj_count;
+          if (!IS_CGB) {
+            while (j > 0 && o->x < PPU.line_obj[j - 1].x) {
+              PPU.line_obj[j] = PPU.line_obj[j - 1];
+              j--;
+            }
+          }
+          PPU.line_obj[j] = *o;*/
+          if (++lineObjCount == maxObjsPerLine) {
+            break;
+          }
         }
       }
-      else {
-        ioAddresses.Stat = (byte) (ioAddresses.Stat & ~0x4);
+
+      var screenWidth = 160;
+      var bucketCount = screenWidth / 8 + 2;
+      var buckets = new int[bucketCount];
+
+      var scX = ioAddresses.ScX;
+      var scxFine = scX & 7;
+
+      var ticks = minTicks + scxFine;
+      var hasZero = false;
+
+      foreach (var obj in objs) {
+        var x = obj.X + 8;
+        if (x >= screenWidth + 8) {
+          continue;
+        }
+
+        if (!hasZero && x == 0) {
+          hasZero = true;
+          ticks += scxFine;
+        }
+
+        x += scxFine;
+        var bucket = x >> 3;
+        buckets[bucket] = Math.Max(buckets[bucket], 5 - (x & 7));
+        ticks += 6;
+      }
+      foreach (var t in buckets) {
+        ticks += t;
+      }
+      return ticks;
+    }
+
+    // TODO: This needs to be moved to IoAddresses, so it can be checked the
+    // instant they become equal.
+    private void LyLyc_(byte ly) {
+      var ioAddresses = this.IoAddresses;
+      var stat = ioAddresses.Stat;
+
+      //LY=LYC?
+      if (ly == ioAddresses.Lyc.Value) {
+        //STAT
+        ioAddresses.Stat.Value |= 0x4;
+        if ((stat.Value & 0x40) != 0) {
+          this.interruptZ80_(InterruptType.LCD_STAT);
+        }
+      } else {
+        stat.Value = (byte) (stat.Value & ~0x4);
       }
     }
 
@@ -257,55 +395,68 @@ namespace fin.emulation.gb {
     }
 
     private void interruptZ80_(InterruptType type) {
-      var ioAddresses = this.memory_.MemoryMap.IoAddresses;
+      var if_ = this.IoAddresses.If;
       switch (type) {
         case InterruptType.V_BLANK:
-          ioAddresses.If |= 0x1;
+          if_.Value |= 0x1;
           break;
         case InterruptType.LCD_STAT:
-          ioAddresses.If |= 0x2;
+          if_.Value |= 0x2;
           break;
         case InterruptType.TIMER:
-          ioAddresses.If |= 0x4;
+          if_.Value |= 0x4;
           break;
         case InterruptType.SERIAL:
-          ioAddresses.If |= 0x8;
+          if_.Value |= 0x8;
           break;
         case InterruptType.JOYPAD:
-          ioAddresses.If |= 0x10;
+          if_.Value |= 0x10;
           break;
       }
     }
 
+    public byte ScanlineLcdc { get; private set; } = 0;
+
     private void DrawScanline_() {
-      var lcdc = this.memory_.MemoryMap.IoAddresses.Lcdc;
+      if (!this.lcd_.Active) {
+        return;
+      }
 
-      if ((lcdc & 0x1) != 0) {
+      var lcdc = this.IoAddresses.Lcdc.Value;
+      var ly = this.IoAddresses.Ly.Value;
+      var lcd = this.lcd_;
+
+      this.ScanlineLcdc = lcdc;
+
+      var rand = Color.Random();
+      for (var x = 0; x < 160; ++x) {
+        lcd.SetPixel(x, ly, rand);
+      }
+
+      /*if ((lcdc & 0x1) != 0) {
         this.DrawBg_();
-      }
+      }*/
 
-      if ((lcdc & 0x2) != 0) {
+      /*if ((lcdc & 0x2) != 0) {
         this.DrawSprites_();
-      }
+      }*/
     }
 
-    private readonly byte[] wrapper_ = new byte[1];
-
     private void DrawBg_() {
-      int i;
-      var useWindow = false;
+      var memoryMap = this.MemoryMap;
+      var ioAddresses = this.IoAddresses;
 
-      var memoryMap = this.memory_.MemoryMap;
-      var ioAddresses = memoryMap.IoAddresses;
-      var lcdc = ioAddresses.Lcdc;
+      var lcdc = ioAddresses.Lcdc.Value;
       var wy = ioAddresses.Wy;
-      var ly = ioAddresses.Ly;
+      var ly = ioAddresses.Ly.Value;
 
       //window enabled and scanline within window ?
-      byte yPos;
+      var useWindow = (lcdc & (1 << 5)) != 0 && wy <= ly;
+
+      byte y;
       int backgroundAddress;
-      if ((lcdc & (1 << 5)) != 0 && wy <= ly) {
-        yPos = (byte) (ly - wy);
+      if (useWindow) {
+        y = (byte) (ly - wy);
 
         //Window Tile Map Display Select
         backgroundAddress = ((lcdc & (1 << 6)) != 0)
@@ -313,12 +464,10 @@ namespace fin.emulation.gb {
                                 ? 0x1C00
                                 //0x9800
                                 : 0x1800;
-
-        useWindow = true;
       }
-      else //not using window
-      {
-        yPos = (byte) (ioAddresses.ScY + ly);
+      //not using window
+      else {
+        y = (byte) (ioAddresses.ScY + ly);
 
         //Window Tile Map Display Select
         backgroundAddress = ((lcdc & (1 << 3)) != 0)
@@ -329,77 +478,63 @@ namespace fin.emulation.gb {
       }
 
 
+      // each vertical line takes up two bytes of memory
+      var tileLine = (byte) ((y & 7) * 2);
+
       //TODO: testing divide by 8 == multiply by 0.125
       //rowPos o current scanline (of the 8 pixels)
-      var rowPos = ((byte) (yPos / 8)) * 32;
+      var tileRow = (ushort) (y / 8 * 32);
 
+      var scX = ioAddresses.ScX;
+      var wX = (byte) (ioAddresses.Wx - 7);
+
+      var areTileAddressesSigned = (lcdc & (1 << 4)) == 0;
+
+      var upper = 0;
+      var lower = 0;
 
       //draw de 160 pixels in current line  TODO: (4 by 4)
-      for (i = 0; i < 160; i++) {
-        var xPos = i + ioAddresses.ScX;
+      for (var p = 0; p < 160; p++) {
+        var x = useWindow && p > wX ? (byte) (p - wX) : (byte) (p + scX);
 
-        if (useWindow) {
-          var rWX = ioAddresses.Wx - 7;
-          if (i >= rWX) {
-            xPos = i - rWX;
-          }
-        }
-
-        //TODO: testing divide by 8 == multiply by 0.125
-        var colPos = (xPos / 8);
-
-
-        // get the tile identity number
-        // which tile data are we using?
-        ushort tileAddress;
-        if ((lcdc & (1 << 4)) != 0) {
-          tileAddress = 0x0;
+        if ((p & 7) == 0 || ((p + scX) & 7) == 0) {
+          var tileCol = (ushort) (x / 8);
           var tileNumber =
-              memoryMap[
-                  (ushort) (0x8000 + backgroundAddress + rowPos + colPos)];
-          tileAddress = (ushort) (tileAddress + tileNumber * 16);
+              memoryMap[(ushort) (0x8000 + backgroundAddress + tileRow + tileCol)];
+
+          ushort tileAddress;
+          if (!areTileAddressesSigned) {
+            tileAddress = (ushort) (0x8000 + tileNumber * 16);
+          } else {
+            tileAddress =
+                (ushort) (0x8800 +
+                          (128 + ByteMath.ByteToSByte(tileNumber)) * 16);
+          }
+
+          var vramAddress = (ushort) (tileAddress + tileLine);
+          lower = memoryMap[vramAddress];
+          upper = memoryMap[(ushort) (vramAddress + 1)];
         }
-        else {
-          tileAddress = 0x800;
-          
-          var uTileNumber =
-              memoryMap[
-                  (ushort) (0x8000 + backgroundAddress + rowPos + colPos)];
-          this.wrapper_[0] = uTileNumber;
-          var tileNumber = ((sbyte[]) (Array) this.wrapper_)[0];
 
-          tileAddress = (ushort)(tileAddress + (tileNumber + 128) * 16);
-        }
+        var colorBit = 7 - (x & 7);
+        var colorId = (((upper >> colorBit) & 1) << 1) |
+                      ((lower >> colorBit) & 1);
 
-        // each vertical line takes up two bytes of memory
-        var line = (yPos % 8) * 2;
-
-        //vram (0x8000 +(tileLocation*16))+line
-        var vramAddress = (ushort) (0x8000 + tileAddress + line);
-        var data1 = memoryMap[vramAddress];
-        var data2 = memoryMap[(ushort) (vramAddress + 1)];
-
-        var colorBit = ((xPos % 8) - 7) * -1;
-        // combine data 2 and data 1 to get the colour id for this pixel
-        var colorNumber = (data2 & (1 << colorBit)) != 0 ? 0x2 : 0;
-        colorNumber |= (data1 & (1 << colorBit)) != 0 ? 1 : 0;
-
-
-        //finaly get color from palette and draw
-        var color = this.GetColor_(colorNumber, 0);
+        var color = this.GetColor_(colorId, 0);
 
         //draw
-        this.lcd_.SetPixel(i, ly, color);
+        this.lcd_.SetPixel(p, ly, color);
       }
     }
 
     private void DrawSprites_() {
-      var memoryMap = this.memory_.MemoryMap;
-      var ioAddresses = memoryMap.IoAddresses;
-      int i;
+      var memoryMap = this.MemoryMap;
+      var ioAddresses = this.IoAddresses;
+
+      var lcdc = ioAddresses.Lcdc.Value;
 
       //loop throught the 40 sprites
-      for (i = 0; i < 40; i++) {
+      for (var i = 0; i < 40; i++) {
         //4 bytes in OAM (Sprite attribute table)
         var index = i * 4;
 
@@ -411,10 +546,10 @@ namespace fin.emulation.gb {
         var attributes = memoryMap[(ushort) (oamAddress + 3)];
 
         //check y - Size in LCDC
-        var sizeY = (ushort) (ioAddresses.Lcdc & 0x4) != 0 ? 16 : 8;
+        var sizeY = (ushort) (lcdc & 0x4) != 0 ? 16 : 8;
 
         //check if sprite is in current Scanline
-        var ly = ioAddresses.Ly;
+        var ly = ioAddresses.Ly.Value;
         if (ly >= posY && ly < posY + sizeY) {
           var line = ly - posY;
 
@@ -471,23 +606,18 @@ namespace fin.emulation.gb {
     //mode 0 - BGP FF47
     //mode 1 - OBP0 FF48
     //mode 2 - OBP1 FF49
-    private Color GetColor_(int number, int mode) {
-      // Number will be from 0-3, so these will be from (1, 0) to (7, 6)
-      var lo = number * 2;
-      var hi = lo + 1;
-
-      var ioAddresses = this.memory_.MemoryMap.IoAddresses;
-      var palette = mode switch {
+    private Color GetColor_(int colorId, int paletteMode) {
+      var ioAddresses = this.IoAddresses;
+      var palette = paletteMode switch {
           0 => ioAddresses.Bgp,
           1 => ioAddresses.Obp0,
           2 => ioAddresses.Obp1,
           _ => 0,
       };
 
-      var colorindex = (palette & (1 << hi)) != 0 ? 0x2 : 0;
-      colorindex |= (palette & (1 << lo)) != 0 ? 0x1 : 0;
+      var colorIndex = (palette >> colorId * 2) & 0x3;
 
-      return colorindex switch {
+      return colorIndex switch {
           0 => Lcd.WHITE,
           1 => Lcd.LIGHT_GRAY,
           2 => Lcd.DARK_GRAY,

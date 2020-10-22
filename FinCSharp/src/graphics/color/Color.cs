@@ -1,4 +1,6 @@
-﻿using CColor = System.Drawing.Color;
+﻿using System;
+
+using CColor = System.Drawing.Color;
 
 namespace fin.graphics.color {
   public interface IColor {
@@ -48,6 +50,14 @@ namespace fin.graphics.color {
 
     public static Color FromCColor(CColor cColor)
       => Color.FromRgbaB(cColor.R, cColor.G, cColor.B, cColor.A);
+
+    private static readonly Random rand_ = new Random();
+
+    public static Color Random() => Color.FromRgbF(
+        (float) Color.rand_.NextDouble(),
+        (float) Color.rand_.NextDouble(),
+        (float) Color.rand_.NextDouble());
+
 
     public byte Rb => (byte) (this.I >> 24 & 0xff);
     public byte Gb => (byte) (this.I >> 16 & 0xff);

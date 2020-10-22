@@ -1,4 +1,6 @@
-﻿namespace fin.emulation.gb.memory {
+﻿using System.Runtime.CompilerServices;
+
+namespace fin.emulation.gb.memory {
   public static class BitMath {
     public static bool GetBit(int value, int index)
       => ((value >> index) & 0x1) == 0x1;
@@ -18,17 +20,12 @@
     /// <summary>
     ///   Shifts the bits right without modifying the sign bit (which is MSB).
     /// </summary>
-    public static int ArithmeticShiftRight(
+    /*public static int ArithmeticShiftRight(
         int value,
         int bitCount,
         out bool carry) {
-      carry = (value & 1) == 1;
 
-      var signBit = value & BitMath.CreateBitmaskAt(bitCount - 1);
-
-      var bitMaskUpToEnd = BitMath.CreateBitmaskUpTo(bitCount);
-      return signBit & ((value & bitMaskUpToEnd) >> 1);
-    }
+    }*/
 
     /// <summary>
     ///   Shifts all bits left.

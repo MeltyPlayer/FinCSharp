@@ -8,6 +8,9 @@ namespace fin.emulation.gb.memory {
       this.data_ = data;
     }
 
+    public byte this[ushort address] => this.data_[address];
+
+
     public byte this[int bankIndex, ushort relativeAddress]
       => this.data_[bankIndex * 0x4000 + relativeAddress];
   }

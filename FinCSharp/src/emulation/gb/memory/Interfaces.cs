@@ -1,4 +1,6 @@
-﻿namespace fin.emulation.gb.memory {
+﻿using fin.emulation.gb.memory.io;
+
+namespace fin.emulation.gb.memory {
   public interface IMemoryComponent {
     void Reset();
   }
@@ -8,7 +10,7 @@
 
   public interface IMemoryMap : IMemoryComponent {
     IoAddresses IoAddresses { get; }
-    Rom Rom { get; set; }
+    Rom Rom { set; }
     byte this[ushort address] { get; set; }
   }
 

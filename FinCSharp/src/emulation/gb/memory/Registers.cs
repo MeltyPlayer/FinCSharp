@@ -5,17 +5,22 @@
     }
 
     public void Reset() {
-      this.Af.Value = 0x1180; //0x11b0;
-      this.Bc.Value = 0x0000; //0x0013;
-      this.De.Value = 0xff56; //0x00d8;
-      this.Hl.Value = 0x000d; //0x014d;
+      this.Af.Value = 0x11b0;
+      this.Bc.Value = 0x0013;
+      this.De.Value = 0x00d8;
+      this.Hl.Value = 0x014d;
+
+      //this.Af.Value = 0x1180;
+      //this.Bc.Value = 0x0000;
+      //this.De.Value = 0xff56;
+      //this.Hl.Value = 0x000d;
 
       this.Sp.Value = 0xfffe;
       this.Pc.Value = 0x0100;
     }
 
 
-    public IDoubleRegister Af { get; } = new DoubleRegister();
+    public IDoubleRegister Af { get; } = new AfRegister();
 
     public ISingleRegister A => this.Af.Upper;
     public ISingleRegister F => this.Af.Lower;

@@ -2,18 +2,18 @@
 
 namespace fin.assert.fluent {
   public sealed partial class Expect {
-    public static ActionThatPredicate That(Action lhs) =>
-        new ActionThatPredicate(lhs);
+    public static ActionThatPredicate That(Action actual) =>
+        new ActionThatPredicate(actual);
 
     public class ActionThatPredicate : IThatPredicate<Action> {
-      private readonly Action lhs_;
+      private readonly Action actual_;
 
-      public ActionThatPredicate(Action lhs) {
-        this.lhs_ = lhs;
+      public ActionThatPredicate(Action actual) {
+        this.actual_ = actual;
       }
 
-      public bool Equals(Action rhs, string message = "")
-        => Asserts.Equal(this.lhs_, rhs, message);
+      public bool Equals(Action expected, string message = "")
+        => Asserts.Equal(expected, this.actual_, message);
 
       public void Throws<TException>(TException expected)
           where TException : Exception {
@@ -28,7 +28,7 @@ namespace fin.assert.fluent {
         Asserts.Fail();
       }
 
-      private void Execute_() => this.lhs_();
+      private void Execute_() => this.actual_();
     }
   }
 }

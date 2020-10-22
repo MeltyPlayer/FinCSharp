@@ -1,4 +1,7 @@
-﻿namespace fin.emulation.gb.memory {
+﻿using System;
+using System.Runtime.CompilerServices;
+
+namespace fin.emulation.gb.memory {
   public static class ByteMath {
     public static (byte, byte) SplitShort(ushort value)
       => ((byte) (value >> 8), (byte) (value & 0xff));
@@ -11,17 +14,28 @@
       => BitMath.GetBit(value, index);
 
     public static byte SetBit(byte value, int index, bool bit)
-      => (byte)BitMath.SetBit(value, index, bit);
+      => (byte) BitMath.SetBit(value, index, bit);
 
 
     public static byte Swap(byte value) => (byte) ((value << 4) | (value >> 4));
 
+    public static sbyte ByteToSByte(byte value)
+      => (sbyte) (value < 128 ? value : value - 256);
+
+    public static byte SByteToByte(sbyte sValue)
+      => (byte) (sValue > 0 ? sValue : sValue + 256);
 
     /// <summary>
     ///   Shifts the bits right without modifying the sign bit (which is MSB).
     /// </summary>
-    public static byte ArithmeticShiftRight(byte value, out bool carry)
-      => (byte) BitMath.ArithmeticShiftRight(value, 8, out carry);
+    public static byte ArithmeticShiftRight(byte value, out bool carry) {
+      var sValue = ByteMath.ByteToSByte(value);
+
+      carry = (value & 1) == 1;
+      var newSValue = (sbyte) (sValue >> 1);
+
+      return ByteMath.SByteToByte(newSValue);
+    }
 
     /// <summary>
     ///   Shifts all bits left.

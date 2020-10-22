@@ -4,7 +4,7 @@ using fin.emulation.gb.memory;
 
 namespace fin.emulation.gb {
   public class Opcodes : IOpcodes {
-    private readonly Memory memory_;
+    private readonly Mmu memory_;
 
     private readonly IInstructionTable instructionTable_ =
         new InstructionTableImpl();
@@ -12,8 +12,11 @@ namespace fin.emulation.gb {
     private readonly IInstructionTable cbInstructionTable_ =
         new InstructionTableImpl();
 
-    public Opcodes(Memory memory) {
+    public Opcodes(Mmu memory) {
       this.memory_ = memory;
+      this.MemoryMap = this.memory_.MemoryMap;
+      this.Registers = this.memory_.Registers;
+      this.Stack = this.memory_.Stack;
 
       this._Bc_ = new RamRegister(this.MemoryMap, this.Registers.Bc);
       this._De_ = new RamRegister(this.MemoryMap, this.Registers.De);
@@ -24,9 +27,9 @@ namespace fin.emulation.gb {
 
     public int FetchAndRunOp() => this.instructionTable_.Call(this.D8);
 
-    private IMemoryMap MemoryMap => this.memory_.MemoryMap;
-    private IRegisters Registers => this.memory_.Registers;
-    private IStack Stack => this.memory_.Stack;
+    private IMemoryMap MemoryMap { get; }
+    private IRegisters Registers { get; }
+    private IStack Stack { get; }
 
     private HaltState HaltState {
       get => this.memory_.HaltState;
@@ -73,15 +76,7 @@ namespace fin.emulation.gb {
       }
     }
 
-    private readonly byte[] wrapper_ = new byte[1];
-
-    private sbyte R8 {
-      get {
-        this.wrapper_[0] = this.MemoryMap[this.Pc++];
-        var converted = (sbyte[]) (Array) this.wrapper_;
-        return converted[0];
-      }
-    }
+    private sbyte R8 => ByteMath.ByteToSByte(this.MemoryMap[this.Pc++]);
 
     private void Op(byte opcode, int cycles, Action handler)
       => this.instructionTable_.Set(opcode, cycles, handler);
@@ -96,6 +91,8 @@ namespace fin.emulation.gb {
       => this.cbInstructionTable_.Set(opcode, handler);
 
     private delegate int AriZHandler();
+
+    private delegate void AriCHandler(ref bool c);
 
     private delegate int AriZcHandler(ref bool c);
 
@@ -112,12 +109,25 @@ namespace fin.emulation.gb {
                        this.Registers.HFlag = false;
                  });
 
+    private void AriC(byte opcode, int cycles, AriCHandler handler)
+      => this.Op(opcode,
+                 cycles,
+                 () => {
+                   var carry = this.Registers.CFlag;
+                   handler(ref carry);
+
+                   this.Registers.CFlag = carry;
+                   this.Registers.ZFlag =
+                       this.Registers.NFlag =
+                           this.Registers.HFlag = false;
+                 });
+
     private void CbAriZ(byte opcode, int cycles, AriZHandler handler)
       => this.CbOp(opcode,
                    cycles,
                    () => {
                      var result = handler();
-                     
+
                      this.Registers.ZFlag = result == 0;
                      this.Registers.CFlag =
                          this.Registers.NFlag =
@@ -130,7 +140,7 @@ namespace fin.emulation.gb {
                    () => {
                      var carry = this.Registers.CFlag;
                      var result = handler(ref carry);
-                     
+
                      this.Registers.ZFlag = result == 0;
                      this.Registers.CFlag = carry;
                      this.Registers.NFlag =
@@ -209,7 +219,7 @@ namespace fin.emulation.gb {
       this.Op(0x6b, 4, () => this.L.Value = this.E.Value);
       this.Op(0x6c, 4, () => this.L.Value = this.H.Value);
       this.Op(0x6d, 4, () => {}); // L=L, NOP
-      this.Op(0x6e, 8, () => this.E.Value = this._Hl_.Value);
+      this.Op(0x6e, 8, () => this.L.Value = this._Hl_.Value);
 
       this.Op(0x70, 8, () => this._Hl_.Value = this.B.Value);
       this.Op(0x71, 8, () => this._Hl_.Value = this.C.Value);
@@ -310,12 +320,12 @@ namespace fin.emulation.gb {
       this.Op(0xf8,
               12,
               () => {
-                var address = this.Sp.Value + this.R8;
+                var start = this.Sp.Value;
+                var delta = this.R8;
+                var address = start + delta;
                 this.Hl.Value = (ushort) address;
 
-                this.Registers.ZFlag = this.Registers.NFlag = false;
-                this.Registers.HFlag = (address & 0x10) != 0;
-                this.Registers.CFlag = (address & 0x100) != 0;
+                this.UpdateAddTo16SpFlags_((byte) start, (byte) delta);
               });
       // 5. LD (nn),SP
       this.Op(0x08,
@@ -348,20 +358,22 @@ namespace fin.emulation.gb {
 
     private void AdcToA(byte value) {
       var startA = this.A.Value;
-
       var carry = this.Registers.CFlag ? 1 : 0;
-      var delta = value + carry;
 
       var result = this.A.Value + value + carry;
       this.A.Value = (byte) result;
 
-      this.UpdateFlagsAfterAdd_(startA, delta, result);
+      this.UpdateFlagsAfterAdd_(startA, value, result, carry);
     }
 
-    private void UpdateFlagsAfterAdd_(int start, int delta, int result) { 
+    private void UpdateFlagsAfterAdd_(
+        int start,
+        int delta,
+        int result,
+        int carry = 0) {
       this.Registers.ZFlag = (byte) result == 0;
       this.Registers.NFlag = false;
-      this.UpdateHFlag8(start, delta, result);
+      this.Registers.HFlag = (start & 0xf) + (delta & 0xf) + carry > 0xf;
       this.Registers.CFlag = (result & 0x100) != 0;
     }
 
@@ -376,26 +388,24 @@ namespace fin.emulation.gb {
 
     private void SbcFromA(byte value) {
       var startA = this.A.Value;
-
       var carry = this.Registers.CFlag ? 1 : 0;
-      var delta = value + carry;
 
-      var result = startA - delta;
+      var result = startA - value - carry;
       this.A.Value = (byte) result;
 
-      this.UpdateFlagsAfterSubtract_(startA, delta, result);
+      this.UpdateFlagsAfterSubtract_(startA, value, result, carry);
     }
 
-    private void UpdateFlagsAfterSubtract_(int start, int delta, int result) {
+    private void UpdateFlagsAfterSubtract_(
+        int start,
+        int delta,
+        int result,
+        int carry = 0) {
       this.Registers.ZFlag = (byte) result == 0;
       this.Registers.NFlag = true;
-      this.UpdateHFlag8(start, delta, result);
-
-      this.Registers.CFlag = (-(sbyte)(result >> 8) & 0x1) != 0;
+      this.Registers.HFlag = (start & 0xf) - (delta & 0xf) - carry < 0;
+      this.Registers.CFlag = result < 0;
     }
-    
-    private void UpdateHFlag8(int start, int delta, int result)
-      => this.Registers.HFlag = ((start ^ delta ^ result) & 0x10) != 0;
 
     private void AndWithA(byte value) {
       var result = this.A.Value & value;
@@ -419,7 +429,7 @@ namespace fin.emulation.gb {
     private void XorWithA(byte value) {
       var result = this.A.Value ^ value;
       this.A.Value = (byte) result;
-      
+
       this.Registers.ZFlag = this.A.Value == 0;
       this.Registers.NFlag =
           this.Registers.HFlag = this.Registers.CFlag = false;
@@ -437,7 +447,7 @@ namespace fin.emulation.gb {
 
       this.Registers.ZFlag = register.Value == 0;
       this.Registers.NFlag = false;
-      this.Registers.HFlag = (result % 16) == 0;
+      this.Registers.HFlag = (result & 0xf) == 0;
     }
 
     private void Dec(ISingleRegister register) {
@@ -446,7 +456,7 @@ namespace fin.emulation.gb {
 
       this.Registers.ZFlag = register.Value == 0;
       this.Registers.NFlag = true;
-      this.Registers.HFlag = (result % 16) == 15;
+      this.Registers.HFlag = (result & 0xf) == 0xf;
     }
 
     private void Define333_8BitAlu_() {
@@ -556,10 +566,9 @@ namespace fin.emulation.gb {
       var result = start + value;
       register.Value = (ushort) result;
 
-      this.Registers.ZFlag = register.Value == 0;
       this.Registers.NFlag = false;
-      this.UpdateHFlag16(start, value, (ushort) result);
-      this.Registers.CFlag = (result & 0x10000) != 0;
+      this.Registers.HFlag = (start & 0xfff) + (value & 0xfff) > 0xfff;
+      this.Registers.CFlag = result > 0xffff;
     }
 
     private void AddTo16Sp(IDoubleRegister register, int value) {
@@ -568,14 +577,15 @@ namespace fin.emulation.gb {
       var result = start + value;
       register.Value = (ushort) result;
 
-      this.Registers.ZFlag = false;
-      this.Registers.NFlag = false;
-      this.Registers.HFlag = (result & 0x10) != 0;
-      this.Registers.CFlag = (result & 0x100) != 0;
+      this.UpdateAddTo16SpFlags_((byte) start, (byte) value);
     }
 
-    private void UpdateHFlag16(ushort start, ushort delta, ushort result)
-      => this.Registers.HFlag = ((start ^ delta ^ result) & 0x1000) != 0;
+    private void UpdateAddTo16SpFlags_(byte start, byte delta) {
+      this.Registers.ZFlag = false;
+      this.Registers.NFlag = false;
+      this.Registers.HFlag = (start & 0xf) + (delta & 0xf) > 0xf;
+      this.Registers.CFlag = (start & 0xff) + (delta & 0xff) > 0xff;
+    }
 
     private void Define334_16BitArithmetic_() {
       // 1. ADD HL,n
@@ -613,30 +623,25 @@ namespace fin.emulation.gb {
               () => {
                 var a = this.Registers.A.Value;
 
-                // note: assumes a is a uint8_t and wraps from 0xff to 0
-                if (!this.Registers.NFlag) {
-                  // after an addition, adjust if (half-)carry occurred or if result is out of bounds
-                  if (this.Registers.CFlag || a > 0x99) {
-                    a += 0x60;
-                    this.Registers.CFlag = true;
-                  }
-                  if (this.Registers.HFlag || (a & 0x0f) > 0x09) {
-                    a += 0x6;
-                  }
+                var n = this.Registers.NFlag;
+                var h = this.Registers.HFlag;
+                var c = this.Registers.CFlag;
+
+                var delta = 0;
+                if (h || (!n && (a & 0xf) > 9)) {
+                  delta = 6;
                 }
-                else {
-                  // after a subtraction, only adjust if (half-)carry occurred
-                  if (this.Registers.CFlag) {
-                    a -= 0x60;
-                  }
-                  if (this.Registers.HFlag) {
-                    a -= 0x6;
-                  }
+                if (c || (!n && a > 0x99)) {
+                  delta |= 0x60;
+                  this.Registers.CFlag = true;
                 }
 
-                // these flags are always updated
+                a = (byte) (a + (n ? -delta : +delta));
+
+                this.Registers.A.Value = a;
+
                 this.Registers.ZFlag = (a == 0);
-                this.Registers.HFlag = false; // h flag is always cleared
+                this.Registers.HFlag = false;
               });
       // 3. CPL
       this.Op(0x2f,
@@ -675,13 +680,13 @@ namespace fin.emulation.gb {
 
     private void Define336_RotatesAndShifts_() {
       // 1. RLCA
-      this.AriZc(0x07, 4, (ref bool c) => this.A.RotateLeft(out c));
+      this.AriC(0x07, 4, (ref bool c) => this.A.RotateLeft(out c));
       // 2. RLA
-      this.AriZc(0x17, 4, (ref bool c) => this.A.RotateLeftThrough(ref c));
+      this.AriC(0x17, 4, (ref bool c) => this.A.RotateLeftThrough(ref c));
       // 3. RRCA
-      this.AriZc(0x0f, 4, (ref bool c) => this.A.RotateRight(out c));
+      this.AriC(0x0f, 4, (ref bool c) => this.A.RotateRight(out c));
       // 4. RRA
-      this.AriZc(0x1f, 4, (ref bool c) => this.A.RotateRightThrough(ref c));
+      this.AriC(0x1f, 4, (ref bool c) => this.A.RotateRightThrough(ref c));
       // 5. RLC n
       this.CbAriZc(0x07, 8, (ref bool c) => this.A.RotateLeft(out c));
       this.CbAriZc(0x00, 8, (ref bool c) => this.B.RotateLeft(out c));
@@ -993,43 +998,49 @@ namespace fin.emulation.gb {
       // 2. JP cc,nn
       this.Op(0xc2,
               () => {
-                this.Pc = this.D16;
+                var jumpAddress = this.D16;
                 if (!this.Registers.ZFlag) {
+                  this.Pc = jumpAddress;
                   return 16;
                 }
                 return 12;
               });
       this.Op(0xca,
               () => {
-                this.Pc = this.D16;
+                var jumpAddress = this.D16;
                 if (this.Registers.ZFlag) {
+                  this.Pc = jumpAddress;
                   return 16;
                 }
                 return 12;
               });
       this.Op(0xd2,
               () => {
-                this.Pc = this.D16;
+                var jumpAddress = this.D16;
                 if (!this.Registers.CFlag) {
+                  this.Pc = jumpAddress;
                   return 16;
                 }
                 return 12;
               });
       this.Op(0xda,
               () => {
-                this.Pc = this.D16;
+                var jumpAddress = this.D16;
                 if (this.Registers.CFlag) {
+                  this.Pc = jumpAddress;
                   return 16;
                 }
                 return 12;
               });
       // 3. JP (HL)
-      this.Op(0xe9, 4, () => this.Pc = this._Hl_.Value);
+      this.Op(0xe9, 4, () => this.Pc = this.Hl.Value);
       // 4. JR n
-      this.Op(0x18, 8, () => {
-        var r8 = this.R8;
-        this.Pc = (ushort) (this.Pc + r8);
-      });
+      this.Op(0x18,
+              12,
+              () => {
+                var r8 = this.R8;
+                this.Pc = (ushort) (this.Pc + r8);
+              });
       // 5. JR cc,n
       this.Op(0x20,
               () => {
@@ -1062,51 +1073,54 @@ namespace fin.emulation.gb {
               () => {
                 var r8 = this.R8;
                 if (this.Registers.CFlag) {
-                  this.Pc = (ushort)(this.Pc + r8);
+                  this.Pc = (ushort) (this.Pc + r8);
                   return 12;
                 }
                 return 8;
               });
     }
 
-    private void Call_() {
-      // PC isn't incremented yet, so we have to add 2.
-      this.Stack.Push16((ushort) (this.Pc + 1 + 1));
-      this.Pc = this.D16;
+    private void Call_() => this.CallIf_(true);
+
+    private bool CallIf_(bool ifCondition) {
+      var callAddress = this.D16;
+      var nextInstruction = this.Pc;
+      if (ifCondition) {
+        this.Stack.Push16(nextInstruction);
+        this.Pc = callAddress;
+        return true;
+      }
+      return false;
     }
 
     private void Define339_Calls_() {
       // 1. CALL nn
-      this.Op(0xcd, 24, this.Call_);
+      this.Op(0xcd, 24, () => this.Call_());
       // 1. CALL cc,nn
       this.Op(0xc4,
               () => {
-                if (!this.Registers.ZFlag) {
-                  this.Call_();
+                if (this.CallIf_(!this.Registers.ZFlag)) {
                   return 24;
                 }
                 return 12;
               });
       this.Op(0xcc,
               () => {
-                if (this.Registers.ZFlag) {
-                  this.Call_();
+                if (this.CallIf_(this.Registers.ZFlag)) {
                   return 24;
                 }
                 return 12;
               });
       this.Op(0xd4,
               () => {
-                if (!this.Registers.CFlag) {
-                  this.Call_();
+                if (this.CallIf_(!this.Registers.CFlag)) {
                   return 24;
                 }
                 return 12;
               });
       this.Op(0xdc,
               () => {
-                if (this.Registers.CFlag) {
-                  this.Call_();
+                if (this.CallIf_(this.Registers.CFlag)) {
                   return 24;
                 }
                 return 12;
@@ -1170,33 +1184,33 @@ namespace fin.emulation.gb {
       this.Op(0xc9, 16, () => this.Pc = this.Stack.Pop16());
       // 2. RET cc
       this.Op(0xc0,
-              () => { 
-                this.Pc = this.Stack.Pop16();
+              () => {
                 if (!this.Registers.ZFlag) {
+                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;
               });
       this.Op(0xc8,
               () => {
-                this.Pc = this.Stack.Pop16();
                 if (this.Registers.ZFlag) {
+                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;
               });
       this.Op(0xd0,
               () => {
-                this.Pc = this.Stack.Pop16();
                 if (!this.Registers.CFlag) {
+                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;
               });
       this.Op(0xd8,
               () => {
-                this.Pc = this.Stack.Pop16();
                 if (this.Registers.CFlag) {
+                  this.Pc = this.Stack.Pop16();
                   return 20;
                 }
                 return 8;

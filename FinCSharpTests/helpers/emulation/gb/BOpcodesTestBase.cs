@@ -1,5 +1,6 @@
 ﻿using fin.emulation.gb;
 using fin.emulation.gb.memory;
+using fin.emulation.gb.memory.io;
 using fin.helpers.emulation.gb.memory;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,7 +9,7 @@ namespace fin.helpers.emulation.gb {
   public abstract class BOpcodesTestBase {
     public ISerialBus SerialBus { get; private set; }
     public ReplayRegisters ReplayRegisters { get; private set; }
-    public Memory Memory { get; private set; }
+    public Mmu Memory { get; private set; }
     public ReplayOpcodes Opcodes { get; private set; }
     private Cpu cpu_;
 
@@ -44,7 +45,7 @@ namespace fin.helpers.emulation.gb {
       this.SerialBus = new SerialBus();
       var ioAddresses = new IoAddresses(this.SerialBus);
       this.ReplayRegisters = new ReplayRegisters();
-      this.Memory = new Memory(new MemoryMap(ioAddresses), this.ReplayRegisters);
+      this.Memory = new Mmu(new MemoryMap(ioAddresses), this.ReplayRegisters);
       this.Opcodes = new ReplayOpcodes(this.Memory);
       this.cpu_ = new Cpu(lcd, this.Memory, this.Opcodes);
     }

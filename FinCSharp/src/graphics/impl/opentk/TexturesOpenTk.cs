@@ -64,7 +64,7 @@
 
       GL.BindTexture(TextureTarget.Texture2D, 0);
 
-      return new TextureOpentk(textureId);
+      return new TextureOpenTk(textureId);
     }
 
     private static SizedInternalFormat ConvertImageTypeToTextureFormat_(
@@ -99,10 +99,10 @@
     }
 
     // TODO: Discard
-    private class TextureOpentk : ITexture {
+    private class TextureOpenTk : ITexture {
       private readonly uint textureId_;
 
-      public TextureOpentk(uint textureId) {
+      public TextureOpenTk(uint textureId) {
         this.textureId_ = textureId;
         //this.OnDiscard += _ => this.DestroyTexture_();
       }
@@ -125,6 +125,21 @@
 
       public void Unbind() =>
           GL.BindTexture(TextureTarget.Texture2D, 0);
+    }
+
+    private class PixelBufferObjectOpenTk {
+      private readonly uint bufferId_;
+
+      public PixelBufferObjectOpenTk(uint bufferId) {
+        this.bufferId_ = bufferId;
+        //this.OnDiscard += _ => this.DestroyTexture_();
+      }
+
+      public void SetPixels() {
+        //GL.GenBuffers();
+        GL.BindBuffer(BufferTarget.PixelPackBuffer, this.bufferId_);
+        //GL.BufferData();
+      }
     }
   }
 }

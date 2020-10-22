@@ -12,7 +12,11 @@ namespace fin.emulation.gb {
     private readonly FinArrayGrid<Color> pixels_ =
         new FinArrayGrid<Color>(256, 256, Lcd.WHITE);
 
-    public void Reset() => this.pixels_.Clear();
+    public bool Active { get; set; } = true;
+
+    public void Reset() {
+      this.pixels_.Clear();
+    }
 
     public Color GetPixel(int x, int y) => this.pixels_[x, y];
 
@@ -20,6 +24,10 @@ namespace fin.emulation.gb {
       => this.pixels_[x, y] = color;
 
     public void Render(IGraphics g) {
+      if (!this.Active) {
+        return;
+      }
+
       var r2d = g.Render2d;
       var p = g.Primitives;
       var size = 1;

@@ -1,63 +1,57 @@
-﻿using fin.assert;
+﻿using System;
+
+using fin.assert;
+using fin.emulation.gb.memory.io;
+using fin.emulation.gb.memory.mapper;
+using fin.emulation.gb.memory.mbc;
 
 namespace fin.emulation.gb.memory {
   public class MemoryMap : IMemoryMap {
-    // TODO: Switch this out for a different approach; e.g. memory mapper.
-    private readonly byte[] data_ = new byte[0x8000];
+    private readonly IMemoryMapper impl_;
+
+    private readonly IMemoryBankController mbc_;
+    private readonly RomBankSwitcher romBank0_ = new RomBankSwitcher {Bank = 0};
+    private readonly RomBankSwitcher romBankX_ = new RomBankSwitcher {Bank = 1};
 
     public IoAddresses IoAddresses { get; }
-    public Rom Rom { get; set; }
 
     public MemoryMap(IoAddresses ioAddresses) {
       this.IoAddresses = ioAddresses;
+
+      this.mbc_ = new MemoryBankController(this.romBank0_, this.romBankX_);
+
+      var f = IMemorySourceFactory.INSTANCE;
+
+      var ram = f.NewArray(0xfe00 - 0xe000);
+
+      this.impl_ = f.BuildMapper(0xffff + 1)
+                    .Register(0x0000, this.romBank0_)
+                    .Register(0x4000, this.romBankX_)
+                    .Register(0xc000, ram)
+                    .Register(0xe000, ram)
+                    .Register(0xff00, this.IoAddresses)
+                    .Build();
+      Asserts.Equal(8, this.impl_.SourceCount);
 
       this.Reset();
     }
 
     public void Reset() {
-      for (var i = 0; i < this.data_.Length; ++i) {
-        this.data_[i] = 0;
+      for (var i = 0x8000; i < this.impl_.Size; ++i) {
+        this.impl_[(ushort) i] = 0;
       }
 
+      this.romBankX_.Bank = 1;
       this.IoAddresses.Reset();
     }
 
-
     public byte this[ushort address] {
-      get => this.GetOrSet_(address);
-      set => this.GetOrSet_(address, value);
+      get => this.impl_[address];
+      set => this.impl_[address] = value;
     }
 
-    private byte GetOrSet_(ushort address, byte? setValue = null) {
-      // ROM, Bank 0
-      if (address < 0x4000) {
-        Asserts.Null(setValue, "Can't write to ROM!");
-        return this.Rom[0, address];
-      }
-      // ROM, Switchable bank
-      if (address < 0x8000) {
-        Asserts.Null(setValue, "Can't write to ROM!");
-        // TODO: Handle switchable ROM banks.
-        return this.Rom[1, (ushort) (address - 0x4000)];
-      }
-
-      // TODO: Use different arrays.
-      if (address >= 0xe000 && address < 0xfe00) {
-        address = (ushort)(0xc000 + (address - 0xe000));
-      }
-
-
-      if (address >= 0xff00) {
-        var ioAddress = (byte) (address - 0xff00);
-        return (setValue != null)
-                   ? this.IoAddresses[ioAddress] = (byte) setValue
-                   : this.IoAddresses[ioAddress];
-      }
-      
-      var dataAddress = address - 0x8000;
-      return (setValue != null) ?
-        this.data_[dataAddress] = (byte) setValue:
-        this.data_[dataAddress];
+    public Rom Rom {
+      set => this.mbc_.Rom = value;
     }
   }
 }

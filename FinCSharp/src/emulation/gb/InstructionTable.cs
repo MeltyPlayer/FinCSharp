@@ -5,6 +5,7 @@ using System.Text;
 using fin.assert;
 using fin.data.collections.grid;
 using fin.data.collections.list;
+using fin.emulation.gb.memory;
 
 namespace fin.emulation.gb {
   public interface IInstructionTable {
@@ -32,24 +33,19 @@ namespace fin.emulation.gb {
     public void Set(byte opcode, Func<int> handler) {
       Asserts.Null(
           this.impl_[opcode],
-          $"Expected instruction '{InstructionTableImpl.ByteToHex_(opcode)}' to not be defined yet.");
+          $"Expected instruction '{ByteFormatter.ToHex8(opcode)}' to not be defined yet.");
 
       this.impl_[opcode] = handler;
     }
 
     public int Call(byte opcode) {
       var handler = this.impl_[opcode];
-      Asserts.Nonnull(
-          handler,
-          $"Expected instruction '{InstructionTableImpl.ByteToHex_(opcode)}' to be defined.");
+      if (handler == null) {
+        Asserts.Fail(
+            $"Expected instruction '{ByteFormatter.ToHex8(opcode)}' to be defined.");
+      }
 
       return handler!();
-    }
-
-    private static string ByteToHex_(byte value) {
-      StringBuilder hex = new StringBuilder(4);
-      hex.AppendFormat("0x{0:x2}", value);
-      return hex.ToString();
     }
   }
 }

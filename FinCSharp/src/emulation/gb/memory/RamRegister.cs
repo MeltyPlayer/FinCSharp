@@ -25,7 +25,7 @@
 
 
     public byte ArithmeticShiftRight(out bool carry)
-      => this.Value = ByteMath.LogicalShiftRight(this.Value, out carry);
+      => this.Value = ByteMath.ArithmeticShiftRight(this.Value, out carry);
 
     public byte LogicalShiftLeft(out bool carry)
       => this.Value = ByteMath.LogicalShiftLeft(this.Value, out carry);

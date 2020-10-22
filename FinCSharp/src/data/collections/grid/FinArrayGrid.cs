@@ -6,7 +6,7 @@ using fin.exception;
 namespace fin.data.collections.grid {
   // TODO: Add tests.
   public class FinArrayGrid<T> : IFinGrid<T> {
-    private IFinList<GridNode> impl_;
+    private readonly IFinList<GridNode> impl_;
     private bool touched_ = false;
 
     public int Width { get; }
