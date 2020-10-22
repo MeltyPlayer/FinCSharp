@@ -6,6 +6,7 @@ namespace fin.emulation.gb.memory.io {
 
     public ISerialBus SerialBus { get; }
 
+    public Joypad Joypad { get; } = new Joypad();
     public If If { get; } = new If();
     public Lcdc Lcdc { get; } = new Lcdc();
     public Stat Stat { get; } = new Stat();
@@ -25,6 +26,7 @@ namespace fin.emulation.gb.memory.io {
       this.Ie = f.NewValue();
 
       this.impl_ = f.BuildMapper(0x100)
+                    .Register(0x00, this.Joypad)
                     .Register(
                         0x01,
                         f.BuildValue()

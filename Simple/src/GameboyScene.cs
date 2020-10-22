@@ -42,6 +42,13 @@ namespace simple {
       // Add contents of view.
       var gameboy = instantiator.Wrap(viewRoot, new GameboyComponent());
       gameboy.LaunchRom(LocalFile.WithinResources("sml.gb"));
+
+      /*var romPath =
+          "R:/Documents/CSharpWorkspace/FinCSharp/FinCSharpTests/tst/emulation/gb/blargg/" +
+          "cpu_instrs" +
+          ".gb";
+      var romFile = LocalFile.At(romPath);
+      gameboy.LaunchRom(romFile);*/
     }
 
     private class AudioComponent : IComponent {

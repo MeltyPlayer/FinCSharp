@@ -166,7 +166,7 @@ namespace fin.emulation.gb {
 
           //overflow
           if (++ioAddresses.Tima == 0) {
-            this.interruptZ80_(InterruptType.TIMER);
+            this.InterruptZ80(InterruptType.TIMER);
             ioAddresses.Tima = ioAddresses.Tma;
           }
         }
@@ -218,7 +218,7 @@ namespace fin.emulation.gb {
               //starting vsync period
               if (++ly >= 144) {
                 this.ChangeStat_(PpuModeType.V_BLANK);
-                this.interruptZ80_(InterruptType.V_BLANK);
+                this.InterruptZ80(InterruptType.V_BLANK);
               } else {
                 this.ChangeStat_(PpuModeType.OAM_RAM_SEARCH);
                 this.PpuModeCycleCount = 80;
@@ -254,6 +254,7 @@ namespace fin.emulation.gb {
 
     private void ChangeStat_(PpuModeType newModeType) {
       var stat = this.IoAddresses.Stat;
+      stat.Mode = newModeType;
 
       var shouldTriggerLcdInterrupt = newModeType switch {
           PpuModeType.OAM_RAM_SEARCH => stat.OamRamSearchInterruptEnabled,
@@ -263,7 +264,7 @@ namespace fin.emulation.gb {
       };
 
       if (shouldTriggerLcdInterrupt) {
-        this.interruptZ80_(InterruptType.LCD_STAT);
+        this.InterruptZ80(InterruptType.LCD_STAT);
       }
     }
 
@@ -379,14 +380,14 @@ namespace fin.emulation.gb {
         //STAT
         ioAddresses.Stat.Value |= 0x4;
         if ((stat.Value & 0x40) != 0) {
-          this.interruptZ80_(InterruptType.LCD_STAT);
+          this.InterruptZ80(InterruptType.LCD_STAT);
         }
       } else {
         stat.Value = (byte) (stat.Value & ~0x4);
       }
     }
 
-    private enum InterruptType {
+    public enum InterruptType {
       V_BLANK,
       LCD_STAT,
       TIMER,
@@ -394,7 +395,7 @@ namespace fin.emulation.gb {
       JOYPAD,
     }
 
-    private void interruptZ80_(InterruptType type) {
+    public void InterruptZ80(InterruptType type) {
       var if_ = this.IoAddresses.If;
       switch (type) {
         case InterruptType.V_BLANK:
@@ -423,23 +424,15 @@ namespace fin.emulation.gb {
       }
 
       var lcdc = this.IoAddresses.Lcdc.Value;
-      var ly = this.IoAddresses.Ly.Value;
-      var lcd = this.lcd_;
-
       this.ScanlineLcdc = lcdc;
 
-      var rand = Color.Random();
-      for (var x = 0; x < 160; ++x) {
-        lcd.SetPixel(x, ly, rand);
+      if ((lcdc & 0x1) != 0) {
+        this.DrawBg_();
       }
 
-      /*if ((lcdc & 0x1) != 0) {
-        this.DrawBg_();
-      }*/
-
-      /*if ((lcdc & 0x2) != 0) {
+      if ((lcdc & 0x2) != 0) {
         this.DrawSprites_();
-      }*/
+      }
     }
 
     private void DrawBg_() {

@@ -15,7 +15,7 @@ namespace fin.emulation.gb.blargg {
   [TestClass]
   public class BlarggTest {
     private const bool COMPARE_TO_BINJGB_ = false;
-    private const bool LOG_TRACE_ = false;
+    private const bool LOG_TRACE_ = true;
 
     [TestMethod]
     public void TestInstrTiming() => this.TestFile_("instr_timing");
