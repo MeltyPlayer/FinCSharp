@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace fin.data.collections.list {
   public class FinArrayList<T> : IFinList<T> {
-    private readonly ArrayList impl_;
+    private readonly List<T> impl_;
 
     public FinArrayList() {
-      this.impl_ = new ArrayList();
+      this.impl_ = new List<T>();
     }
 
     public FinArrayList(int size, T defaultValue = default) {
-      this.impl_ = new ArrayList();
+      this.impl_ = new List<T>(size);
       for (var i = 0; i < size; ++i) {
         this.impl_.Add(defaultValue);
       }

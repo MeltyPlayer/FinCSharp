@@ -1,7 +1,7 @@
 ﻿namespace fin.emulation.gb.memory.io {
   public enum PpuModeType {
-    H_BLANK = 0,
-    V_BLANK = 1,
+    HBLANK = 0,
+    VBLANK = 1,
     OAM_RAM_SEARCH = 2,
     DATA_TRANSFER = 3,
   }
@@ -17,12 +17,12 @@
       set => this.Value = (byte) BitMath.SetBit(this.Value, 5, value);
     }
 
-    public bool HBlankInterruptEnabled {
+    public bool HblankInterruptEnabled {
       get => BitMath.GetBit(this.Value, 3);
       set => this.Value = (byte)BitMath.SetBit(this.Value, 3, value);
     }
 
-    public bool VBlankInterruptEnabled {
+    public bool VblankInterruptEnabled {
       get => BitMath.GetBit(this.Value, 4);
       set => this.Value = (byte)BitMath.SetBit(this.Value, 4, value);
     }

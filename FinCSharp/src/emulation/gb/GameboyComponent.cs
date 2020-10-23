@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 using fin.app;
@@ -7,6 +8,7 @@ using fin.app.node;
 using fin.emulation.gb.memory;
 using fin.emulation.gb.memory.io;
 using fin.file;
+using fin.graphics;
 using fin.graphics.camera;
 using fin.graphics.color;
 
@@ -20,17 +22,30 @@ namespace fin.emulation.gb {
     private readonly Mmu mmu_;
     private readonly Cpu cpu_;
 
-    public GameboyComponent() {
+    private readonly IPixelBufferObject pbo_;
+    private bool pboCacheDirty_ = true;
+
+    public GameboyComponent(ITextures t) {
       this.lcd_ = new Lcd();
       this.mmu_ =
           new Mmu(new MemoryMap(new IoAddresses(new SerialBus())),
-                     new Registers());
+                  new Registers());
       var opcodes = new Opcodes(this.mmu_);
+
       this.cpu_ = new Cpu(this.lcd_, this.mmu_, opcodes);
+      this.cpu_.OnEnterVblank += () => {
+        if (!this.pboCacheDirty_) {
+          return;
+        }
+        this.pbo_.SetAllPixels(this.lcd_.PixelData);
+        this.pboCacheDirty_ = false;
+      };
 
       var outputPath =
           "R:/Documents/CSharpWorkspace/FinCSharp/FinCSharpTests/tst/emulation/gb/blargg/output.txt";
       this.writer_ = new StreamWriter(outputPath);
+
+      this.pbo_ = t.Create(201, 144);
     }
 
     public void LaunchRom(IFile romFile) {
@@ -46,11 +61,16 @@ namespace fin.emulation.gb {
     // TODO: Consider hooking into a different event.
     [OnTick]
     private void StartTick_(StartTickEvent _) {
+      this.pboCacheDirty_ = true;
+
       var doLog = false;
 
       var cpu = this.cpu_;
       var memoryMap = this.mmu_.MemoryMap;
       var ioAddresses = memoryMap.IoAddresses;
+      var stat = ioAddresses.Stat;
+
+      var initialPpuMode = stat.Mode;
 
       if (!doLog) {
         this.cpu_.ExecuteCycles(70224); // 70221
@@ -90,10 +110,10 @@ namespace fin.emulation.gb {
             output.AppendFormat(" ly={0:x2}", ly.Value);
             output.AppendFormat(" ppu={0:x1} |", ppuMode);
 
-            output.AppendFormat(" div={0:x2}", ioAddresses.Div);
-            output.AppendFormat(" tima={0:x2}", ioAddresses.Tima);
-            output.AppendFormat(" tma={0:x2}", ioAddresses.Tma);
-            output.AppendFormat(" tac={0:x2}", ioAddresses.Tac);
+            output.AppendFormat(" div={0:x2}", ioAddresses.Div.Value);
+            output.AppendFormat(" tima={0:x2}", ioAddresses.Tima.Value);
+            output.AppendFormat(" tma={0:x2}", ioAddresses.Tma.Value);
+            output.AppendFormat(" tac={0:x2}", ioAddresses.Tac.Value);
 
             output.Append('\n');
 
@@ -121,28 +141,125 @@ namespace fin.emulation.gb {
         RenderForOrthographicCameraTickEvent evt) {
       var g = evt.Graphics;
 
-      this.lcd_.Render(g);
+      this.RenderLcd_(g);
 
       g.Primitives.VertexColor(Color.White);
 
       var registers = this.mmu_.Registers;
-      var ioAddresses = this.mmu_.MemoryMap.IoAddresses;
+      var memoryMap = this.mmu_.MemoryMap;
+      var ioAddresses = memoryMap.IoAddresses;
+
+      var lX = 202;
+      var bY = 145;
 
       var t = g.Text;
       var i = 0;
-      t.Draw(320, 20*i++, 16, 16, "pc: " + ByteFormatter.ToHex16(registers.Pc.Value));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "pc: " + ByteFormatter.ToHex16(registers.Pc.Value));
 
       i++;
-      t.Draw(320, 20 * i++, 16, 16, "af: " + ByteFormatter.ToHex16(registers.Af.Value));
-      t.Draw(320, 20 * i++, 16, 16, "bc: " + ByteFormatter.ToHex16(registers.Bc.Value));
-      t.Draw(320, 20 * i++, 16, 16, "de: " + ByteFormatter.ToHex16(registers.De.Value));
-      t.Draw(320, 20 * i++, 16, 16, "hl: " + ByteFormatter.ToHex16(registers.Hl.Value));
-
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "af: " + ByteFormatter.ToHex16(registers.Af.Value));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "bc: " + ByteFormatter.ToHex16(registers.Bc.Value));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "de: " + ByteFormatter.ToHex16(registers.De.Value));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "hl: " + ByteFormatter.ToHex16(registers.Hl.Value));
       i++;
-      t.Draw(320, 20 * i++, 16, 16, "ppu: " + ByteFormatter.ToHex8((byte)this.cpu_.PpuMode));
-      t.Draw(320, 20 * i++, 16, 16, "ly: " + ByteFormatter.ToHex8(this.mmu_.MemoryMap.IoAddresses.Ly.Value));
-      t.Draw(320, 20 * i++, 16, 16, ByteFormatter.ToHex8(ioAddresses.Lcdc.Value));
-      t.Draw(320, 20 * i++, 16, 16, ByteFormatter.ToHex8(this.cpu_.ScanlineLcdc));
+
+      lX = 320;
+      i = 0;
+
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "ppu: " + ByteFormatter.ToHex8((byte) this.cpu_.PpuMode));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "ly: " +
+             ByteFormatter.ToHex8(this.mmu_.MemoryMap.IoAddresses.Ly.Value));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             "dma: " +
+             ByteFormatter.ToHex16(this.mmu_.MemoryMap.IoAddresses
+                                       .LastDmaAddress));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             ByteFormatter.ToHex8(ioAddresses.Lcdc.Value));
+      t.Draw(lX,
+             20 * i++,
+             16,
+             16,
+             ByteFormatter.ToHex8(this.cpu_.ScanlineLcdc));
+
+      var oam = memoryMap.Oam;
+
+      for (i = 0; i < 40; i++) {
+        var oamAddress = (ushort) (i * 4);
+        var y = (byte) (oam[oamAddress] - 16);
+        var x = (byte) (oam[(ushort) (oamAddress + 1)] - 8);
+
+        var nPerRow = 7;
+        var c = i % nPerRow;
+        var r = (i - c) / nPerRow;
+
+        t.Draw(c * 90,
+               bY + r * 20,
+               16,
+               16,
+               "(" +
+               ByteFormatter.ToHex8(x) +
+               ", " +
+               ByteFormatter.ToHex8(y) +
+               ")");
+      }
+    }
+
+    private void RenderLcd_(IGraphics g) {
+      if (!this.lcd_.Active) {
+        return;
+      }
+      
+      var r2d = g.Render2d;
+
+      this.pbo_.Bind();
+      r2d.Rectangle(0, 0, 201, 144, true);
+      this.pbo_.Unbind();
+      
+      /*var p = g.Primitives;
+      var size = 1;
+      p.Begin(PrimitiveType.POINTS);
+      for (var y = 0; y < height; ++y) {
+        for (var x = 0; x < width; ++x) {
+          var color = this.pixels_[x, y];
+          p.VertexColor(color).Vertex(x, y);
+          //r2d.Rectangle(x * size, y * size, size, size, true);
+        }
+      }
+      p.End();*/
     }
   }
 }

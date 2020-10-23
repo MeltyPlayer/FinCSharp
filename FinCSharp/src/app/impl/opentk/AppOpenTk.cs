@@ -9,6 +9,7 @@ using fin.audio.impl.opentk;
 using fin.discardable;
 using fin.discardable.impl;
 using fin.function;
+using fin.graphics;
 using fin.graphics.impl.opentk;
 using fin.input;
 using fin.input.impl.opentk;
@@ -24,6 +25,8 @@ namespace fin.app.impl.opentk {
     private readonly IAppNode root_;
     private readonly ISceneManager sceneManager_ = new SceneManagerImpl();
 
+
+    public IGraphics Graphics => this.g_;
     private readonly GraphicsOpenTk g_ = new GraphicsOpenTk();
 
     public IAudio Audio { get; }

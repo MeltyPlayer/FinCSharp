@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
-using fin.data.collections.list;
 using fin.exception;
 
 namespace fin.data.collections.grid {
   // TODO: Add tests.
   public class FinArrayGrid<T> : IFinGrid<T> {
-    private readonly IFinList<GridNode> impl_;
+    private readonly GridNode[] impl_;
     private bool touched_ = false;
 
     public int Width { get; }
@@ -23,7 +23,7 @@ namespace fin.data.collections.grid {
       this.defaultValue_ = defaultValue;
 
       var size = width * height;
-      this.impl_ = new FinArrayList<GridNode>(size);
+      this.impl_ = new GridNode[size];
       for (var r = 0; r < height; ++r) {
         for (var c = 0; c < width; ++c) {
           var i = this.CalculateIndex_(c, r);
@@ -32,10 +32,13 @@ namespace fin.data.collections.grid {
       }
     }
 
-    public int Count => this.impl_.Count;
+    public int Count => this.impl_.Length;
 
-    public IEnumerator<IGridNode<T>> GetEnumerator() =>
-        this.impl_.GetEnumerator();
+    public IEnumerator<IGridNode<T>> GetEnumerator() {
+      foreach (var node in this.impl_) {
+        yield return node;
+      }
+    }
 
     public bool Clear() {
       if (!this.touched_) {
@@ -74,6 +77,7 @@ namespace fin.data.collections.grid {
       return true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int CalculateIndex_(int c, int r) => r * this.Width + c;
 
     private class GridNode : IGridNode<T> {

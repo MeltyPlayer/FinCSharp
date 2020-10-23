@@ -1,4 +1,6 @@
-﻿using fin.emulation.gb.memory.mapper;
+﻿using System.Diagnostics;
+
+using fin.emulation.gb.memory.mapper;
 
 namespace fin.emulation.gb.memory.io {
   public class IoAddresses : IMemorySource {
@@ -7,12 +9,26 @@ namespace fin.emulation.gb.memory.io {
     public ISerialBus SerialBus { get; }
 
     public Joypad Joypad { get; } = new Joypad();
+    public IMemoryValue Div { get; }
+    public IMemoryValue Tima { get; }
+    public IMemoryValue Tma { get; }
+    public IMemoryValue Tac { get; }
     public If If { get; } = new If();
     public Lcdc Lcdc { get; } = new Lcdc();
     public Stat Stat { get; } = new Stat();
+    public IMemoryValue ScrollY { get; }
+    public IMemoryValue ScrollX { get; }
     public Ly Ly { get; } = new Ly();
     public Lyc Lyc { get; } = new Lyc();
+    public IMemoryValue Bgp { get; }
+    public IMemoryValue Obp0 { get; }
+    public IMemoryValue Obp1 { get; }
+    public IMemoryValue Wy { get; }
+    public IMemoryValue Wx { get; }
     public IMemoryValue Ie { get; }
+    public IMemoryMap? Parent { get; set; }
+
+    public ushort LastDmaAddress { get; set; }
 
     public IoAddresses(ISerialBus serialBus) {
       this.SerialBus = serialBus;
@@ -23,6 +39,34 @@ namespace fin.emulation.gb.memory.io {
 
       var f = IMemorySourceFactory.INSTANCE;
 
+      this.Div = f.BuildValue()
+                  .OnSet((value, direct) => {
+                    if (!direct) {
+                      this.DivCounter = 0;
+                      return 0;
+                    }
+                    return value;
+                  })
+                  .Build();
+      this.Tima = f.NewValue();
+      this.Tma = f.NewValue();
+      this.Tac = f.BuildValue()
+                  .OnSet((value, direct) => {
+                    if (!direct) {
+                      this.TimerCounter = 0;
+                      return (byte) (value | 0xf8);
+                    }
+                    return value;
+                  })
+                  .Build();
+
+      this.ScrollY = f.NewValue();
+      this.ScrollX = f.NewValue();
+      this.Bgp = f.NewValue();
+      this.Obp0 = f.NewValue();
+      this.Obp1 = f.NewValue();
+      this.Wy = f.NewValue();
+      this.Wx = f.NewValue();
       this.Ie = f.NewValue();
 
       this.impl_ = f.BuildMapper(0x100)
@@ -33,33 +77,36 @@ namespace fin.emulation.gb.memory.io {
                          .OnSet(this.SerialBus.Bytes.OnNext)
                          .Build()
                     )
-                    //FF04 - DIV - Divider Register (R/W)
-                    .Register(0x04,
-                              f.BuildValue()
-                               .OnSet((value, direct) => {
-                                 if (!direct) {
-                                   this.DivCounter = 0;
-                                   return 0;
-                                 }
-                                 return value;
-                               })
-                               .Build())
-                    //FF07 - TAC
-                    .Register(0x07,
-                              f.BuildValue()
-                               .OnSet((value , direct) => {
-                                 if (!direct) {
-                                   this.TimerCounter = 0;
-                                   return (byte)(value | 0xf8);
-                                 }
-                                 return value;
-                               })
-                               .Build())
+                    .Register(0x04, this.Div)
+                    .Register(0x05, this.Tima)
+                    .Register(0x06, this.Tma)
+                    .Register(0x07, this.Tac)
                     .Register(0x0f, this.If)
                     .Register(0x40, this.Lcdc)
                     .Register(0x41, this.Stat)
+                    .Register(0x42, this.ScrollY)
+                    .Register(0x43, this.ScrollX)
                     .Register(0x44, this.Ly)
                     .Register(0x45, this.Lyc)
+                    .Register(0x46,
+                              f.BuildValue()
+                               .OnSet(value => {
+                                 var address = (ushort) (value << 8);
+                                 this.LastDmaAddress = address;
+
+                                 var memory = this.Parent!;
+                                 var oam = memory.Oam;
+                                 var oamSize = oam.Size;
+                                 for (ushort i = 0; i < oamSize; ++i) {
+                                   oam[i] = memory[(ushort) (address + i)];
+                                 }
+                               })
+                               .Build())
+                    .Register(0x47, this.Bgp)
+                    .Register(0x48, this.Obp0)
+                    .Register(0x49, this.Obp1)
+                    .Register(0x4a, this.Wy)
+                    .Register(0x4b, this.Wx)
                     .Register(0xff, this.Ie)
                     .Build();
     }
@@ -69,13 +116,15 @@ namespace fin.emulation.gb.memory.io {
       this.TimerCounter = 0;
 
       for (var i = 0; i < this.impl_.Size; ++i) {
-        this.impl_[(ushort) i] = 0;
+        if (i != 0x46) {
+          this.impl_[(ushort) i] = 0;
+        }
       }
 
-      this.Div = 0x00;
-      this.Tima = 0x00;
-      this.Tma = 0x00;
-      this.Tac = 0x00;
+      this.Div.Value = 0x00;
+      this.Tima.Value = 0x00;
+      this.Tma.Value = 0x00;
+      this.Tac.Value = 0x00;
       this.Nr10 = 0x80;
       this.Nr11 = 0xbf;
       this.Nr12 = 0xf3;
@@ -96,40 +145,20 @@ namespace fin.emulation.gb.memory.io {
       this.Nr52 = 0xf1;
       this.Lcdc.Value = 0x91;
       this.Stat.Value = 0x84;
-      this.ScY = 0x00;
-      this.ScX = 0x00;
+      this.ScrollY.Value = 0x00;
+      this.ScrollX.Value = 0x00;
 
       //this.Ly = 0x90; // 0x00 for DMG, 0x90 for GBC
       this.Ly.Value = 0x00; // 0x00 for DMG, 0x90 for GBC
 
       this.Lyc.Value = 0x00;
-      this.Bgp = 0xfc;
-      this.Obp0 = 0xff;
-      this.Obp1 = 0xff;
-      this.Wy = 0x00;
-      this.Wx = 0x00;
+      this.Bgp.Value = 0xfc;
+      this.Obp0.Value = 0xff;
+      this.Obp1.Value = 0xff;
+      this.Wy.Value = 0x00;
+      this.Wx.Value = 0x00;
       this.Ie.Value = 0x00;
       this.If.Value = 0xe0;
-    }
-
-    public byte Div {
-      get => this[0x04];
-      set => this[0x04] = value;
-    }
-
-    public byte Tima {
-      get => this[0x05];
-      set => this[0x05] = value;
-    }
-
-    public byte Tma {
-      get => this[0x06];
-      set => this[0x06] = value;
-    }
-
-    public byte Tac {
-      get => this[0x07];
-      set => this[0x07] = value;
     }
 
     public byte Nr10 {
@@ -222,41 +251,6 @@ namespace fin.emulation.gb.memory.io {
       set => this[0x26] = value;
     }
 
-    public byte ScY {
-      get => this[0x42];
-      set => this[0x42] = value;
-    }
-
-    public byte ScX {
-      get => this[0x43];
-      set => this[0x43] = value;
-    }
-
-    public byte Bgp {
-      get => this[0x47];
-      set => this[0x47] = value;
-    }
-
-    public byte Obp0 {
-      get => this[0x48];
-      set => this[0x48] = value;
-    }
-
-    public byte Obp1 {
-      get => this[0x49];
-      set => this[0x49] = value;
-    }
-
-    public byte Wy {
-      get => this[0x4a];
-      set => this[0x4a] = value;
-    }
-
-    public byte Wx {
-      get => this[0x4b];
-      set => this[0x4b] = value;
-    }
-    
 
     public byte this[ushort address] {
       get => this.impl_[address];

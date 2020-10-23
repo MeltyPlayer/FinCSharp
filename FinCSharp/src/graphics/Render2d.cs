@@ -13,7 +13,8 @@
     public virtual Render2d Point(Vertex2d vertex) => this.Points(vertex);
 
     public virtual Render2d Points(params Vertex2d[] vertices) {
-      this.graphics_.Primitives.Begin(PrimitiveType.POINTS).Vertices(vertices)
+      this.graphics_.Primitives.Begin(PrimitiveType.POINTS)
+          .Vertices(vertices)
           .End();
       return this;
     }
@@ -25,11 +26,12 @@
       return this;
     }
 
-    public virtual Render2d Circle(float centerX,
-                                   float centerY,
-                                   float radius,
-                                   int vertexCount,
-                                   bool filled) {
+    public virtual Render2d Circle(
+        float centerX,
+        float centerY,
+        float radius,
+        int vertexCount,
+        bool filled) {
       var primitives = this.graphics_.Primitives;
 
       if (filled) {
@@ -41,8 +43,7 @@
                         centerY - radius * MathF.Sin(deg));
           primitives.Vertex(x, y);
         }
-      }
-      else {
+      } else {
         primitives.Begin(PrimitiveType.LINE_LOOP);
         for (var i = 0; i < vertexCount; ++i) {
           var deg = MathF.PI * 2 * i / vertexCount;
@@ -57,16 +58,21 @@
       return this;
     }
 
-    public virtual Render2d Rectangle(float leftX,
-                                      float topY,
-                                      float width,
-                                      float height,
-                                      bool filled) {
+    public virtual Render2d Rectangle(
+        float leftX,
+        float topY,
+        float width,
+        float height,
+        bool filled) {
       this.graphics_.Primitives
           .Begin(filled ? PrimitiveType.QUADS : PrimitiveType.LINE_LOOP)
+          .VertexUv(0, 0)
           .Vertex(leftX, topY)
+          .VertexUv(1, 0)
           .Vertex(leftX + width, topY)
+          .VertexUv(1, 1)
           .Vertex(leftX + width, topY + height)
+          .VertexUv(0, 1)
           .Vertex(leftX, topY + height)
           .End();
       return this;

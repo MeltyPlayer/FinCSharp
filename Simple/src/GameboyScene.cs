@@ -31,7 +31,8 @@ namespace simple {
       window.Height = appHeight;
       window.Visible = true;
 
-      var instantiator = evt.App.Instantiator;
+      var app = evt.App;
+      var instantiator = app.Instantiator;
       var viewRoot = instantiator.NewTopLevelChild();
 
       var view =
@@ -40,7 +41,9 @@ namespace simple {
       view.AddOrthographicCamera(viewRoot);
 
       // Add contents of view.
-      var gameboy = instantiator.Wrap(viewRoot, new GameboyComponent());
+      var gameboy =
+          instantiator.Wrap(viewRoot,
+                            new GameboyComponent(app.Graphics.Textures));
       gameboy.LaunchRom(LocalFile.WithinResources("sml.gb"));
 
       /*var romPath =

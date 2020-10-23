@@ -1,4 +1,7 @@
 ﻿using fin.emulation.gb.memory.io;
+using fin.emulation.gb.memory.mapper;
+
+using OpenTK.Graphics.ES11;
 
 namespace fin.emulation.gb.memory {
   public interface IMemoryComponent {
@@ -9,8 +12,10 @@ namespace fin.emulation.gb.memory {
   }
 
   public interface IMemoryMap : IMemoryComponent {
-    IoAddresses IoAddresses { get; }
     Rom Rom { set; }
+    IMemoryArray Vram { get; }
+    IMemoryArray Oam { get; }
+    IoAddresses IoAddresses { get; }
     byte this[ushort address] { get; set; }
   }
 

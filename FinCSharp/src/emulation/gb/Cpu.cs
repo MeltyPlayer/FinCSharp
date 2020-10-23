@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 
 using fin.assert;
@@ -153,21 +154,21 @@ namespace fin.emulation.gb {
 
       if (ioAddresses.DivCounter >= 256) {
         ioAddresses.DivCounter -= 256;
-        ++ioAddresses.Div;
+        ++ioAddresses.Div.Value;
       }
 
       //TIMA
-      if ((ioAddresses.Tac & 0x4) != 0) {
+      if ((ioAddresses.Tac.Value & 0x4) != 0) {
         ioAddresses.TimerCounter += cyclesThisIteration;
 
-        var tacCycles = this.tacCycles_[ioAddresses.Tac & 0x3];
+        var tacCycles = this.tacCycles_[ioAddresses.Tac.Value & 0x3];
         while (ioAddresses.TimerCounter >= tacCycles) {
           ioAddresses.TimerCounter -= tacCycles;
 
           //overflow
-          if (++ioAddresses.Tima == 0) {
+          if (++ioAddresses.Tima.Value == 0) {
             this.InterruptZ80(InterruptType.TIMER);
-            ioAddresses.Tima = ioAddresses.Tma;
+            ioAddresses.Tima.Value = ioAddresses.Tma.Value;
           }
         }
       }
@@ -205,19 +206,19 @@ namespace fin.emulation.gb {
           else if (mode == PpuModeType.DATA_TRANSFER) {
             if (this.UpwardScanlineCycleCounter >
                 80 + this.PpuModeCycleCount) {
-              this.ChangeStat_(PpuModeType.H_BLANK);
+              this.ChangeStat_(PpuModeType.HBLANK);
               this.PpuModeCycleCount = 456 - this.UpwardScanlineCycleCounter;
 
               this.DrawScanline_();
             }
-          } else if (mode == PpuModeType.H_BLANK) {
+          } else if (mode == PpuModeType.HBLANK) {
             // 80 + 172 + 204
             if (this.UpwardScanlineCycleCounter > 456) {
               this.UpwardScanlineCycleCounter -= 456;
 
               //starting vsync period
               if (++ly >= 144) {
-                this.ChangeStat_(PpuModeType.V_BLANK);
+                this.ChangeStat_(PpuModeType.VBLANK);
                 this.InterruptZ80(InterruptType.V_BLANK);
               } else {
                 this.ChangeStat_(PpuModeType.OAM_RAM_SEARCH);
@@ -231,7 +232,7 @@ namespace fin.emulation.gb {
               this.ChangeStat_(PpuModeType.DATA_TRANSFER);
               this.PpuModeCycleCount = 172;
             }
-          } else if (mode == PpuModeType.V_BLANK) {
+          } else if (mode == PpuModeType.VBLANK) {
             if (this.UpwardScanlineCycleCounter > 456) {
               this.UpwardScanlineCycleCounter -= 456;
               if (++ly >= 154) {
@@ -246,11 +247,15 @@ namespace fin.emulation.gb {
         }
       } else {
         // Reset
-        stat.Mode = PpuModeType.H_BLANK;
+        stat.Mode = PpuModeType.HBLANK;
         this.UpwardScanlineCycleCounter = 0;
         ioAddresses.Ly.Value = 0;
       }
     }
+
+    public delegate void OnEnterVblankHandler();
+
+    public event OnEnterVblankHandler OnEnterVblank;
 
     private void ChangeStat_(PpuModeType newModeType) {
       var stat = this.IoAddresses.Stat;
@@ -258,10 +263,14 @@ namespace fin.emulation.gb {
 
       var shouldTriggerLcdInterrupt = newModeType switch {
           PpuModeType.OAM_RAM_SEARCH => stat.OamRamSearchInterruptEnabled,
-          PpuModeType.H_BLANK        => stat.HBlankInterruptEnabled,
-          PpuModeType.V_BLANK        => stat.VBlankInterruptEnabled,
+          PpuModeType.HBLANK        => stat.HblankInterruptEnabled,
+          PpuModeType.VBLANK        => stat.VblankInterruptEnabled,
           _                          => false,
       };
+
+      if (newModeType == PpuModeType.VBLANK) {
+        this.OnEnterVblank?.Invoke();
+      }
 
       if (shouldTriggerLcdInterrupt) {
         this.InterruptZ80(InterruptType.LCD_STAT);
@@ -305,6 +314,8 @@ namespace fin.emulation.gb {
       var maxObjsPerLine = 10;
       var objs = new LinkedList<Obj>();
 
+      var oam = memoryMap.Oam;
+
       var objCount = 40;
       for (var i = 0; i < objCount; ++i) {
         /* Put the visible sprites into line_obj. Insert them so sprites with
@@ -312,14 +323,13 @@ namespace fin.emulation.gb {
          * always ordered by obj index. */
 
         // Sprite attrib memory (OAM) address
-        var index = i * 4;
-        var oamAddress = (ushort) (0xfe00 + index);
-        var objY = memoryMap[oamAddress] - 16;
+        var oamAddress = (ushort) (i * 4);
+        var objY = oam[oamAddress] - 16;
 
         var relY = ly - objY;
 
         if (relY < objHeight) {
-          var objX = memoryMap[(ushort) (oamAddress + 1)] - 8;
+          var objX = oam[(ushort) (oamAddress + 1)] - 8;
 
           objs.AddLast(new Obj(objX, objY));
 
@@ -341,7 +351,7 @@ namespace fin.emulation.gb {
       var bucketCount = screenWidth / 8 + 2;
       var buckets = new int[bucketCount];
 
-      var scX = ioAddresses.ScX;
+      var scX = ioAddresses.ScrollX.Value;
       var scxFine = scX & 7;
 
       var ticks = minTicks + scxFine;
@@ -440,7 +450,7 @@ namespace fin.emulation.gb {
       var ioAddresses = this.IoAddresses;
 
       var lcdc = ioAddresses.Lcdc.Value;
-      var wy = ioAddresses.Wy;
+      var wy = ioAddresses.Wy.Value;
       var ly = ioAddresses.Ly.Value;
 
       //window enabled and scanline within window ?
@@ -460,7 +470,7 @@ namespace fin.emulation.gb {
       }
       //not using window
       else {
-        y = (byte) (ioAddresses.ScY + ly);
+        y = (byte) (ioAddresses.ScrollY.Value + ly);
 
         //Window Tile Map Display Select
         backgroundAddress = ((lcdc & (1 << 3)) != 0)
@@ -478,13 +488,17 @@ namespace fin.emulation.gb {
       //rowPos o current scanline (of the 8 pixels)
       var tileRow = (ushort) (y / 8 * 32);
 
-      var scX = ioAddresses.ScX;
-      var wX = (byte) (ioAddresses.Wx - 7);
+      var scX = ioAddresses.ScrollX.Value;
+      var wX = (byte) (ioAddresses.Wx.Value - 7);
 
       var areTileAddressesSigned = (lcdc & (1 << 4)) == 0;
 
-      var upper = 0;
-      var lower = 0;
+      byte upper = 0;
+      byte lower = 0;
+
+      var bgp = ioAddresses.Bgp.Value;
+
+      var vram = memoryMap.Vram;
 
       //draw de 160 pixels in current line  TODO: (4 by 4)
       for (var p = 0; p < 160; p++) {
@@ -493,27 +507,25 @@ namespace fin.emulation.gb {
         if ((p & 7) == 0 || ((p + scX) & 7) == 0) {
           var tileCol = (ushort) (x / 8);
           var tileNumber =
-              memoryMap[(ushort) (0x8000 + backgroundAddress + tileRow + tileCol)];
+              vram[(ushort) (backgroundAddress + tileRow + tileCol)];
 
           ushort tileAddress;
           if (!areTileAddressesSigned) {
-            tileAddress = (ushort) (0x8000 + tileNumber * 16);
+            tileAddress = (ushort) (0x000 + tileNumber * 16);
           } else {
             tileAddress =
-                (ushort) (0x8800 +
+                (ushort) (0x800 +
                           (128 + ByteMath.ByteToSByte(tileNumber)) * 16);
           }
 
           var vramAddress = (ushort) (tileAddress + tileLine);
-          lower = memoryMap[vramAddress];
-          upper = memoryMap[(ushort) (vramAddress + 1)];
+          lower = vram[vramAddress];
+          upper = vram[(ushort) (vramAddress + 1)];
         }
 
-        var colorBit = 7 - (x & 7);
-        var colorId = (((upper >> colorBit) & 1) << 1) |
-                      ((lower >> colorBit) & 1);
-
-        var color = this.GetColor_(colorId, 0);
+        var colorBit = (byte) (7 - (x & 7));
+        var colorId = this.GetColorId_(colorBit, lower, upper);
+        var color = this.GetColor_(bgp, colorId);
 
         //draw
         this.lcd_.SetPixel(p, ly, color);
@@ -522,92 +534,96 @@ namespace fin.emulation.gb {
 
     private void DrawSprites_() {
       var memoryMap = this.MemoryMap;
+      var vram = memoryMap.Vram;
+      var oam = memoryMap.Oam;
       var ioAddresses = this.IoAddresses;
 
+      var ly = ioAddresses.Ly.Value;
       var lcdc = ioAddresses.Lcdc.Value;
+
+      var obp0 = ioAddresses.Obp0.Value;
+      var obp1 = ioAddresses.Obp1.Value;
+
+      var notOnLineColor = Color.FromCColor(System.Drawing.Color.DimGray);
+      var transparentColor = Color.FromCColor(System.Drawing.Color.Aqua);
+      var offscreenColor = Color.FromCColor(System.Drawing.Color.Yellow);
+      var notOverBgColor = Color.FromCColor(System.Drawing.Color.Red);
+      var bgNotWhiteColor = Color.FromCColor(System.Drawing.Color.Green);
 
       //loop throught the 40 sprites
       for (var i = 0; i < 40; i++) {
-        //4 bytes in OAM (Sprite attribute table)
-        var index = i * 4;
+        Color? didNotRenderColor = null;
 
-        // Sprite attrib memory (OAM) address
-        var oamAddress = (ushort) (0xfe00 + index);
-        var posY = memoryMap[oamAddress] - 16;
-        var posX = memoryMap[(ushort) (oamAddress + 1)] - 8;
-        var tileLocation = memoryMap[(ushort) (oamAddress + 2)];
-        var attributes = memoryMap[(ushort) (oamAddress + 3)];
+        var spriteAddress = (ushort) (i * 4);
+        var y = (byte) (oam[spriteAddress] - 16);
+        var x = (byte) (oam[(ushort) (spriteAddress + 1)] - 8);
+        var tile = oam[(ushort) (spriteAddress + 2)];
+        var attributes = oam[(ushort) (spriteAddress + 3)];
 
         //check y - Size in LCDC
-        var sizeY = (ushort) (lcdc & 0x4) != 0 ? 16 : 8;
+        var sizeY = BitMath.GetBit(lcdc, 2) ? 16 : 8;
 
         //check if sprite is in current Scanline
-        var ly = ioAddresses.Ly.Value;
-        if (ly >= posY && ly < posY + sizeY) {
-          var line = ly - posY;
+        if (ly >= y && ly < y + sizeY) {
+          var isXFlipped = (attributes & 0x20) != 0;
+          var isYFlipped = (attributes & 0x40) != 0;
+          var isOverBg = (attributes >> 7) == 0;
+          var palette = BitMath.GetBit(attributes, 4) ? obp1 : obp0;
 
-          //flip y-axis ?
-          if ((attributes & 0x40) != 0) {
-            line = (line - sizeY) * -1;
-          }
+          var tileRow = isYFlipped ? sizeY - 1 - (ly - y) : ly - y;
 
-          // each vertical line takes up two bytes of memory
-          line *= 2;
+          var tileAddress = (ushort) ((tile * 16) + (tileRow * 2));
+          var lower = vram[tileAddress];
+          var upper = vram[(ushort) (tileAddress + 1)];
 
-          //vram (0x8000 +(tileLocation*16))+line
-          var dataAddress = (ushort) (0x8000 + (tileLocation * 16) + line);
-          var data1 = memoryMap[dataAddress];
-          var data2 = memoryMap[(ushort) (dataAddress + 1)];
+          for (var p = 0; p < 8; p++) {
+            var colorBit = (byte) (isXFlipped ? p : 7 - p);
+            var colorId = this.GetColorId_(colorBit, lower, upper);
 
-          for (var pixel = 7; pixel >= 0; pixel--) {
-            var colorBit = pixel;
-
-            int pos = 7 - pixel + posX;
-            if (pos > 159 || pos < 0) {
+            // White is transparent for sprites.
+            if (colorId == 0) {
+              didNotRenderColor = transparentColor;
               continue;
             }
 
-            //flip x-axis ?
-            if ((attributes & 0x20) != 0) {
-              colorBit = (colorBit - 7) * -1;
-            }
-
-            // combine data 2 and data 1 to get the colour id for this pixel
-            var colorNumber = (data2 & (1 << colorBit)) != 0 ? 0x2 : 0;
-            colorNumber |= (data1 & (1 << colorBit)) != 0 ? 1 : 0;
-
-            //get color from palette
-            var color =
-                this.GetColor_(colorNumber, ((attributes & 0x10) >> 4) + 1);
-
-            //white = transparent for sprites
-            if (color.Rb == 255) {
+            var sX = x + p;
+            if (sX < 0 || sX >= 160) {
+              didNotRenderColor = offscreenColor;
               continue;
             }
 
-            //dont' draw if behind backgound
-            if ((attributes & (1 << 7)) == 0 ||
-                this.lcd_.GetPixel(pos, ly).Rb == 255) {
-              this.lcd_.SetPixel(pos, ly, color);
+            var color = this.GetColor_(palette, colorId);
+
+            var isBgWhite = this.lcd_.GetPixel(sX, ly).Rb == 255;
+            if (isOverBg || isBgWhite) {
+              this.lcd_.SetPixel(sX, ly, color);
+            } else {
+              if (!isOverBg) {
+                didNotRenderColor = notOverBgColor;
+              } else {
+                didNotRenderColor = bgNotWhiteColor;
+              }
             }
           }
+        } else {
+          didNotRenderColor = notOnLineColor;
+        }
+
+        if (didNotRenderColor != null) {
+          this.lcd_.SetPixel(161 + i, ly, (Color) didNotRenderColor);
         }
       }
     }
 
 
+    private byte GetColorId_(byte colorBit, byte lower, byte upper)
+      => (byte) ((((upper >> colorBit) & 1) << 1) |
+                 ((lower >> colorBit) & 1));
+
     //mode 0 - BGP FF47
     //mode 1 - OBP0 FF48
     //mode 2 - OBP1 FF49
-    private Color GetColor_(int colorId, int paletteMode) {
-      var ioAddresses = this.IoAddresses;
-      var palette = paletteMode switch {
-          0 => ioAddresses.Bgp,
-          1 => ioAddresses.Obp0,
-          2 => ioAddresses.Obp1,
-          _ => 0,
-      };
-
+    private Color GetColor_(byte palette, int colorId) {
       var colorIndex = (palette >> colorId * 2) & 0x3;
 
       return colorIndex switch {

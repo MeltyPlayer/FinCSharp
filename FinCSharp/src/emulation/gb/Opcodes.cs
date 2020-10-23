@@ -1,6 +1,7 @@
 ﻿using System;
 
 using fin.emulation.gb.memory;
+using fin.emulation.gb.memory.io;
 
 namespace fin.emulation.gb {
   public class Opcodes : IOpcodes {
@@ -15,6 +16,7 @@ namespace fin.emulation.gb {
     public Opcodes(Mmu memory) {
       this.memory_ = memory;
       this.MemoryMap = this.memory_.MemoryMap;
+      this.IoAddresses = this.MemoryMap.IoAddresses;
       this.Registers = this.memory_.Registers;
       this.Stack = this.memory_.Stack;
 
@@ -28,6 +30,7 @@ namespace fin.emulation.gb {
     public int FetchAndRunOp() => this.instructionTable_.Call(this.D8);
 
     private IMemoryMap MemoryMap { get; }
+    private IoAddresses IoAddresses { get; }
     private IRegisters Registers { get; }
     private IStack Stack { get; }
 
@@ -254,13 +257,11 @@ namespace fin.emulation.gb {
       // 5. LD A,(C)
       this.Op(0xf2,
               8,
-              () => this.A.Value =
-                        this.MemoryMap[(ushort) (0xff00 + this.C.Value)]);
+              () => this.A.Value = this.IoAddresses[this.C.Value]);
       // 6. LD (C),A
       this.Op(0xe2,
               8,
-              () => this.MemoryMap[(ushort) (0xff00 + this.C.Value)] =
-                        this.A.Value);
+              () => this.IoAddresses[this.C.Value] = this.A.Value);
       // 7. LD A,(HLD) -->
       // 8. LD A,(HL-) -->
       // 9. LDD A,(HL)
@@ -300,11 +301,11 @@ namespace fin.emulation.gb {
       // 19. LDH (n),A
       this.Op(0xe0,
               12,
-              () => this.MemoryMap[(ushort) (0xff00 + this.D8)] = this.A.Value);
+              () => this.IoAddresses[this.D8] = this.A.Value);
       // 20. LD (C),A
       this.Op(0xf0,
               12,
-              () => this.A.Value = this.MemoryMap[(ushort) (0xff00 + this.D8)]);
+              () => this.A.Value = this.IoAddresses[this.D8]);
     }
 
     private void Define332_16BitLoads_() {

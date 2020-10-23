@@ -26,8 +26,12 @@
                           width,
                           height);*/
 
-      var pixelData =
-          TexturesOpenTk.ConvertRgbaGridToUintArray_(imageData.pixels);
+      var pixelData = new uint[width * height];
+      TexturesOpenTk.ConvertRgbaGridToUintArray_(
+          imageData.pixels,
+          ref pixelData,
+          width,
+          height);
 
       GL.BindTexture(TextureTarget.Texture2D, textureId);
       GL.TexImage2D(TextureTarget.Texture2D,
@@ -82,11 +86,12 @@
       }
     }
 
-    private static uint[]
-        ConvertRgbaGridToUintArray_(IFinGrid<Color> rgbaGrid) {
-      var (width, height) = (rgbaGrid.Width, rgbaGrid.Height);
-      var uintArray = new uint[width * height];
-
+    private static void ConvertRgbaGridToUintArray_(
+        IFinGrid<Color> rgbaGrid,
+        ref uint[] uintArray,
+        int width,
+        int height
+    ) {
       for (var y = 0; y < height; ++y) {
         for (var x = 0; x < width; ++x) {
           var i = y * width + x;
@@ -94,8 +99,6 @@
           uintArray[i] = rgba.I;
         }
       }
-
-      return uintArray;
     }
 
     // TODO: Discard
@@ -104,19 +107,6 @@
 
       public TextureOpenTk(uint textureId) {
         this.textureId_ = textureId;
-        //this.OnDiscard += _ => this.DestroyTexture_();
-      }
-
-      private void DestroyTexture_() {
-        var textureIdArray = new[] {this.textureId_};
-        GL.DeleteTextures(1, textureIdArray);
-        //this.Discard();
-      }
-
-      public IColor GetPixel(int x, int y) => Color.FromRgba(0);
-
-      public IFinGrid<IColor> GetAllPixels() {
-        throw new System.Exception();
       }
 
       // TODO: This is an internal detail that doesn't apply to all libraries, rethink this!
@@ -127,19 +117,106 @@
           GL.BindTexture(TextureTarget.Texture2D, 0);
     }
 
-    private class PixelBufferObjectOpenTk {
+    public IPixelBufferObject Create(int width, int height)
+      => new PixelBufferObjectOpenTk(width, height);
+
+    // TODO: Width/height
+    // TODO: Destroying
+    // TODO: Pull these out into common methods
+    // TODO: Configuration
+    private class PixelBufferObjectOpenTk : IPixelBufferObject {
       private readonly uint bufferId_;
+      private readonly uint textureId_;
 
-      public PixelBufferObjectOpenTk(uint bufferId) {
-        this.bufferId_ = bufferId;
-        //this.OnDiscard += _ => this.DestroyTexture_();
+      private readonly int width_;
+      private readonly int height_;
+
+      private uint[] pixelData_;
+
+      public PixelBufferObjectOpenTk(int width, int height) {
+        this.width_ = width;
+        this.height_ = height;
+
+        this.pixelData_ = new uint[width * height];
+
+        //GL.GenBuffers(1, out this.bufferId_);
+        GL.GenTextures(1, out this.textureId_);
+
+
+        GL.BindTexture(TextureTarget.Texture2D, this.textureId_);
+
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureMinFilter,
+                        (int) TextureMinFilter.Linear);
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureMagFilter,
+                        (int) TextureMagFilter.Linear);
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapS,
+                        (int) TextureWrapMode.Clamp);
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapT,
+                        (int) TextureWrapMode.Clamp);
+
+        GL.BindTexture(TextureTarget.Texture2D, 0);
       }
 
-      public void SetPixels() {
-        //GL.GenBuffers();
+      public void SetAllPixels(IFinGrid<Color> rgbaGrid) {
+        /*TexturesOpenTk.ConvertRgbaGridToUintArray_(
+            rgbaGrid,
+            ref this.pixelData_);
+
         GL.BindBuffer(BufferTarget.PixelPackBuffer, this.bufferId_);
-        //GL.BufferData();
+        GL.ReadPixels(0,
+                      0,
+                      this.width_,
+                      this.height_,
+                      PixelFormat.AbgrExt,
+                      PixelType.UnsignedByte,
+                      this.pixelData_);
+        GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);*/
+
+        TexturesOpenTk.ConvertRgbaGridToUintArray_(
+            rgbaGrid,
+            ref this.pixelData_,
+            this.width_,
+            this.height_);
+
+        GL.BindTexture(TextureTarget.Texture2D, this.textureId_);
+        //GL.BindTexture(BufferTarget.PixelUnpackBuffer, this.pixelData_);
+
+        GL.TexImage2D(TextureTarget.Texture2D,
+                      0,
+                      PixelInternalFormat.Rgba,
+                      this.width_,
+                      this.height_,
+                      0,
+                      PixelFormat.AbgrExt,
+                      PixelType.UnsignedByte,
+                      this.pixelData_);
+
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureMinFilter,
+                        (int)TextureMinFilter.Linear);
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureMagFilter,
+                        (int)TextureMagFilter.Linear);
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapS,
+                        (int)TextureWrapMode.Clamp);
+        GL.TexParameter(TextureTarget.Texture2D,
+                        TextureParameterName.TextureWrapT,
+                        (int)TextureWrapMode.Clamp);
+
+        //GL.BindTexture(BufferTarget.PixelUnpackBuffer, 0);
+        GL.BindTexture(TextureTarget.Texture2D, 0);
       }
+
+      public void Bind() =>
+          GL.BindTexture(TextureTarget.Texture2D, this.textureId_);
+
+      public void Unbind() =>
+          GL.BindTexture(TextureTarget.Texture2D, 0);
     }
   }
 }

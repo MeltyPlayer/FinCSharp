@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using fin.assert;
 
@@ -157,7 +158,7 @@ namespace fin.emulation.gb.memory.mapper.impl {
       public int SourceCount => this.sources_.Length;
 
       // TODO: A better way of doing this??
-      private MemoryMapperSource At_(ushort address) 
+      private MemoryMapperSource At_(ushort address)
         => this.sourcesMap_[address];
     }
   }
