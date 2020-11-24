@@ -5,13 +5,13 @@ using fin.assert;
 using CMath = System.Math;
 
 namespace fin.math {
-  public static class Math {
+  public static class FinMath {
     /**
      * Constants
      */
-    public const double PI = CMath.PI;
+    public const float PI = (float) CMath.PI;
 
-    public const double TAU = 2 * Math.PI;
+    public const float TAU = 2 * FinMath.PI;
 
     /**
      * Operations
@@ -36,10 +36,10 @@ namespace fin.math {
       var multiplier = 1f / values.Length;
 
       foreach (var value in values) {
-        runningMean += (dynamic)value * multiplier;
+        runningMean += (dynamic) value * multiplier;
       }
 
-      return (TNumber)runningMean;
+      return (TNumber) runningMean;
     }
 
     /**
@@ -47,13 +47,13 @@ namespace fin.math {
      */
     public static TNumber Abs<TNumber>(TNumber value)
         where TNumber : IComparable
-      => Math.IsPositive(value)
+      => FinMath.IsPositive(value)
              ? value
              : -(dynamic) value;
 
     public static int Sign<TNumber>(TNumber value)
         where TNumber : IComparable
-      => Math.IsPositive(value) ? 1 : Math.IsNegative(value) ? -1 : 0;
+      => FinMath.IsPositive(value) ? 1 : FinMath.IsNegative(value) ? -1 : 0;
 
     public static bool IsPositive<TNumber>(TNumber value)
         where TNumber : IComparable
@@ -87,16 +87,17 @@ namespace fin.math {
         TNumber value,
         TNumber max)
         where TNumber : IComparable {
-      Asserts.True(Math.IsLessThanOrEqualTo(min, max), "Expected min <= max.");
-      return Math.IsGreaterThanOrEqualTo(value, min) &&
-             Math.IsLessThanOrEqualTo(value, max);
+      Asserts.True(FinMath.IsLessThanOrEqualTo(min, max),
+                   "Expected min <= max.");
+      return FinMath.IsGreaterThanOrEqualTo(value, min) &&
+             FinMath.IsLessThanOrEqualTo(value, max);
     }
 
     public static bool IsIncreasing<TNumber>(params TNumber[] values)
         where TNumber : IComparable {
       var previousValue = values[0];
       foreach (var value in values) {
-        if (Math.IsGreaterThan(previousValue, value)) {
+        if (FinMath.IsGreaterThan(previousValue, value)) {
           return false;
         }
         previousValue = value;
@@ -108,7 +109,7 @@ namespace fin.math {
         where TNumber : IComparable {
       var previousValue = values[0];
       foreach (var value in values) {
-        if (Math.IsLessThan(previousValue, value)) {
+        if (FinMath.IsLessThan(previousValue, value)) {
           return false;
         }
         previousValue = value;
@@ -121,19 +122,20 @@ namespace fin.math {
      */
     public static TNumber Min<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable
-      => Math.IsLessThan(lhs, rhs) ? lhs : rhs;
+      => FinMath.IsLessThan(lhs, rhs) ? lhs : rhs;
 
     public static TNumber Max<TNumber>(TNumber lhs, TNumber rhs)
         where TNumber : IComparable
-      => Math.IsGreaterThan(lhs, rhs) ? lhs : rhs;
+      => FinMath.IsGreaterThan(lhs, rhs) ? lhs : rhs;
 
     public static TNumber Clamp<TNumber>(
         TNumber min,
         TNumber value,
         TNumber max)
         where TNumber : IComparable {
-      Asserts.True(Math.IsLessThanOrEqualTo(min, max), "Expected min <= max.");
-      return Math.Max(min, Math.Min(value, max));
+      Asserts.True(FinMath.IsLessThanOrEqualTo(min, max),
+                   "Expected min <= max.");
+      return FinMath.Max(min, FinMath.Min(value, max));
     }
 
     public static TNumber Wrap<TNumber>(
@@ -141,7 +143,8 @@ namespace fin.math {
         TNumber value,
         TNumber max)
         where TNumber : IComparable {
-      Asserts.True(Math.IsLessThanOrEqualTo(min, max), "Expected min <= max.");
+      Asserts.True(FinMath.IsLessThanOrEqualTo(min, max),
+                   "Expected min <= max.");
 
       dynamic dMin = min;
       dynamic dValue = value;
@@ -149,8 +152,8 @@ namespace fin.math {
 
       var range = dMax - dMin;
 
-      var firstPass = dMax - Math.Mod(dMax - dValue, range);
-      var secondPass = dMin + Math.Mod(firstPass - dMin, range);
+      var firstPass = dMax - FinMath.Mod(dMax - dValue, range);
+      var secondPass = dMin + FinMath.Mod(firstPass - dMin, range);
 
       return secondPass;
     }
@@ -159,7 +162,9 @@ namespace fin.math {
         TNumber start,
         TNumber end,
         TNumber inc) where TNumber : IComparable {
-      Asserts.True(Math.IsPositive(inc), "Expected increment to be positive.");
+      // TODO: Do we want/need this assert?
+      Asserts.True(FinMath.IsPositive(inc),
+                   "Expected increment to be positive.");
 
       dynamic dStart = start;
       dynamic dEnd = end;
@@ -167,11 +172,11 @@ namespace fin.math {
 
       var range = dEnd - dStart;
 
-      if (Math.Abs(range) < dInc) {
+      if (FinMath.Abs(range) < dInc) {
         return end;
       }
 
-      var sign = Math.Sign(range);
+      var sign = FinMath.Sign(range);
       return dStart + sign * inc;
     }
   }

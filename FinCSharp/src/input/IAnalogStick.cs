@@ -2,6 +2,6 @@
   using math.geometry;
 
   public interface IAnalogStick {
-    IVector2<float> NormalizedAxes { get; }
+    IVector2<float> RawAxes { get; }
   }
 }

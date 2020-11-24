@@ -99,7 +99,7 @@ namespace fin.app.impl.opentk {
         emitStartTick(new StartTickEvent());
 
         this.windowManager_.ProcessEvents();
-        this.input_.ButtonManager.HandleTransitions();
+        this.input_.Poll();
         if (this.input_.Keyboard[KeyId.ESC].IsPressed) {
           this.ScheduleCloseApp_();
         }

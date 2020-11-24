@@ -5,6 +5,18 @@
   };
 
   public interface ITransform {
+    ITransform Identity();
+
+
+    ITransform Push();
+    ITransform Pop();
+
+
+    // 2D transforms
+    ITransform Translate(float x, float y);
+    ITransform Rotate(float deg);
+
+
     /*public abstract void set_target_matrix(MatrixType matrixType);
 
     public abstract void print_matrix();

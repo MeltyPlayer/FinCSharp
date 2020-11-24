@@ -1,6 +1,6 @@
-﻿namespace fin.input {
-  using button;
+﻿using fin.input.button;
 
+namespace fin.input {
   public class ButtonDpad : IDpad {
     public IButton Up { get; set; } = NullButton.Instance;
     public IButton Down { get; set; } = NullButton.Instance;

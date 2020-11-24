@@ -49,7 +49,7 @@ namespace simple {
 
       [OnTick]
       private void StartTick_(StartTickEvent _) {
-        this.circularProgress_.Radians += .02;
+        this.circularProgress_.Radians += .02f;
       }
 
       [OnTick]

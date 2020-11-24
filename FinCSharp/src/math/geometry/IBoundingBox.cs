@@ -8,8 +8,8 @@ namespace fin.math.geometry {
 
   public class MutableDimensions<TNumber> : IDimensions<TNumber>
       where TNumber : IComparable {
-    public TNumber Width { get; set; } = default;
-    public TNumber Height { get; set; } = default;
+    public TNumber Width { get; set; }
+    public TNumber Height { get; set; }
 
     public MutableDimensions() {}
 
@@ -25,30 +25,30 @@ namespace fin.math.geometry {
 
     // TODO: How slow is this dynamic stuff...?
     // TODO: Can we figure this out earlier to cache it?
-    TNumber LeftX => Math.Min(this.TopLeft.X,
+    TNumber LeftX => FinMath.Min(this.TopLeft.X,
                               this.TopLeft.X +
                               (dynamic) this.Dimensions.Width);
 
-    TNumber RightX => Math.Max(this.TopLeft.X,
+    TNumber RightX => FinMath.Max(this.TopLeft.X,
                                this.TopLeft.X +
                                (dynamic) this.Dimensions.Width);
 
-    TNumber CenterX => Math.Mean(this.LeftX, this.RightX);
+    TNumber CenterX => FinMath.Mean(this.LeftX, this.RightX);
 
-    TNumber TopY => Math.Min(this.TopLeft.Y,
+    TNumber TopY => FinMath.Min(this.TopLeft.Y,
                              this.TopLeft.Y +
                              (dynamic) this.Dimensions.Height);
 
-    TNumber BottomY => Math.Max(this.TopLeft.Y,
+    TNumber BottomY => FinMath.Max(this.TopLeft.Y,
                                 this.TopLeft.Y +
                                 (dynamic) this.Dimensions.Height);
 
-    TNumber CenterY => Math.Mean(this.TopY, this.BottomY);
+    TNumber CenterY => FinMath.Mean(this.TopY, this.BottomY);
 
     // TODO: Should we allow negative widths/heights? If we don't the above
     // stuff gets way easier.
-    TNumber Width => Math.Abs(this.Dimensions.Width);
-    TNumber Height => Math.Abs(this.Dimensions.Height);
+    TNumber Width => FinMath.Abs(this.Dimensions.Width);
+    TNumber Height => FinMath.Abs(this.Dimensions.Height);
   }
 
   public class AggregationBoundingBox<TNumber> : IBoundingBox<TNumber>

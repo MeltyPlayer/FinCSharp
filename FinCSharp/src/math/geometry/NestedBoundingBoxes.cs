@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using fin.log;
-
 namespace fin.math.geometry {
   public interface INestedBoundingBoxes<TNumber> : IBoundingBox<TNumber>
     where TNumber : IComparable {
@@ -66,12 +64,12 @@ namespace fin.math.geometry {
           var boxRightX = boxLeftX + (dynamic) boxWidth;
           var boxBottomY = boxTopY + (dynamic) boxHeight;
 
-          var adjustedLeftX = Math.Max(currentLeftX, boxLeftX);
-          var adjustedRightX = Math.Min(currentRightX, boxRightX);
-          var adjustedTopY = Math.Max(currentTopY, boxTopY);
-          var adjustedBottomY = Math.Min(currentBottomY, boxBottomY);
-          var adjustedWidth = Math.Max(0, adjustedRightX - adjustedLeftX);
-          var adjustedHeight = Math.Max(0, adjustedBottomY - adjustedTopY);
+          var adjustedLeftX = FinMath.Max(currentLeftX, boxLeftX);
+          var adjustedRightX = FinMath.Min(currentRightX, boxRightX);
+          var adjustedTopY = FinMath.Max(currentTopY, boxTopY);
+          var adjustedBottomY = FinMath.Min(currentBottomY, boxBottomY);
+          var adjustedWidth = FinMath.Max(0, adjustedRightX - adjustedLeftX);
+          var adjustedHeight = FinMath.Max(0, adjustedBottomY - adjustedTopY);
 
           intersection.TopLeft.X = adjustedLeftX;
           intersection.TopLeft.Y = adjustedTopY;

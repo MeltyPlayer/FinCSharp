@@ -14,7 +14,7 @@
 
   using SharpFont;
 
-  using Color = color.Color;
+  using FinColor = color.FinColor;
 
   public interface IFontGlyph {
     // To calculate these stats, multiply by the font size.
@@ -92,7 +92,7 @@
 
       var fontGlyphs = new Dictionary<char, FontGlyph>();
       var atlasPixelGrid =
-          new FinSparseGrid<Color>(atlasWidth,
+          new FinSparseGrid<FinColor>(atlasWidth,
                                    atlasHeight,
                                    ColorConstants.TRANSPARENT_BLACK);
       var atlasImageData = new ImageData(ImageType.RGBA, atlasPixelGrid);
@@ -124,7 +124,7 @@
             for (var c = 0; c < width; ++c) {
               var i = r * width + c;
               var alpha = bufferData[i];
-              var color = Color.FromRgbaB(255, 255, 255, alpha);
+              var color = FinColor.FromRgbaB(255, 255, 255, alpha);
               atlasPixelGrid[x + c, r] = color;
             }
           }

@@ -5,8 +5,7 @@ using fin.input.button;
 namespace fin.input {
   public interface IJoystick {
     bool IsConnected { get; }
-    ImmutableArray<IDpad> Dpads { get; }
-    ImmutableArray<IAnalogStick> AnalogSticks { get; }
+    ImmutableArray<IAxis> Axes { get; }
     ImmutableArray<IButton> Buttons { get; }
   }
 }

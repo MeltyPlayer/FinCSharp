@@ -4,10 +4,10 @@ using fin.graphics.color;
 
 namespace fin.emulation.gb {
   public class Lcd {
-    public static readonly Color WHITE = Color.FromVB(255);
-    public static readonly Color LIGHT_GRAY = Color.FromVB(190);
-    public static readonly Color DARK_GRAY = Color.FromVB(90);
-    public static readonly Color BLACK = Color.FromVB(0);
+    public static readonly FinColor WHITE = FinColor.FromVB(255);
+    public static readonly FinColor LIGHT_GRAY = FinColor.FromVB(190);
+    public static readonly FinColor DARK_GRAY = FinColor.FromVB(90);
+    public static readonly FinColor BLACK = FinColor.FromVB(0);
 
     public bool Active { get; set; } = true;
 
@@ -15,12 +15,12 @@ namespace fin.emulation.gb {
       this.PixelData.Clear();
     }
 
-    public Color GetPixel(int x, int y) => this.PixelData[x, y];
+    public FinColor GetPixel(int x, int y) => this.PixelData[x, y];
 
-    public void SetPixel(int x, int y, Color color)
+    public void SetPixel(int x, int y, FinColor color)
       => this.PixelData[x, y] = color;
 
-    public IFinGrid<Color> PixelData { get; } =
-      new FinUnsafeArrayGrid<Color>(256, 256, Lcd.WHITE);
+    public IFinGrid<FinColor> PixelData { get; } =
+      new FinUnsafeArrayGrid<FinColor>(256, 256, Lcd.WHITE);
   }
 }

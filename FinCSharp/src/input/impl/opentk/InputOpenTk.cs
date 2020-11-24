@@ -1,17 +1,23 @@
-﻿using fin.input.keyboard;
+﻿using fin.input.gamepad;
+using fin.input.keyboard;
 
 namespace fin.input.impl.opentk {
-
   public class InputOpenTk : IInput {
+    private readonly JoystickManagerOpenTk joystickManager_;
+
+    private readonly ButtonManagerOpenTk buttonManager_ =
+        new ButtonManagerOpenTk();
+
     public InputOpenTk() {
-      this.Cursor = new CursorOpenTk(this.ButtonManager);
-      this.Keyboard = new KeyboardOpenTk(this.ButtonManager);
+      this.Cursor = new CursorOpenTk(this.buttonManager_);
+      this.Keyboard = new KeyboardOpenTk(this.buttonManager_);
 
-      this.Controller = new KeyboardGamepad(this.Keyboard);
+      this.joystickManager_ = new JoystickManagerOpenTk(this.buttonManager_);
+
+      this.Controller = new AggregateGamepad(
+          new KeyboardGamepad(this.Keyboard),
+          new JoystickGamepad(this.joystickManager_.First));
     }
-
-    public ButtonManagerOpenTk ButtonManager { get; } =
-      new ButtonManagerOpenTk();
 
     public IGamepad Controller { get; }
 
@@ -20,5 +26,11 @@ namespace fin.input.impl.opentk {
 
     IKeyboard IInput.Keyboard => this.Keyboard;
     public KeyboardOpenTk Keyboard { get; }
+
+    public void Poll() {
+      this.joystickManager_.Poll();
+      this.buttonManager_.HandleTransitions();
+      this.Controller.Poll();
+    }
   }
 }

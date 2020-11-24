@@ -2,7 +2,7 @@
 using simple.platformer.world;
 
 using CMath = System.Math;
-using Math = fin.math.Math;
+using FinMath = fin.math.FinMath;
 
 namespace simple.platformer {
   public class PlayerCollider {
@@ -48,7 +48,7 @@ namespace simple.platformer {
 
     private void CheckCollisions_(
         LevelTileTypes tile,
-        (double, double) blockPosition) {
+        (float, float) blockPosition) {
       var isFloor = LevelGrid.Matches(tile, LevelTileTypes.FLOOR);
       var isCeiling = LevelGrid.Matches(tile, LevelTileTypes.CEILING);
       var isLeftWall = LevelGrid.Matches(tile, LevelTileTypes.LEFT_WALL);
@@ -68,11 +68,18 @@ namespace simple.platformer {
       }
 
       // Hitting a wall or being close to the side of a wall should eject next.
-      if (isLeftWall) {
-        this.PerformLeftWallCollision_(blockX, blockY);
+      var collidedWithWall = false;
+      if (isLeftWall && this.PerformLeftWallCollision_(blockX, blockY)) {
+        collidedWithWall = true;
+        this.StateMachine.WallSlidingOnLeft = false;
       }
-      if (isRightWall) {
-        this.PerformRightWallCollision_(blockX, blockY);
+      if (isRightWall && this.PerformRightWallCollision_(blockX, blockY)) {
+        collidedWithWall = true;
+        this.StateMachine.WallSlidingOnLeft = true;
+      }
+
+      if (collidedWithWall && this.StateMachine.IsInAir) {
+        this.StateMachine.State = PlayerState.WALL_SLIDING;
       }
 
       // Last, we want to check the ceiling completely.
@@ -81,7 +88,7 @@ namespace simple.platformer {
       }
     }
 
-    private void PerformFloorCollision_(double blockX, double blockY) {
+    private void PerformFloorCollision_(float blockX, float blockY) {
       var blockSize = LevelConstants.SIZE;
 
       var blockLeftX = blockX;
@@ -90,11 +97,12 @@ namespace simple.platformer {
 
       if (this.PlayerRigidbody.RightX > blockLeftX &&
           this.PlayerRigidbody.LeftX < blockRightX) {
-        if (Math.IsIncreasing(this.PlayerRigidbody.PreviousBottomY,
+        if (FinMath.IsIncreasing(this.PlayerRigidbody.PreviousBottomY,
                               blockTopY,
                               this.PlayerRigidbody.BottomY)) {
           if (this.StateMachine.IsInAir) {
-            this.StateMachine.State = PlayerState.STANDING;
+            this.StateMachine.State = PlayerState.LANDING;
+            this.PlayerRigidbody.XVelocity *= .5f;
           }
 
           this.PlayerRigidbody.BottomY = blockTopY;
@@ -104,9 +112,9 @@ namespace simple.platformer {
     }
 
     private void PerformCeilingCollision_(
-        double blockX,
-        double blockY,
-        double wiggleRoom = 0) {
+        float blockX,
+        float blockY,
+        float wiggleRoom = 0) {
       var blockSize = LevelConstants.SIZE;
 
       var blockLeftX = blockX + wiggleRoom;
@@ -129,7 +137,7 @@ namespace simple.platformer {
       }
     }
 
-    private void PerformLeftWallCollision_(double blockX, double blockY) {
+    private bool PerformLeftWallCollision_(float blockX, float blockY) {
       var blockSize = LevelConstants.SIZE;
 
       var blockLeftX = blockX;
@@ -138,19 +146,22 @@ namespace simple.platformer {
 
       if (this.PlayerRigidbody.BottomY > blockTopY &&
           this.PlayerRigidbody.TopY < blockBottomY) {
-        if (Math.IsIncreasing( //this.PreviousRightX,
+        if (FinMath.IsIncreasing( //this.PreviousRightX,
             this.PlayerRigidbody.LeftX,
             blockLeftX,
             this.PlayerRigidbody.RightX)) {
           this.PlayerRigidbody.RightX = blockLeftX;
           if (this.PlayerRigidbody.XVelocity > 0) {
             this.PlayerRigidbody.XVelocity = 0;
+            return true;
           }
         }
       }
+
+      return false;
     }
 
-    private void PerformRightWallCollision_(double blockX, double blockY) {
+    private bool PerformRightWallCollision_(float blockX, float blockY) {
       var blockSize = LevelConstants.SIZE;
 
       var blockRightX = blockX + blockSize;
@@ -159,16 +170,19 @@ namespace simple.platformer {
 
       if (this.PlayerRigidbody.BottomY > blockTopY &&
           this.PlayerRigidbody.TopY < blockBottomY) {
-        if (Math.IsIncreasing(this.PlayerRigidbody.LeftX,
+        if (FinMath.IsIncreasing(this.PlayerRigidbody.LeftX,
                               blockRightX,
                               this.PlayerRigidbody.RightX
             /*, this.PreviousLeftX*/)) {
           this.PlayerRigidbody.LeftX = blockRightX;
           if (this.PlayerRigidbody.XVelocity < 0) {
             this.PlayerRigidbody.XVelocity = 0;
+            return true;
           }
         }
       }
+
+      return false;
     }
   }
 }

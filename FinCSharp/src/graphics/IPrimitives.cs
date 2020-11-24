@@ -1,6 +1,6 @@
-﻿using fin.graphics.color;
+﻿using System.Drawing;
 
-using CColor = System.Drawing.Color;
+using fin.graphics.color;
 
 namespace fin.graphics {
   public enum PrimitiveType {
@@ -33,10 +33,10 @@ namespace fin.graphics {
       return this;
     }
 
-    public virtual IPrimitives VertexColor(Color color) =>
+    public virtual IPrimitives VertexColor(IColor color) =>
         this.VertexColorB(color.Rb, color.Gb, color.Bb, color.Ab);
 
-    public virtual IPrimitives VertexColor(CColor cColor) =>
+    public virtual IPrimitives VertexColor(Color cColor) =>
         this.VertexColorB(cColor.R, cColor.G, cColor.B, cColor.A);
 
     public abstract IPrimitives VertexColorB(byte r, byte g, byte b, byte a);

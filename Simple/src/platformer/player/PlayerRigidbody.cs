@@ -2,83 +2,83 @@
   public class PlayerRigidbody {
     public Rigidbody Rigidbody { get; set; }
 
-    public double Width { get; set; } = PlayerConstants.HSIZE;
-    public double Height { get; set; } = PlayerConstants.VSIZE;
+    public float Width { get; set; } = PlayerConstants.HSIZE;
+    public float Height { get; set; } = PlayerConstants.VSIZE;
 
-    public double CenterX {
+    public float CenterX {
       get => this.X;
       set => this.X = value;
     }
 
-    public double CenterY {
+    public float CenterY {
       get => this.Y - this.Height / 2;
       set => this.Y = value + this.Height / 2;
     }
 
-    public double LeftX {
+    public float LeftX {
       get => this.X - this.Width / 2;
       set => this.X = value + this.Width / 2;
     }
 
-    public double RightX {
+    public float RightX {
       get => this.X + this.Width / 2;
       set => this.X = value - this.Width / 2;
     }
 
-    public double BottomY {
+    public float BottomY {
       get => this.Y;
       set => this.Y = value;
     }
 
-    public double TopY {
+    public float TopY {
       get => this.Y - this.Height;
       set => this.Y = value + this.Height;
     }
 
 
-    public double PreviousBottomY => this.PreviousY;
-    public double PreviousTopY => this.PreviousY - this.Height;
-    private double PreviousY => this.Rigidbody.PreviousY;
+    public float PreviousBottomY => this.PreviousY;
+    public float PreviousTopY => this.PreviousY - this.Height;
+    private float PreviousY => this.Rigidbody.PreviousY;
 
 
-    private double X {
+    private float X {
       get => this.Rigidbody.X;
       set => this.Rigidbody.X = value;
     }
 
-    private double Y {
+    private float Y {
       get => this.Rigidbody.Y;
       set => this.Rigidbody.Y = value;
     }
 
-    public double XVelocity {
+    public float XVelocity {
       get => this.Rigidbody.XVelocity;
       set => this.Rigidbody.XVelocity = value;
     }
 
-    public double YVelocity {
+    public float YVelocity {
       get => this.Rigidbody.YVelocity;
       set => this.Rigidbody.YVelocity = value;
     }
 
-    public (double, double) Velocity {
+    public (float, float) Velocity {
       get => this.Rigidbody.Velocity;
       set => this.Rigidbody.Velocity = value;
     }
 
-    public double XAcceleration {
+    public float? TargetXVelocity {
+      get => this.Rigidbody.TargetXVelocity;
+      set => this.Rigidbody.TargetXVelocity = value;
+    }
+
+    public float XAcceleration {
       get => this.Rigidbody.XAcceleration;
       set => this.Rigidbody.XAcceleration = value;
     }
 
-    public double YAcceleration {
+    public float YAcceleration {
       get => this.Rigidbody.YAcceleration;
       set => this.Rigidbody.YAcceleration = value;
-    }
-
-    public (double, double) Acceleration {
-      get => this.Rigidbody.Acceleration;
-      set => this.Rigidbody.Acceleration = value;
     }
   }
 }

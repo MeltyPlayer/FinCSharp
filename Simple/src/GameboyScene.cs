@@ -42,8 +42,7 @@ namespace simple {
 
       // Add contents of view.
       var gameboy =
-          instantiator.Wrap(viewRoot,
-                            new GameboyComponent(app.Graphics.Textures));
+          instantiator.Wrap(viewRoot, new GameboyComponent(app));
       gameboy.LaunchRom(LocalFile.WithinResources("sml.gb"));
 
       /*var romPath =

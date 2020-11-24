@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Subjects;
 
 using fin.discardable;
 
@@ -22,6 +23,13 @@ namespace fin.audio {
 
     IAudioStreamSource NewAudioStreamSource(
         Action<byte[]> populateFunc,
+        int channels = 1,
+        int bytesPerSample = 1,
+        int frequency = IAudioFactory.DEFAULT_FREQUENCY,
+        int numBuffers = 2,
+        int bufferSize = IAudioFactory.DEFAULT_BUFFER_SIZE);
+    IAudioStreamSource NewAudioStreamSource(
+        Subject<byte[]> populateSubject,
         int channels = 1,
         int bytesPerSample = 1,
         int frequency = IAudioFactory.DEFAULT_FREQUENCY,

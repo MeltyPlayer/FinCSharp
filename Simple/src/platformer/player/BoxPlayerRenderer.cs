@@ -5,7 +5,7 @@ namespace simple.platformer.player {
   public class BoxPlayerRenderer {
     public PlayerRigidbody PlayerRigidbody { get; set; }
     
-    public Color Color { get; set; }
+    public FinColor Color { get; set; }
 
     public void Render(IGraphics g) {
       g.Primitives.VertexColor(this.Color);

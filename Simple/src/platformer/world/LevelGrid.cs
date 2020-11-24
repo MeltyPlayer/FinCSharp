@@ -18,9 +18,9 @@ namespace simple.platformer.world {
   public class LevelGrid {
     private readonly IFinGrid<LevelTileTypes> tiles_;
 
-    public double Size { get; }
+    public float Size { get; }
 
-    public LevelGrid(double size) {
+    public LevelGrid(float size) {
       this.Size = size;
 
       var bitmap =

@@ -25,7 +25,7 @@ namespace simple.platformer.world {
           continue;
         }
 
-        var color = Color.FromRgbF(
+        var color = FinColor.FromRgbF(
             LevelGrid.Matches(tile, LevelTileTypes.LEFT_WALL) ||
             LevelGrid.Matches(tile, LevelTileTypes.RIGHT_WALL)
                 ? 1

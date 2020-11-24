@@ -5,7 +5,7 @@ namespace fin.graphics.color {
   public class ColorTest {
     [TestMethod]
     public void TestFromRgbaB() {
-      var color = Color.FromRgbaB(1, 2, 3, 4);
+      var color = FinColor.FromRgbaB(1, 2, 3, 4);
       Assert.AreEqual(1, color.Rb);
       Assert.AreEqual(2, color.Gb);
       Assert.AreEqual(3, color.Bb);
@@ -14,7 +14,7 @@ namespace fin.graphics.color {
 
     [TestMethod]
     public void TestFromRgbaF() {
-      var color = Color.FromRgbaF(.1f, .2f, .3f, .4f);
+      var color = FinColor.FromRgbaF(.1f, .2f, .3f, .4f);
       var tolerance = .01f;
       Assert.AreEqual(.1, color.Rf, tolerance);
       Assert.AreEqual(.2, color.Gf, tolerance);

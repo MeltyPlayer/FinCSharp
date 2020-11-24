@@ -1,49 +1,49 @@
-﻿using CMath = System.Math;
+﻿using System;
 
 namespace fin.math.number {
   public interface IDirection {
-    double Fraction { get; set; }
+    float Fraction { get; set; }
 
-    double Degrees { get; set; }
-    double Radians { get; set; }
+    float Degrees { get; set; }
+    float Radians { get; set; }
 
-    double NormalX { get; }
-    double NormalY { get; }
-    (double, double) Normal { get; set; }
+    float NormalX { get; }
+    float NormalY { get; }
+    (float, float) Normal { get; set; }
   }
 
   public class Direction : IDirection {
     private readonly IFraction impl_;
 
-    public double Fraction {
+    public float Fraction {
       get => this.impl_.Value;
       set => this.Set_(value);
     }
 
-    public double Degrees {
+    public float Degrees {
       get => this.Fraction * 360;
       set => this.Fraction = value / 360;
     }
 
-    public double Radians {
-      get => this.impl_.Value * Math.TAU;
-      set => this.Fraction = value / Math.TAU;
+    public float Radians {
+      get => this.impl_.Value * FinMath.TAU;
+      set => this.Fraction = value / FinMath.TAU;
     }
 
-    private double? normalX_;
-    private double? normalY_;
+    private float? normalX_;
+    private float? normalY_;
 
-    public double NormalX
-      => this.normalX_ ?? (this.normalX_ = CMath.Cos(this.Radians)) ?? 0;
+    public float NormalX
+      => this.normalX_ ?? (this.normalX_ = (float) Math.Cos(this.Radians)) ?? 0;
 
-    public double NormalY
-      => this.normalY_ ?? (this.normalY_ = CMath.Sin(this.Radians)) ?? 0;
+    public float NormalY
+      => this.normalY_ ?? (this.normalY_ = (float) Math.Sin(this.Radians)) ?? 0;
 
-    public (double, double) Normal {
+    public (float, float) Normal {
       get => (this.NormalX, this.NormalY);
       set {
         var (normalX, normalY) = value;
-        this.Radians = CMath.Atan2(normalY, normalX);
+        this.Radians = (float) Math.Atan2(normalY, normalX);
       }
     }
 
@@ -51,28 +51,28 @@ namespace fin.math.number {
       this.impl_ = new CircularFraction(0);
     }
 
-    public static Direction FromDegrees(double degrees) =>
+    public static Direction FromDegrees(float degrees) =>
         new Direction() {
             Degrees = degrees,
         };
 
-    public static Direction FromRadians(double radians) =>
+    public static Direction FromRadians(float radians) =>
         new Direction() {
             Radians = radians,
         };
 
-    public static Direction FromNormal(double normalX, double normalY) =>
+    public static Direction FromNormal(float normalX, float normalY) =>
         new Direction() {
             Normal = (normalX, normalY),
         };
 
-    private void Set_(double value) {
+    private void Set_(float value) {
       var initialValue = this.impl_.Value;
       this.impl_.Value = value;
       var finalValue = this.impl_.Value;
 
       // TODO: Make sure this tolerance works.
-      if (CMath.Abs(initialValue - finalValue) > .01) {
+      if (Math.Abs(initialValue - finalValue) > .01) {
         this.normalX_ = null;
         this.normalY_ = null;
       }

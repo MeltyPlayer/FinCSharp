@@ -10,9 +10,7 @@ using fin.emulation.gb.memory.io;
 using fin.file;
 using fin.graphics;
 using fin.graphics.camera;
-using fin.graphics.color;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using fin.input;
 
 using Color = System.Drawing.Color;
 
@@ -21,11 +19,16 @@ namespace fin.emulation.gb {
     private readonly Lcd lcd_;
     private readonly Mmu mmu_;
     private readonly Cpu cpu_;
+    private readonly Apu apu_;
+
+    private readonly IGamepad gamepad_;
 
     private readonly IPixelBufferObject pbo_;
     private bool pboCacheDirty_ = true;
 
-    public GameboyComponent(ITextures t) {
+    public GameboyComponent(IApp app) {
+      this.gamepad_ = app.Input.Controller;
+
       this.lcd_ = new Lcd();
       this.mmu_ =
           new Mmu(new MemoryMap(new IoAddresses(new SerialBus())),
@@ -41,11 +44,19 @@ namespace fin.emulation.gb {
         this.pboCacheDirty_ = false;
       };
 
+      this.apu_ = new Apu();
+      app.Audio.Factory.NewAudioStreamSource(this.apu_.BufferSubject,
+                                             2,
+                                             1,
+                                             Apu.FREQUENCY,
+                                             10,
+                                             Apu.FREQUENCY);
+
       var outputPath =
           "R:/Documents/CSharpWorkspace/FinCSharp/FinCSharpTests/tst/emulation/gb/blargg/output.txt";
       this.writer_ = new StreamWriter(outputPath);
 
-      this.pbo_ = t.Create(201, 144);
+      this.pbo_ = app.Graphics.Textures.Create(201, 144);
     }
 
     public void LaunchRom(IFile romFile) {
@@ -72,8 +83,9 @@ namespace fin.emulation.gb {
 
       var initialPpuMode = stat.Mode;
 
+      int cyclesThisIteration = 0;
       if (!doLog) {
-        this.cpu_.ExecuteCycles(70224); // 70221
+        cyclesThisIteration = this.cpu_.ExecuteCycles(70224); // 70221
       } else {
         var cyclesPerTick = 1000;
 
@@ -118,6 +130,7 @@ namespace fin.emulation.gb {
             output.Append('\n');
 
             var cycles = cpu.ExecuteInstructions(1);
+            cyclesThisIteration += cycles;
 
             /*if (initialPc == 0x01c6) {
               Assert.Fail("How did we get here???");
@@ -133,8 +146,32 @@ namespace fin.emulation.gb {
         }
       }
 
+      this.apu_.Tick(cyclesThisIteration);
       ioAddresses.Joypad.Update(cpu);
     }
+
+
+    [OnTick]
+    private void ProcessInputs_(ProcessInputsEvent _) {
+      var joypad = this.mmu_.MemoryMap.IoAddresses.Joypad;
+
+      var dpad = this.gamepad_[AnalogStickType.PRIMARY].RawAxes;
+      var (dpadX, dpadY) = (dpad.X, dpad.Y);
+      joypad.ToggleDpadRight(dpadX > .5);
+      joypad.ToggleDpadLeft(dpadX < -.5);
+      joypad.ToggleDpadUp(dpadY > .5);
+      joypad.ToggleDpadDown(dpadY < -.5);
+
+      var buttonA = this.gamepad_[FaceButtonType.PRIMARY];
+      var buttonB = this.gamepad_[FaceButtonType.SECONDARY];
+      var buttonSelect = this.gamepad_[FaceButtonType.SELECT];
+      var buttonStart = this.gamepad_[FaceButtonType.START];
+      joypad.ToggleButtonA(buttonA.IsDown);
+      joypad.ToggleButtonB(buttonB.IsDown);
+      joypad.ToggleButtonSelect(buttonSelect.IsDown);
+      joypad.ToggleButtonStart(buttonStart.IsDown);
+    }
+
 
     [OnTick]
     private void RenderForOrthographicCamera_(
@@ -242,13 +279,13 @@ namespace fin.emulation.gb {
       if (!this.lcd_.Active) {
         return;
       }
-      
+
       var r2d = g.Render2d;
 
       this.pbo_.Bind();
       r2d.Rectangle(0, 0, 201, 144, true);
       this.pbo_.Unbind();
-      
+
       /*var p = g.Primitives;
       var size = 1;
       p.Begin(PrimitiveType.POINTS);

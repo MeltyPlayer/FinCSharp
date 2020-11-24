@@ -87,7 +87,7 @@
     }
 
     private static void ConvertRgbaGridToUintArray_(
-        IFinGrid<Color> rgbaGrid,
+        IFinGrid<FinColor> rgbaGrid,
         ref uint[] uintArray,
         int width,
         int height
@@ -161,7 +161,7 @@
         GL.BindTexture(TextureTarget.Texture2D, 0);
       }
 
-      public void SetAllPixels(IFinGrid<Color> rgbaGrid) {
+      public void SetAllPixels(IFinGrid<FinColor> rgbaGrid) {
         /*TexturesOpenTk.ConvertRgbaGridToUintArray_(
             rgbaGrid,
             ref this.pixelData_);

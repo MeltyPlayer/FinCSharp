@@ -49,14 +49,14 @@ namespace simple {
 
   public class RateStreamPopulator : IStreamPopulator {
     private readonly IPcmData pcm_;
-    private CircularRangedNumber<float> sampleOffset_;
+    private CircularRangedFloat sampleOffset_;
 
     private float rate_ = .25f;
 
     public RateStreamPopulator(IPcmData pcm) {
       this.pcm_ = pcm;
       this.sampleOffset_ =
-          new CircularRangedNumber<float>(0, 0, this.pcm_.SampleCount);
+          new CircularRangedFloat(0, 0, this.pcm_.SampleCount);
     }
 
     public void Populate(byte[] bytes) {

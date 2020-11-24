@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Reactive.Subjects;
 
 using fin.discardable;
 using fin.math.number;
@@ -11,45 +12,36 @@ using OpenTK.Audio.OpenAL;
 namespace fin.audio.impl.opentk {
   public partial class AudioOpenTk : IAudio {
     private partial class AudioFactoryOpenTk : IAudioFactory {
-      private enum AudioStreamSourceState {
-        STOPPED,
-        PLAYING,
-        PAUSED,
-
-        DESTROYED,
-      }
-
       public IAudioStreamSource NewAudioStreamSource(
-          Action<byte[]> populateFunc,
+          Subject<byte[]> populateFunc,
           int channels,
           int bytesPerSample,
           int frequency,
           int numBuffers,
           int bufferSize) {
-        var streamSource = new AudioStreamSourceOpenTk(this.node_,
-                                                       populateFunc,
-                                                       channels,
-                                                       bytesPerSample,
-                                                       frequency,
-                                                       numBuffers,
-                                                       bufferSize);
+        var streamSource = new ReactiveAudioStreamSourceOpenTk(this.node_,
+                                                               populateFunc,
+                                                               channels,
+                                                               bytesPerSample,
+                                                               frequency,
+                                                               numBuffers,
+                                                               bufferSize);
         this.streamSources_.Add(streamSource);
         return streamSource;
       }
 
       // TODO: Rewrite this to stream an observable.
       // TODO: Handle non-looping?
-      private class AudioStreamSourceOpenTk : IAudioStreamSource {
+      private class ReactiveAudioStreamSourceOpenTk : IAudioStreamSource {
         private readonly IDiscardableNode node_;
 
         private readonly int sourceId_;
 
         private readonly ImmutableArray<int> bufferIds_;
-        private readonly Action<byte[]> populateFunc_;
         private readonly ALFormat format_;
         private readonly int frequency_;
         private readonly int bufferSize_;
-        private readonly CircularRangedNumber<int> currentBufferIndex_;
+        private readonly CircularRangedInt currentBufferIndex_;
 
         private readonly Queue<int> readyBuffersIds_;
 
@@ -57,9 +49,9 @@ namespace fin.audio.impl.opentk {
         private AudioStreamSourceState state_ =
             AudioStreamSourceState.STOPPED;
 
-        public AudioStreamSourceOpenTk(
+        public ReactiveAudioStreamSourceOpenTk(
             IDiscardableNode parent,
-            Action<byte[]> populateFunc,
+            Subject<byte[]> populateSubject,
             int channels,
             int bytesPerSample,
             int frequency,
@@ -71,15 +63,17 @@ namespace fin.audio.impl.opentk {
           this.sourceId_ = AL.GenSource();
 
           this.bufferIds_ = AL.GenBuffers(numBuffers).ToImmutableArray();
-          this.populateFunc_ = populateFunc;
+          populateSubject.Subscribe(pcm => {
+            var readyBufferId = this.readyBuffersIds_.Dequeue();
+            this.PopulateAndQueueBuffer_(readyBufferId, pcm);
+          });
 
           this.format_ = PcmHelperOpenTk.GetPcmFormat(channels, bytesPerSample);
 
           this.frequency_ = frequency;
           this.bufferSize_ = bufferSize;
 
-          this.currentBufferIndex_ =
-              new CircularRangedNumber<int>(0, 0, numBuffers);
+          this.currentBufferIndex_ = new CircularRangedInt(0, 0, numBuffers);
 
           // TODO: Delay this until the observable has returned some value. Stream
           // should remember stop/play/paused state as expected in the meantime.
@@ -87,7 +81,6 @@ namespace fin.audio.impl.opentk {
           foreach (var bufferId in this.bufferIds_) {
             this.readyBuffersIds_.Enqueue(bufferId);
           }
-          this.PopulateAndQueueReadyBuffers_();
         }
 
         private void Destroy_() {
@@ -109,21 +102,9 @@ namespace fin.audio.impl.opentk {
             AL.SourceUnqueueBuffers(this.sourceId_, 1);
             this.readyBuffersIds_.Enqueue(processedBufferId);
           }
-
-          this.PopulateAndQueueReadyBuffers_();
         }
 
-        private void PopulateAndQueueReadyBuffers_() {
-          while (this.readyBuffersIds_.Count > 0) {
-            var readyBufferId = this.readyBuffersIds_.Dequeue();
-            this.PopulateAndQueueBuffer_(readyBufferId);
-          }
-        }
-
-        private void PopulateAndQueueBuffer_(int bufferId) {
-          byte[] pcm = new byte[this.bufferSize_];
-          this.populateFunc_(pcm);
-
+        private void PopulateAndQueueBuffer_(int bufferId, byte[] pcm) {
           AL.BufferData(bufferId,
                         this.format_,
                         pcm,

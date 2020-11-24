@@ -15,27 +15,27 @@ namespace fin.app.events {
 
   [AttributeUsage(AttributeTargets.Method)]
   public class OnTickAttribute : Attribute {
-    public OnTickAttribute() {}
-
-    public delegate dynamic ForOnTickMethod();
-
     public static void SniffAndAddMethods(
         object onTickHandlerOwner,
         IForOnTickMethod target) {
-      var forOnTickMethod = target.GetType().GetMethods()
+      var forOnTickMethod = target.GetType()
+                                  .GetMethods()
                                   .Single(m => m.Name == "ForOnTickMethod");
 
+      // Gets list of all methods in the owner with OnTickAttribute. 
       var type = onTickHandlerOwner.GetType();
-      var methods = type.GetMethods(BindingFlags.Instance |
-                                    BindingFlags.Static | BindingFlags.Public |
-                                    BindingFlags.NonPublic);
+      var onTickHandlers = type.GetMethods(BindingFlags.Instance |
+                                           BindingFlags.Static |
+                                           BindingFlags.Public |
+                                           BindingFlags.NonPublic)
+                               .Where(m =>
+                                          m.GetCustomAttributes(
+                                               typeof(OnTickAttribute),
+                                               true)
+                                           .Length >
+                                          0)
+                               .ToArray();
 
-      var onTickHandlers = methods
-                           .Where(m =>
-                                      m.GetCustomAttributes(
-                                          typeof(OnTickAttribute),
-                                          true).Length > 0)
-                           .ToArray();
       foreach (var onTickHandler in onTickHandlers) {
         var parameters = onTickHandler.GetParameters();
         var eventParameter = parameters[0];
@@ -53,16 +53,13 @@ namespace fin.app.events {
         var specificHandler =
             onTickHandler.CreateDelegate(actionType, onTickHandlerOwner);
 
-        //var actionType = typeof(Action<>).MakeGenericType(eventParameterType);
-        //Action<dynamic> handler = evt => onTickHandler.CreateDelegate(actionType, this).DynamicInvoke(new[] { evt });
-        forOnTickMethod.MakeGenericMethod(eventParameterType).Invoke(target,
-                                                                     new object
-                                                                         [] {
-                                                                             safeEventParameterType,
-                                                                             specificHandler
-                                                                         });
-
-        //onTick.MakeGenericMethod(eventParameterType).Invoke(this, new object[] { safeEventParameterType, handler });
+        forOnTickMethod.MakeGenericMethod(eventParameterType)
+                       .Invoke(target,
+                               // TODO: Boxes to object, worth fixing?
+                               new[] {
+                                   safeEventParameterType,
+                                   specificHandler
+                               });
       }
     }
   }

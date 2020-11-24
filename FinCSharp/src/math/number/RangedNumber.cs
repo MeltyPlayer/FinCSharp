@@ -3,12 +3,6 @@
 using fin.assert;
 
 namespace fin.math.number {
-  public interface IRangedNumber<TNumber> : INumber<TNumber>
-      where TNumber : IComparable {
-    TNumber Min { get; }
-    TNumber Max { get; }
-  }
-
   public abstract class BRangedNumber<TNumber> : IRangedNumber<TNumber>
       where TNumber : IComparable {
     public TNumber Min { get; }
@@ -35,43 +29,82 @@ namespace fin.math.number {
     protected abstract void Set(TNumber value);
   }
 
-  public sealed class ClampedRangedNumber<TNumber> : BRangedNumber<TNumber>
-      where TNumber : IComparable {
-    private TNumber impl_ = default;
-
-    public ClampedRangedNumber(
-        TNumber min,
-        TNumber initialValue,
-        TNumber max) : base(
+  public abstract class BRangedInt : BRangedNumber<int>, IRangedInt {
+    protected BRangedInt(int min, int initialValue, int max) : base(
         min,
         initialValue,
-        max) {
-      this.Set(initialValue);
-    }
-
-    protected override TNumber Get() => this.impl_;
-
-    protected override void Set(TNumber value) =>
-        this.impl_ = Math.Clamp(this.Min, value, this.Max);
+        max) {}
   }
 
-  public sealed class CircularRangedNumber<TNumber> : BRangedNumber<TNumber>
-      where TNumber : IComparable {
-    private TNumber impl_ = default;
+  public sealed class ClampedRangedInt : BRangedInt {
+    private int impl_;
 
-    public CircularRangedNumber(
-        TNumber min,
-        TNumber initialValue,
-        TNumber max) : base(
+    public ClampedRangedInt(int min, int initialValue, int max) : base(
         min,
         initialValue,
         max) {
       this.Set(initialValue);
     }
 
-    protected override TNumber Get() => this.impl_;
+    protected override int Get() => this.impl_;
 
-    protected override void Set(TNumber value) =>
-        this.impl_ = Math.Wrap(this.Min, value, this.Max);
+    protected override void Set(int value) =>
+        this.impl_ = IntMath.Clamp(this.Min, value, this.Max);
+  }
+
+  public sealed class CircularRangedInt : BRangedInt {
+    private int impl_;
+
+    public CircularRangedInt(int min, int initialValue, int max) : base(
+        min,
+        initialValue,
+        max) {
+      this.Set(initialValue);
+    }
+
+    protected override int Get() => this.impl_;
+
+    protected override void Set(int value) =>
+        this.impl_ = IntMath.Wrap(this.Min, value, this.Max);
+  }
+
+
+  public abstract class BRangedFloat : BRangedNumber<float>, IRangedFloat {
+    protected BRangedFloat(float min, float initialValue, float max) : base(
+        min,
+        initialValue,
+        max) {}
+  }
+
+  public sealed class ClampedRangedFloat : BRangedFloat {
+    private float impl_;
+
+    public ClampedRangedFloat(float min, float initialValue, float max) : base(
+        min,
+        initialValue,
+        max) {
+      this.Set(initialValue);
+    }
+
+    protected override float Get() => this.impl_;
+
+    protected override void Set(float value) =>
+        this.impl_ = FloatMath.Clamp(this.Min, value, this.Max);
+  }
+
+  public sealed class CircularRangedFloat : BRangedFloat {
+    private float impl_;
+
+    public CircularRangedFloat(float min, float initialValue, float max) : base(
+        min,
+        initialValue,
+        max) {
+      this.Set(initialValue);
+    }
+
+    protected override float Get() => this.impl_;
+
+    protected override void Set(float value) =>
+        this.impl_ = FloatMath.Wrap(this.Min, value, this.Max);
   }
 }

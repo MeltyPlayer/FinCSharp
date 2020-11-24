@@ -4,6 +4,7 @@ using fin.settings;
 using fin.math.geometry;
 
 using simple.platformer.player;
+using simple.platformer.world;
 
 namespace simple.platformer {
   public sealed class PlatformScene : BScene {
@@ -30,10 +31,26 @@ namespace simple.platformer {
       view.AddOrthographicCamera(viewRoot);
 
       // Add contents of view.
-      instantiator.NewChild(viewRoot,
-                            new PlayerComponent(evt.App.Input.Controller));
-    }
+      var gamepad = evt.App.Input.Controller;
+      var playerRigidbody = new PlayerRigidbody {
+          Rigidbody = new Rigidbody {
+              Position = (LevelConstants.SIZE * 10, LevelConstants.SIZE * 13),
+              YAcceleration = PlayerConstants.GRAVITY,
+              MaxYSpeed = float.MaxValue,
+          },
+      };
 
-    
+      var playerStateMachine = new PlayerStateMachine {
+          State = PlayerState.STANDING,
+      };
+
+      instantiator.NewChild(viewRoot,
+                            new PlayerComponent(gamepad,
+                                                playerRigidbody,
+                                                playerStateMachine),
+                            new ItemSwitcherComponent(gamepad,
+                                               playerRigidbody,
+                                               playerStateMachine));
+    }
   }
 }

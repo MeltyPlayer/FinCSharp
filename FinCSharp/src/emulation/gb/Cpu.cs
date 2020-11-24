@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Diagnostics;
 
 using fin.assert;
 using fin.emulation.gb.memory;
 using fin.emulation.gb.memory.io;
 using fin.graphics.color;
-using fin.log;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
-
-using SharpFont.PostScript;
 
 namespace fin.emulation.gb {
   public class Cpu {
@@ -263,8 +256,8 @@ namespace fin.emulation.gb {
 
       var shouldTriggerLcdInterrupt = newModeType switch {
           PpuModeType.OAM_RAM_SEARCH => stat.OamRamSearchInterruptEnabled,
-          PpuModeType.HBLANK        => stat.HblankInterruptEnabled,
-          PpuModeType.VBLANK        => stat.VblankInterruptEnabled,
+          PpuModeType.HBLANK         => stat.HblankInterruptEnabled,
+          PpuModeType.VBLANK         => stat.VblankInterruptEnabled,
           _                          => false,
       };
 
@@ -398,33 +391,15 @@ namespace fin.emulation.gb {
     }
 
     public enum InterruptType {
-      V_BLANK,
-      LCD_STAT,
-      TIMER,
-      SERIAL,
-      JOYPAD,
+      V_BLANK = 0x1,
+      LCD_STAT = 0x2,
+      TIMER = 0x4,
+      SERIAL = 0x8,
+      JOYPAD = 0x10,
     }
 
-    public void InterruptZ80(InterruptType type) {
-      var if_ = this.IoAddresses.If;
-      switch (type) {
-        case InterruptType.V_BLANK:
-          if_.Value |= 0x1;
-          break;
-        case InterruptType.LCD_STAT:
-          if_.Value |= 0x2;
-          break;
-        case InterruptType.TIMER:
-          if_.Value |= 0x4;
-          break;
-        case InterruptType.SERIAL:
-          if_.Value |= 0x8;
-          break;
-        case InterruptType.JOYPAD:
-          if_.Value |= 0x10;
-          break;
-      }
-    }
+    public void InterruptZ80(InterruptType interruptType)
+      => this.IoAddresses.If.Value |= (byte) interruptType;
 
     public byte ScanlineLcdc { get; private set; } = 0;
 
@@ -544,15 +519,15 @@ namespace fin.emulation.gb {
       var obp0 = ioAddresses.Obp0.Value;
       var obp1 = ioAddresses.Obp1.Value;
 
-      var notOnLineColor = Color.FromCColor(System.Drawing.Color.DimGray);
-      var transparentColor = Color.FromCColor(System.Drawing.Color.Aqua);
-      var offscreenColor = Color.FromCColor(System.Drawing.Color.Yellow);
-      var notOverBgColor = Color.FromCColor(System.Drawing.Color.Red);
-      var bgNotWhiteColor = Color.FromCColor(System.Drawing.Color.Green);
+      var notOnLineColor = FinColor.FromCColor(System.Drawing.Color.DimGray);
+      var transparentColor = FinColor.FromCColor(System.Drawing.Color.Aqua);
+      var offscreenColor = FinColor.FromCColor(System.Drawing.Color.Yellow);
+      var notOverBgColor = FinColor.FromCColor(System.Drawing.Color.Red);
+      var bgNotWhiteColor = FinColor.FromCColor(System.Drawing.Color.Green);
 
       //loop throught the 40 sprites
       for (var i = 0; i < 40; i++) {
-        Color? didNotRenderColor = null;
+        FinColor? didNotRenderColor = null;
 
         var spriteAddress = (ushort) (i * 4);
         var y = (byte) (oam[spriteAddress] - 16);
@@ -610,7 +585,7 @@ namespace fin.emulation.gb {
         }
 
         if (didNotRenderColor != null) {
-          this.lcd_.SetPixel(161 + i, ly, (Color) didNotRenderColor);
+          this.lcd_.SetPixel(161 + i, ly, (FinColor) didNotRenderColor);
         }
       }
     }
@@ -623,7 +598,7 @@ namespace fin.emulation.gb {
     //mode 0 - BGP FF47
     //mode 1 - OBP0 FF48
     //mode 2 - OBP1 FF49
-    private Color GetColor_(byte palette, int colorId) {
+    private FinColor GetColor_(byte palette, int colorId) {
       var colorIndex = (palette >> colorId * 2) & 0x3;
 
       return colorIndex switch {

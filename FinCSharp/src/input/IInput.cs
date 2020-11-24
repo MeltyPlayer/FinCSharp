@@ -5,5 +5,8 @@ namespace fin.input {
     IGamepad Controller { get; }
     ICursor Cursor { get; }
     IKeyboard Keyboard { get; }
+
+    // TODO: Remove this.
+    void Poll();
   }
 }

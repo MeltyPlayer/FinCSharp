@@ -15,6 +15,6 @@ namespace fin.graphics {
 
   public interface IPixelBufferObject : ITexture {
     //void SetPixel(int x, int y, IColor color);
-    void SetAllPixels(IFinGrid<Color> rgbaGrid);
+    void SetAllPixels(IFinGrid<FinColor> rgbaGrid);
   }
 }

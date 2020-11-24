@@ -26,6 +26,15 @@
       return this;
     }
 
+    public virtual Render2d Line(float x1, float y1, float x2, float y2) {
+      this.graphics_.Primitives.Begin(PrimitiveType.LINE_STRIP)
+          .Vertex(x1, y1)
+          .Vertex(x2, y2)
+          .End();
+      return this;
+    }
+
+
     public virtual Render2d Circle(
         float centerX,
         float centerY,

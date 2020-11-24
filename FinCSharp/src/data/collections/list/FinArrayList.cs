@@ -18,9 +18,7 @@ namespace fin.data.collections.list {
 
     public int Count => this.impl_.Count;
 
-    public IEnumerator<T> GetEnumerator() =>
-        new ConvertedEnumerator<T>(this.impl_.GetEnumerator(),
-                                   obj => (T) obj);
+    public IEnumerator<T> GetEnumerator() => this.impl_.GetEnumerator();
 
     public bool Clear() {
       if (this.Count == 0) {
@@ -35,7 +33,7 @@ namespace fin.data.collections.list {
     /// Time: O(1)
     /// </remarks>
     public T this[int index] {
-      get => (T) this.impl_[index]!;
+      get => this.impl_[index]!;
       set => this.impl_[index] = value;
     }
   }

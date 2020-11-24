@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 using fin.math.geometry;
 using fin.math.number;
 
 namespace fin.graphics.shapes {
+  // Layouts
+
+
   public interface IShape {
     public IVector2<float> Position { get; }
     public IVector2<float> Scale { get; }

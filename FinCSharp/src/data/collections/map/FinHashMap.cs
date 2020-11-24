@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace fin.data.collections.map {
+  /**
+   *
+   */
   public sealed class FinHashMap<TKey, TValue> : IFinMap<TKey, TValue> {
     private readonly ConcurrentDictionary<TKey, TValue> impl_ =
         new ConcurrentDictionary<TKey, TValue>();

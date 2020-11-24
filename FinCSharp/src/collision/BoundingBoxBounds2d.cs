@@ -19,7 +19,7 @@ namespace fin.collision {
     public float BottomY => this.boundingBox_.BottomY;
 
     public bool Contains(float x, float y) =>
-        Math.IsBetween(this.LeftX, x, this.RightX) &&
-        Math.IsBetween(this.TopY, y, this.BottomY);
+        FloatMath.IsBetween(this.LeftX, x, this.RightX) &&
+        FloatMath.IsBetween(this.TopY, y, this.BottomY);
   }
 }
