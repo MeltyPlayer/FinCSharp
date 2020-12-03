@@ -1,6 +1,6 @@
 ﻿using System;
 
-using fin.file;
+using fin.io;
 using fin.log;
 
 using NVorbis;
@@ -12,7 +12,7 @@ namespace fin.audio {
 
   public class OggLoader : IOggLoader {
     public IPcmData Load(IFile file) {
-      using var ogg = new VorbisReader(file.uri);
+      using var ogg = new VorbisReader(file.Uri);
 
       var channels = ogg.Channels;
       var sampleCount = (int) ogg.TotalSamples * channels;

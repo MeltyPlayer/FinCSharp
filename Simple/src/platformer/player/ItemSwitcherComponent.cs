@@ -2,18 +2,19 @@
 using fin.app.events;
 using fin.app.node;
 using fin.graphics.camera;
-using fin.input;
+using fin.input.gamepad;
 using fin.math.number;
+
+using simple.platformer.player.sfx;
 
 namespace simple.platformer.player {
   public interface IItemComponent : IComponent {
-    [OnTick]
     void ProcessInputs(ProcessInputsEvent _);
 
-    [OnTick]
     void TickCollisions(TickCollisionsEvent _);
 
-    [OnTick]
+    void TickAnimations(TickAnimationEvent _);
+
     void RenderForOrthographicCamera(
         RenderForOrthographicCameraTickEvent evt);
   }
@@ -27,6 +28,7 @@ namespace simple.platformer.player {
     public ItemSwitcherComponent(
         IGamepad gamepad,
         PlayerRigidbody playerRigidbody,
+        PlayerSoundsComponent playerSounds,
         PlayerStateMachine stateMachine) {
       this.gamepad_ = gamepad;
 
@@ -36,6 +38,7 @@ namespace simple.platformer.player {
                               stateMachine),
           new WhipComponent(gamepad,
                             playerRigidbody,
+                            playerSounds,
                             stateMachine),
           new SwordComponent(gamepad,
                              playerRigidbody,
@@ -60,6 +63,10 @@ namespace simple.platformer.player {
     [OnTick]
     public void TickCollisions(TickCollisionsEvent _)
       => this.CurrentItem.TickCollisions(_);
+
+    [OnTick]
+    public void TickAnimations(TickAnimationEvent _)
+      => this.CurrentItem.TickAnimations(_);
 
     [OnTick]
     public void RenderForOrthographicCamera(

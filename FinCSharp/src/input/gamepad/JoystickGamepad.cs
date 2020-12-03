@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
+using fin.input.analogstick;
 using fin.input.button;
 
 namespace fin.input.gamepad {

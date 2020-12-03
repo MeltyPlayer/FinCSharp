@@ -2,7 +2,7 @@
 
 using RSG;
 
-namespace fin.file {
+namespace fin.io {
   public static class JsonUtil {
     public static T DeserializeFrom<T>(IFile file)
       => JsonConvert.DeserializeObject<T>(FileUtil.ReadText(file));

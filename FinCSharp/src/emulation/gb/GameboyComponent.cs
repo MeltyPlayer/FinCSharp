@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 
 using fin.app;
@@ -7,10 +6,10 @@ using fin.app.events;
 using fin.app.node;
 using fin.emulation.gb.memory;
 using fin.emulation.gb.memory.io;
-using fin.file;
+using fin.io;
 using fin.graphics;
 using fin.graphics.camera;
-using fin.input;
+using fin.input.gamepad;
 
 using Color = System.Drawing.Color;
 

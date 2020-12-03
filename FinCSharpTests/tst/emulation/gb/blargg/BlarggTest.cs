@@ -7,7 +7,7 @@ using System.Text;
 using fin.assert;
 using fin.emulation.gb.memory;
 using fin.emulation.gb.memory.io;
-using fin.file;
+using fin.io;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

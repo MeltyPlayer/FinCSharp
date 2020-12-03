@@ -15,6 +15,7 @@
     // 2D transforms
     ITransform Translate(float x, float y);
     ITransform Rotate(float deg);
+    ITransform Scale(float x, float y);
 
 
     /*public abstract void set_target_matrix(MatrixType matrixType);

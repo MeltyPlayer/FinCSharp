@@ -3,7 +3,7 @@ using System.Net;
 
 using RSG;
 
-namespace fin.file {
+namespace fin.io {
   internal static class WebFileUtil {
     static WebFileUtil() {
       FileUtil.readTextHandlers.DefineHandler<WebFile>(WebFileUtil.ReadText);
@@ -13,7 +13,7 @@ namespace fin.file {
 
     public static string ReadText(WebFile file) {
       using var client = new WebClient();
-      return client.DownloadString(new Uri(file.uri));
+      return client.DownloadString(new Uri(file.Uri));
     }
 
     public static IPromise<string> ReadTextAsync(WebFile file) {
@@ -29,7 +29,7 @@ namespace fin.file {
             }
           };
 
-        client.DownloadStringAsync(new Uri(file.uri), null);
+        client.DownloadStringAsync(new Uri(file.Uri), null);
       }
 
       return promise;

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Reactive.Subjects;
 
-using fin.discardable;
+using fin.io;
 
 namespace fin.audio {
   public interface IAudio {
     IAudioFactory Factory { get; }
 
+    // TODO: Hide this?
     void Poll();
+
+    IAudioBuffer LoadAsBuffer(IFile file);
   }
 
   // TODO: Rethink this.
@@ -17,7 +20,8 @@ namespace fin.audio {
     private const int DEFAULT_BUFFER_SIZE =
         2 * 2 * IAudioFactory.DEFAULT_FREQUENCY;
 
-    IAudioSource NewAudioSource();
+    ISingleAudioSource NewAudioSource();
+    IPolyphonicAudioSource NewAudioSource(int voiceCount);
 
     IAudioBuffer NewAudioBuffer();
 
@@ -28,6 +32,7 @@ namespace fin.audio {
         int frequency = IAudioFactory.DEFAULT_FREQUENCY,
         int numBuffers = 2,
         int bufferSize = IAudioFactory.DEFAULT_BUFFER_SIZE);
+
     IAudioStreamSource NewAudioStreamSource(
         Subject<byte[]> populateSubject,
         int channels = 1,
@@ -38,11 +43,18 @@ namespace fin.audio {
   }
 
   public interface IAudioSource {
-    void Play(IAudioBuffer buffer, bool looping);
+    void Play(IAudioBuffer buffer, bool looping = false, float pitch = 1);
     void Pause();
     void Stop();
+  }
+
+  public interface ISingleAudioSource : IAudioSource {
     int? SampleOffset { get; }
     float? SampleOffsetFraction { get; }
+  }
+
+  public interface IPolyphonicAudioSource : IAudioSource {
+    int VoiceCount { get; }
   }
 
   public interface IAudioBuffer {
@@ -109,15 +121,15 @@ namespace fin.audio {
       if (this.BytesPerSample == 1) {
         // TODO: Get amplitude for bytes
         return 0;
-      }
-      else {
+      } else {
         var byteOffset = this.BytesPerSample *
                          (sampleOffset * this.Channels + channelOffset);
 
         var shortSample =
             (short) ((this.Pcm[byteOffset + 1] << 8) | this.Pcm[byteOffset]);
 
-        var zeroToOneNormalizedSample = 1f * (shortSample - short.MinValue) /
+        var zeroToOneNormalizedSample = 1f *
+                                        (shortSample - short.MinValue) /
                                         (short.MaxValue - short.MinValue);
         var negativeOneToOneNormalizedSample =
             -1 + 2 * zeroToOneNormalizedSample;

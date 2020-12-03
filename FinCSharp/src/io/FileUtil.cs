@@ -2,7 +2,7 @@
 
 using RSG;
 
-namespace fin.file {
+namespace fin.io {
   public static class FileUtil {
     internal static readonly ConvergingTypedHandlerMap<byte[]>
         readBytesHandlers =

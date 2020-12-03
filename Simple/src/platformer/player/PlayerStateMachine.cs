@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace simple.platformer.player {
   public enum PlayerState {
@@ -32,12 +33,22 @@ namespace simple.platformer.player {
   }
 
   // TODO: Implement behaviors as separate states.
-  public class PlayerStateMachine {
+  // TODO: Implement this via a base state machine class.
+  public class PlayerStateMachine : IStateMachine<PlayerState> {
+    private readonly IStateMachine<PlayerState> impl_ =
+        new StateMachine<PlayerState>();
+
     // TODO: Move these somewhere else.
     public bool WallSlidingOnLeft { get; set; }
 
     // TODO: Validate that only expected transitions are made.
-    public PlayerState State { get; set; }
+    public PlayerState State {
+      get => this.impl_.State;
+      set => this.impl_.State = value;
+    }
+
+    public IStateMachine<PlayerState> OnEnter(PlayerState state, Action handler)
+      => this.impl_.OnEnter(state, handler);
 
     public bool IsOnGround => this.IsInState_(PlayerState.STANDING,
                                               PlayerState.WALKING,

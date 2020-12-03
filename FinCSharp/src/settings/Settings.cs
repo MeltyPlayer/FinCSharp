@@ -2,7 +2,7 @@
 using System.IO;
 
 using fin.app;
-using fin.file;
+using fin.io;
 
 using Newtonsoft.Json;
 
@@ -15,7 +15,7 @@ namespace fin.settings {
       const string directoryPath = "data/";
       const string filePath = directoryPath + "settings.json";
 
-      var file = LocalFile.WithinResources(filePath);
+      var file = LocalIo.Resources.GetFile(filePath);
       try {
         if (file.Exists()) {
           return JsonUtil.DeserializeFrom<Settings>(file);

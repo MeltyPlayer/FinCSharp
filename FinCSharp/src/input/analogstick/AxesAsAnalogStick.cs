@@ -1,7 +1,6 @@
-﻿using fin.math;
-using fin.math.geometry;
+﻿using fin.math.geometry;
 
-namespace fin.input {
+namespace fin.input.analogstick {
   public class AxesAsAnalogStick : IAnalogStick {
     public IAxis Horizontal {
       get => this.axes_.Horizontal;

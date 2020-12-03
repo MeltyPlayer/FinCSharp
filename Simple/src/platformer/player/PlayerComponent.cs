@@ -4,11 +4,14 @@ using System.Drawing;
 using fin.app;
 using fin.app.events;
 using fin.app.node;
+using fin.audio;
 using fin.graphics.camera;
+using fin.graphics.color;
 using fin.input;
 using fin.input.gamepad;
 using fin.math;
 
+using simple.platformer.player.sfx;
 using simple.platformer.world;
 
 namespace simple.platformer.player {
@@ -16,12 +19,13 @@ namespace simple.platformer.player {
     private readonly IGamepad gamepad_;
     private readonly PlayerRigidbody playerRigidbody_;
     private readonly Rigidbody rigidbody_;
+    private readonly PlayerSoundsComponent playerSounds_;
     private readonly PlayerStateMachine stateMachine_;
 
     private readonly LevelGridRenderer levelGridRenderer_;
 
-    private readonly PlayerMotor motor_;
     private readonly PlayerCollider collider_;
+    private readonly PlayerMotor motor_;
     private readonly BoxPlayerRenderer boxPlayerRenderer_;
 
     private float duckFraction_ = 0;
@@ -30,12 +34,14 @@ namespace simple.platformer.player {
     public PlayerComponent(
         IGamepad gamepad,
         PlayerRigidbody playerRigidbody,
+        PlayerSoundsComponent playerSounds,
         PlayerStateMachine playerStateMachine) {
       this.gamepad_ = gamepad;
 
       this.playerRigidbody_ = playerRigidbody;
       this.rigidbody_ = playerRigidbody.Rigidbody;
 
+      this.playerSounds_ = playerSounds;
       this.stateMachine_ = playerStateMachine;
 
       this.levelGridRenderer_ = new LevelGridRenderer {
@@ -178,7 +184,15 @@ namespace simple.platformer.player {
 
     [OnTick]
     private void TickCollisions_(TickCollisionsEvent _) {
-      this.collider_.TickCollisions();
+      var initXSpd = FloatMath.Abs(this.playerRigidbody_.XVelocity);
+      var collidedTypes = this.collider_.TickCollisions();
+
+      if ((collidedTypes & LevelTileTypes.LEFT_WALL) != 0 ||
+          (collidedTypes & LevelTileTypes.RIGHT_WALL) != 0) {
+        if (initXSpd > 1) {
+          this.playerSounds_.PlayBumpWallSound();
+        }
+      }
 
       // If falling while meant to be on the ground, then switch to falling state.
       if (this.stateMachine_.IsOnGround && this.rigidbody_.YVelocity > 0) {
@@ -197,25 +211,31 @@ namespace simple.platformer.player {
 
     [OnTick]
     private void TickAnimation_(TickAnimationEvent _) {
-      this.boxPlayerRenderer_.Color = this.stateMachine_.State switch {
-          PlayerState.STANDING                    => Color.White,
-          PlayerState.WALKING                     => Color.Yellow,
-          PlayerState.RUNNING                     => Color.Orange,
-          PlayerState.TURNING                     => Color.Magenta,
-          PlayerState.STOPPING                    => Color.Bisque,
-          PlayerState.DUCKING                     => Color.Chartreuse,
-          PlayerState.DUCKWALKING                 => Color.ForestGreen,
-          PlayerState.SLIDING                     => Color.LightGreen,
-          PlayerState.JUMPING                     => Color.Cyan,
-          PlayerState.WALL_SLIDING                => Color.MediumPurple,
-          PlayerState.WALLJUMPING                 => Color.Maroon,
-          PlayerState.BACKFLIPPING                => Color.Purple,
-          PlayerState.LONGJUMPING                 => Color.DodgerBlue,
-          PlayerState.FALLING                     => Color.RoyalBlue,
-          PlayerState.LANDING                     => Color.Blue,
-          PlayerState.INITIALLY_FALLING_OFF_LEDGE => Color.CadetBlue,
-          _                                       => Color.Black,
-      };
+      var useStateColor = false;
+      if (useStateColor) {
+        var stateColor = this.stateMachine_.State switch {
+            PlayerState.STANDING                    => Color.White,
+            PlayerState.WALKING                     => Color.Yellow,
+            PlayerState.RUNNING                     => Color.Orange,
+            PlayerState.TURNING                     => Color.Magenta,
+            PlayerState.STOPPING                    => Color.Bisque,
+            PlayerState.DUCKING                     => Color.Chartreuse,
+            PlayerState.DUCKWALKING                 => Color.ForestGreen,
+            PlayerState.SLIDING                     => Color.LightGreen,
+            PlayerState.JUMPING                     => Color.Cyan,
+            PlayerState.WALL_SLIDING                => Color.MediumPurple,
+            PlayerState.WALLJUMPING                 => Color.Maroon,
+            PlayerState.BACKFLIPPING                => Color.Purple,
+            PlayerState.LONGJUMPING                 => Color.DodgerBlue,
+            PlayerState.FALLING                     => Color.RoyalBlue,
+            PlayerState.LANDING                     => Color.Blue,
+            PlayerState.INITIALLY_FALLING_OFF_LEDGE => Color.CadetBlue,
+            _                                       => Color.Black,
+        };
+        this.boxPlayerRenderer_.Color = stateColor;
+      } else {
+        this.boxPlayerRenderer_.Color = ColorConstants.WHITE;
+      }
     }
 
     [OnTick]

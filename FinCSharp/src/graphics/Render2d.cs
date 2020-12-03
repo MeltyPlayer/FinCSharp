@@ -1,4 +1,6 @@
-﻿namespace fin.graphics {
+﻿using fin.math.geometry;
+
+namespace fin.graphics {
   using System;
 
   // TODO: Fix this.
@@ -10,16 +12,16 @@
       this.graphics_ = graphics;
     }
 
-    public virtual Render2d Point(Vertex2d vertex) => this.Points(vertex);
+    public virtual Render2d Point(IVector2<float> vertex) => this.Points(vertex);
 
-    public virtual Render2d Points(params Vertex2d[] vertices) {
+    public virtual Render2d Points(params IVector2<float>[] vertices) {
       this.graphics_.Primitives.Begin(PrimitiveType.POINTS)
           .Vertices(vertices)
           .End();
       return this;
     }
 
-    public virtual Render2d Line(params Vertex2d[] vertices) {
+    public virtual Render2d Line(params IVector2<float>[] vertices) {
       this.graphics_.Primitives.Begin(PrimitiveType.LINE_STRIP)
           .Vertices(vertices)
           .End();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 using fin.input.button;
 
@@ -83,6 +82,6 @@ namespace fin.input.impl.opentk {
       }
     }
 
-    public IJoystick First => this.joysticks_.Values.First();
+    public IEnumerable<IJoystick> All => this.joysticks_.Values;
   }
 }

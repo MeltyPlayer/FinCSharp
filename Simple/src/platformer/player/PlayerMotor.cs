@@ -214,12 +214,11 @@ namespace simple.platformer.player {
                                        PlayerConstants.UPRIGHT_MAX_FAST_XSPD *
                                        PlayerConstants.LONGJUMP_MAX_XSPD;
           }
-          // TODO: Backflip feels weird.
           else if (isBackflip) {
             // Instantly flip horizontal velocity.
             var moveDirection = FinMath.Sign(this.Rigidbody.XVelocity);
             this.Rigidbody.XVelocity =
-                -moveDirection * PlayerConstants.UPRIGHT_MAX_SLOW_XSPD;
+                -moveDirection * PlayerConstants.BACKFLIP_XSPD;
           }
         } else if (this.StateMachine.State == PlayerState.WALL_SLIDING) {
           this.StateMachine.State = PlayerState.WALLJUMPING;

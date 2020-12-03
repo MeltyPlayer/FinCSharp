@@ -1,6 +1,4 @@
-﻿using System;
-
-using fin.app;
+﻿using fin.app;
 using fin.graphics.camera;
 using fin.input;
 using fin.input.gamepad;
@@ -70,6 +68,8 @@ namespace simple.platformer.player {
     public void TickCollisions(TickCollisionsEvent _) {
       // TODO: Any collisions?
     }
+
+    public void TickAnimations(TickAnimationEvent _) {}
 
     public void RenderForOrthographicCamera(
         RenderForOrthographicCameraTickEvent evt) {

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Immutable;
 
-namespace fin.input {
-  using button;
+using fin.input.analogstick;
+using fin.input.button;
 
+namespace fin.input.gamepad {
   public enum AnalogStickType {
     PRIMARY,
     SECONDARY,

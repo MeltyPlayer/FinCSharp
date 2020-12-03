@@ -8,7 +8,7 @@
 
   using data.collections.grid;
 
-  using file;
+  using io;
 
   using log;
 
@@ -49,7 +49,7 @@
 
       var bytes =
           LocalFileUtil.ReadBytes(
-              LocalFile.WithinResources("fonts/" + fontFileName));
+              LocalIo.Resources.GetFile("fonts/" + fontFileName));
       using var face = new Face(library, bytes, 0);
 
       const uint fontSize = 32;

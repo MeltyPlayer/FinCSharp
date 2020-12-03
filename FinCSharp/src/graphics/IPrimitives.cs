@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 
 using fin.graphics.color;
+using fin.math.geometry;
 
 namespace fin.graphics {
   public enum PrimitiveType {
@@ -22,10 +23,12 @@ namespace fin.graphics {
 
     public abstract IPrimitives End();
 
-    public virtual IPrimitives Vertex(Vertex2d v) => this.Vertex(v.x, v.y);
+    public virtual IPrimitives Vertex(IVector2<float> v)
+      => this.Vertex(v.X, v.Y);
+
     public abstract IPrimitives Vertex(float x, float y);
 
-    public virtual IPrimitives Vertices(params Vertex2d[] vs) {
+    public virtual IPrimitives Vertices(params IVector2<float>[] vs) {
       foreach (var v in vs) {
         this.Vertex(v);
       }

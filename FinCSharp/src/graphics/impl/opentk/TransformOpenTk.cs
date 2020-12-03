@@ -34,5 +34,11 @@ namespace fin.graphics.impl.opentk {
       GL.Rotate(-deg, 0, 0, 1);
       return this;
     }
+
+    public ITransform Scale(float x, float y) {
+      GL.MatrixMode(MatrixMode.Modelview);
+      GL.Scale(x, y, 1);
+      return this;
+    }
   }
 }

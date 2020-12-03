@@ -23,7 +23,7 @@ namespace simple.platformer.player {
     public const float AIR_FAST_XACC = .4f;
     public const float AIR_FRICTION = .1f;
 
-    public const float UPRIGHT_MAX_SLOW_XSPD = 7; // 5
+    public const float UPRIGHT_MAX_SLOW_XSPD = 4;
     public const float UPRIGHT_MAX_FAST_XSPD = 7;
 
     public const float GRAVITY = 1.3f; // -.9
@@ -40,6 +40,8 @@ namespace simple.platformer.player {
 
     public static readonly float BACKFLIP_JUMP_SPEED =
         PlayerConstants.CalculateJumpSpeed_(BACKFLIP_JUMP_HEIGHT);
+
+    public static readonly float BACKFLIP_XSPD = 2;
 
     public const float LONGJUMP_HEIGHT = VSIZE * .75f;
 

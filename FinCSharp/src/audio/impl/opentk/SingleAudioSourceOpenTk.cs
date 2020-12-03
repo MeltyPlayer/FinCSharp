@@ -5,15 +5,15 @@ using OpenTK.Audio.OpenAL;
 namespace fin.audio.impl.opentk {
   public partial class AudioOpenTk : IAudio {
     private partial class AudioFactoryOpenTk : IAudioFactory {
-      public IAudioSource NewAudioSource()
-        => new AudioSourceOpenTk(this.node_);
+      public ISingleAudioSource NewAudioSource()
+        => new SingleAudioSourceOpenTk(this.node_);
 
-      private class AudioSourceOpenTk : IAudioSource {
+      private class SingleAudioSourceOpenTk : ISingleAudioSource {
         private readonly IDiscardableNode node_;
         public int Id { get; }
         private IAudioBuffer? currentBuffer_;
 
-        public AudioSourceOpenTk(IDiscardableNode parent) {
+        public SingleAudioSourceOpenTk(IDiscardableNode parent) {
           this.Id = AL.GenSource();
 
           this.node_ = parent.CreateChild();
@@ -22,10 +22,10 @@ namespace fin.audio.impl.opentk {
 
         private void Destroy_() => AL.DeleteSource(this.Id);
 
-        public void Play(IAudioBuffer buffer, bool loop) =>
-            this.Play_((AudioBufferOpenTk) buffer, loop);
+        public void Play(IAudioBuffer buffer, bool loop, float pitch) =>
+            this.Play_((AudioBufferOpenTk) buffer, loop, pitch);
 
-        private void Play_(AudioBufferOpenTk buffer, bool loop) {
+        private void Play_(AudioBufferOpenTk buffer, bool looping, float pitch) {
           if (buffer != this.currentBuffer_ &&
               AL.GetSourceState(this.Id) == ALSourceState.Paused) {
             AL.SourcePlay(this.Id);
@@ -36,7 +36,9 @@ namespace fin.audio.impl.opentk {
           AL.BindBufferToSource(this.Id, buffer.Id);
           this.currentBuffer_ = buffer;
 
-          AL.Source(this.Id, ALSourceb.Looping, loop);
+          // TODO: Pull these out as properties of the source?
+          AL.Source(this.Id, ALSourceb.Looping, looping);
+          AL.Source(this.Id, ALSourcef.Pitch, pitch);
 
           AL.SourcePlay(this.Id);
         }

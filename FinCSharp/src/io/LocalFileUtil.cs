@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 
 using RSG;
 
-namespace fin.file {
+namespace fin.io {
   public static class LocalFileUtil {
     public static byte[] ReadBytes(LocalFile file) =>
-        File.ReadAllBytes(file.uri);
+        File.ReadAllBytes(file.Uri);
 
     public static string ReadText(LocalFile file) {
-      using var reader = new StreamReader(file.uri);
+      using var reader = new StreamReader(file.Uri);
       return reader.ReadToEnd();
     }
 
@@ -19,7 +19,7 @@ namespace fin.file {
 
       Task.Run(async () => {
         try {
-          using var reader = new StreamReader(file.uri);
+          using var reader = new StreamReader(file.Uri);
           var text = await reader.ReadToEndAsync();
           promise.Resolve(text);
         }
@@ -36,7 +36,7 @@ namespace fin.file {
 
       Task.Run(async () => {
         try {
-          using var writer = new StreamWriter(file.uri);
+          using var writer = new StreamWriter(file.Uri);
           await writer.WriteAsync(text);
           promise.Resolve();
         }

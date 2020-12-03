@@ -16,6 +16,10 @@ namespace fin.data.collections.list {
       }
     }
 
+    public FinArrayList(params T[] values) {
+      this.impl_ = new List<T>(values);
+    }
+
     public int Count => this.impl_.Count;
 
     public IEnumerator<T> GetEnumerator() => this.impl_.GetEnumerator();

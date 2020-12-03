@@ -1,10 +1,10 @@
-﻿namespace fin.file {
+﻿namespace fin.io {
   public class WebFile : IFile {
-    public string uri { get; }
+    public string Uri { get; }
 
     private WebFile(string uri) {
       // TODO: Verify formatting.
-      this.uri = uri;
+      this.Uri = uri;
     }
 
     public static WebFile At(string url) =>

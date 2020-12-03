@@ -2,7 +2,7 @@
 
 using fin.input.button;
 
-namespace fin.input.impl.opentk {
+namespace fin.input.button {
   /// <summary>
   ///   The internal controller of a button. Can transition to "down" or "up",
   ///   will automatically track "pressed" and "released".

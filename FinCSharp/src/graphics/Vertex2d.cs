@@ -1,5 +1,7 @@
-﻿namespace fin.graphics {
-  public struct Vertex2d {
+﻿/*using fin.math.geometry;
+
+namespace fin.graphics {
+  public struct Vertex2d : IVector2<float> {
     public float x;
     public float y;
 
@@ -7,5 +9,7 @@
       this.x = x;
       this.y = y;
     }
+
+    public float IVector
   }
-}
+}*/

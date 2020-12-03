@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 
 using fin.data.collections.grid;
-using fin.file;
+using fin.io;
 
 namespace simple.platformer.world {
   [Flags]
@@ -24,7 +24,7 @@ namespace simple.platformer.world {
       this.Size = size;
 
       var bitmap =
-          (Bitmap) Image.FromFile(LocalFile.WithinResources("level.bmp").uri);
+          (Bitmap) Image.FromFile(LocalIo.Resources.GetFile("level.bmp").Uri);
 
       var (width, height) = (bitmap.Width, bitmap.Height);
       var boolGrid =

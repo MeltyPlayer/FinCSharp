@@ -1,4 +1,5 @@
-﻿using fin.input.keyboard;
+﻿using fin.input.gamepad;
+using fin.input.keyboard;
 
 namespace fin.input {
   public interface IInput {

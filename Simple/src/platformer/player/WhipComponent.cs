@@ -5,14 +5,20 @@ using fin.graphics.camera;
 using fin.input;
 using fin.input.gamepad;
 using fin.math;
+using fin.math.geometry;
+
+using simple.platformer.player.sfx;
 
 namespace simple.platformer.player {
   public class WhipComponent : IItemComponent {
     private readonly IGamepad gamepad_;
     private readonly PlayerRigidbody playerRigidbody_;
+    private readonly PlayerSoundsComponent playerSounds_;
     private readonly PlayerStateMachine stateMachine_;
 
     private readonly float whipLength_ = 128;
+
+    private MutableVector2<float>[] whipPoints_;
 
     private bool isWhipping_ = false;
     private float whipTimeFraction_ = 0;
@@ -26,10 +32,18 @@ namespace simple.platformer.player {
     public WhipComponent(
         IGamepad gamepad,
         PlayerRigidbody playerRigidbody,
+        PlayerSoundsComponent playerSounds,
         PlayerStateMachine stateMachine) {
       this.gamepad_ = gamepad;
       this.playerRigidbody_ = playerRigidbody;
+      this.playerSounds_ = playerSounds;
       this.stateMachine_ = stateMachine;
+
+      var whipPointCount = 10;
+      this.whipPoints_ = new MutableVector2<float>[whipPointCount];
+      for (var i = 0; i < whipPointCount; ++i) {
+        this.whipPoints_[i] = new MutableVector2<float>();
+      }
     }
 
     public void ProcessInputs(ProcessInputsEvent _) {
@@ -66,12 +80,17 @@ namespace simple.platformer.player {
 
         this.isWhipping_ = true;
         this.whipTimeFraction_ = 0;
+
+        // TODO: Move this out.
+        this.playerSounds_.PlayWhipSound();
       }
     }
 
     public void TickCollisions(TickCollisionsEvent _) {
       // TODO: Collisions?
     }
+
+    public void TickAnimations(TickAnimationEvent _) {}
 
     public void RenderForOrthographicCamera(
         RenderForOrthographicCameraTickEvent evt) {
@@ -89,9 +108,30 @@ namespace simple.platformer.player {
       // TODO: Track these via a state machine instead.
       if (this.isWhipping_) {
         var maxWhipLen = this.whipLength_ * this.whipStrength_;
-        var whipFraction = MathF.Sin(this.whipTimeFraction_ * .9f * MathF.PI);
-        var whipLen = maxWhipLen * whipFraction;
-        r2d.Line(0, 0, whipLen, 0);
+
+        var whipFractionRads =
+            MathF.Pow(this.whipTimeFraction_, .5f) * .8f * MathF.PI;
+        var whipFraction = MathF.Sin(whipFractionRads);
+
+        var whipLength = maxWhipLen * whipFraction;
+
+        var whipPointCount = this.whipPoints_.Length;
+        for (var i = 0; i < whipPointCount; ++i) {
+          var whipPoint = this.whipPoints_[i];
+
+          var f = (1f * i) / (whipPointCount - 1f);
+          var whipPointX = f * whipLength;
+
+          var whipYRads = 5 * whipFraction * MathF.PI + f * MathF.PI;
+          var whipPointY = MathF.Sin(f * MathF.PI) *
+                           6 *
+                           MathF.Sin(whipYRads);
+
+          whipPoint.X = whipPointX;
+          whipPoint.Y = whipPointY;
+        }
+
+        r2d.Line(this.whipPoints_);
       } else if (this.isStoring_) {
         r2d.Circle(-this.whipStrength_ * 16, 0, 4, 8, true);
       }

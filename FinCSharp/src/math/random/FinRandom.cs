@@ -19,6 +19,10 @@ namespace fin.math.random {
     }
 
     public static int Int() => FinRandom.impl_.Next();
+
+    /// <summary>
+    ///   Returns a random floating point number: 0 <= x < 1
+    /// </summary>
     public static double Double() => FinRandom.impl_.NextDouble();
   }
 }

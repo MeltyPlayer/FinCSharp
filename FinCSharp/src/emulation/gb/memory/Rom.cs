@@ -1,4 +1,4 @@
-﻿using fin.file;
+﻿using fin.io;
 
 namespace fin.emulation.gb.memory {
   public class Rom {

@@ -1,7 +1,7 @@
 ﻿using fin.input.button;
 using fin.math.geometry;
 
-namespace fin.input {
+namespace fin.input.analogstick {
   public class ButtonAxis : IAxis {
     public IButton Positive { set; get; } = NullButton.Instance;
     public IButton Negative { set; get; } = NullButton.Instance;

@@ -1,9 +1,17 @@
 ﻿using fin.discardable;
+using fin.io;
 
 using OpenTK.Audio.OpenAL;
 
 namespace fin.audio.impl.opentk {
   public partial class AudioOpenTk : IAudio {
+    public IAudioBuffer LoadAsBuffer(IFile file) {
+      var pcm = new OggLoader().Load(file);
+      var buffer = this.Factory.NewAudioBuffer();
+      buffer.FillWithPcm(pcm);
+      return buffer;
+    }
+
     private partial class AudioFactoryOpenTk : IAudioFactory {
       public IAudioBuffer NewAudioBuffer()
         => new AudioBufferOpenTk(this.node_);

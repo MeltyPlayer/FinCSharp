@@ -1,16 +1,19 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 
+using fin.input.analogstick;
 using fin.input.button;
 using fin.math;
 
 namespace fin.input.gamepad {
   public class AggregateGamepad : IGamepad {
-    private readonly IGamepad[] gamepads_;
+    private readonly IEnumerable<IGamepad> gamepads_;
     private IGamepad activeGamepad_;
 
-    public AggregateGamepad(params IGamepad[] gamepads) {
+    public AggregateGamepad(IEnumerable<IGamepad> gamepads) {
       this.gamepads_ = gamepads;
-      this.activeGamepad_ = gamepads[0];
+      this.activeGamepad_ = gamepads.First();
     }
 
     public bool IsConnected => this.activeGamepad_.IsConnected;

@@ -12,7 +12,7 @@ using fin.graphics.camera;
 using fin.graphics.color;
 using fin.settings;
 using fin.math.geometry;
-using fin.file;
+using fin.io;
 using fin.math.number;
 
 namespace simple {
@@ -120,7 +120,7 @@ namespace simple {
       public AudioComponent(IAudio audio) {
         this.pcm_ =
             new OggLoader().Load(
-                LocalFile.WithinResources("music/lobbyBackAndForth.ogg"));
+                LocalIo.Resources.GetFile("music/lobbyBackAndForth.ogg"));
 
         this.streamPopulator_ = new RateStreamPopulator(this.pcm_);
 
@@ -186,7 +186,7 @@ namespace simple {
         var cursorX = 640 * sampleOffsetFraction ?? 0;
 
         p.VertexColor(ColorConstants.WHITE);
-        r2d.Line(new Vertex2d(cursorX, 0), new Vertex2d(cursorX, 480));
+        r2d.Line(cursorX, 0, cursorX, 480);
       }
 
       private void RenderTotalWaveformForChannel_(
@@ -204,7 +204,7 @@ namespace simple {
         var maxAmplitude = boundingBox.Dimensions.Height * .5f;
 
         p.VertexColor(ColorConstants.GREEN);
-        r2d.Line(new Vertex2d(leftX, cY), new Vertex2d(rightX, cY));
+        r2d.Line(leftX, cY, rightX, cY);
 
         p.Begin(PrimitiveType.LINE_STRIP);
         for (var x = leftX; x < leftX + rightX; ++x) {
